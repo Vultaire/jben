@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+
+from subprocess import PIPE, Popen as P
+from os import waitpid
+from sys import argv, exit
+
+baseName = "jben"
+# Get version number.  If not specified, assume we're just doing a snapshot.
+if(len(argv)<2):
+	print "No version specified.  Using today's date as a snapshot name."
+	p = P("./mydate", shell=True, stdout=PIPE)
+	waitpid(p.pid,0)
+	version = p.stdout.readline().strip()
+else:
+	version = argv[1]
+
+packageName = baseName + "-" + version
+sourcePackageName = packageName + "-source"
+
+print "Packaging " + baseName + " version " + version + "..."
+
+# Define the files to save
+linuxfiles = " jben/Makefile jben/jben.xpm jben/linux_scripts"
+winfiles = " jben/jben.cbp jben/jben.depend jben/jben.layout jben/jben.ico jben/jben.rc"
+otherfiles = " jben/kanjidic jben/edict2 jben/license jben/jben_icon.xcf jben/skip.regex jben/old_files"
+sourcefiles = "jben/*.cpp jben/*.h " + otherfiles + linuxfiles + winfiles
+
+# Make the .tar.bz2 archive
+p = P("tar -cjf " + sourcePackageName + ".tar.bz2 " + sourcefiles, \
+	shell=True)
+(garbage,result)=waitpid(p.pid,0)
+if(result!=0):
+	print 'Error: could not create source archive "' + sourcePackageName + '.tar.bz2".'
+	exit(-1)
+print 'Source archive "' + sourcePackageName + '.tar.bz2" created.'
+
+# Make the .zip archive
+p = P("zip -rq " + sourcePackageName + ".zip " + sourcefiles, \
+	shell=True)
+(garbage,result)=waitpid(p.pid,0)
+if(result!=0):
+	print 'Error: could not create source archive "' + sourcePackageName + '.zip".'
+	exit(-1)
+print 'Source archive "' + sourcePackageName + '.zip" created.'
+print 'Finished creating all archives for ' + packageName + '!'
+
+archiveDir = 'jben/archives/' + packageName
+print 'Creating directory "' + archiveDir + '...'
+command = 'mkdir ' + archiveDir
+p = P(command, shell=True)
+(garbage,result)=waitpid(p.pid,0)
+if(result!=0):
+	print 'Error: could not create archive directory.'
+	exit(-1)
+
+print 'Moving files...'
+command = 'mv ' + packageName + '* ' + archiveDir
+p = P(command, shell=True)
+(garbage,result)=waitpid(p.pid,0)
+
+print 'Archival complete.'

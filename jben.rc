@@ -1,0 +1,4 @@
+aaaaaaaa ICON "jben.ico"
+iconJben ICON "jben.ico"
+#define wxUSE_NO_MANIFEST 0
+#include "wx/msw/wx.rc"

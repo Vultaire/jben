@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="jben" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="cb-bin\Debug\jben" prefix_auto="1" extension_auto="1" />
+				<Option object_output="cb-obj\Debug\" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-D__WXDEBUG__" />
+					<Add directory="D:\wxMSW-2.8.4\lib\gcc_dll\mswud" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="D:\wxMSW-2.8.4\lib\gcc_dll\mswud" />
+				</ResourceCompiler>
+				<Linker>
+					<Add library="libwxmsw28ud_html.a" />
+					<Add library="libwxmsw28ud_core.a" />
+					<Add library="libwxbase28ud.a" />
+					<Add directory="D:\wxMSW-2.8.4\lib\gcc_dll" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="cb-bin\Release\jben" prefix_auto="1" extension_auto="1" />
+				<Option object_output="cb-obj\Release\" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-Wall" />
+					<Add directory="D:\wxMSW-2.8.4\lib\gcc_dll\mswu" />
+				</Compiler>
+				<ResourceCompiler>
+					<Add directory="D:\wxMSW-2.8.4\lib\gcc_dll\mswu" />
+				</ResourceCompiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="libwxmsw28u_html.a" />
+					<Add library="libwxmsw28u_core.a" />
+					<Add library="libwxbase28u.a" />
+					<Add directory="D:\wxMSW-2.8.4\lib\gcc_dll" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-pipe" />
+			<Add option="-mthreads" />
+			<Add option="-D__GNUWIN32__" />
+			<Add option="-D__WXMSW__" />
+			<Add option="-DWXUSINGDLL" />
+			<Add option="-DwxUSE_UNICODE" />
+			<Add directory="D:\wxMSW-2.8.4\include" />
+			<Add directory="D:\wxMSW-2.8.4\contrib\include" />
+			<Add directory="D:\boost_1_34_1" />
+		</Compiler>
+		<ResourceCompiler>
+			<Add directory="D:\wxMSW-2.8.4\include" />
+		</ResourceCompiler>
+		<Unit filename="boosthashes.cpp" />
+		<Unit filename="boosthashes.h" />
+		<Unit filename="boosthm.h" />
+		<Unit filename="boosthmm.h" />
+		<Unit filename="coveredtextbox.cpp" />
+		<Unit filename="coveredtextbox.h" />
+		<Unit filename="dialog_addkanjibyfreq.cpp" />
+		<Unit filename="dialog_addkanjibyfreq.h" />
+		<Unit filename="dialog_addkanjibygrade.cpp" />
+		<Unit filename="dialog_addkanjibygrade.h" />
+		<Unit filename="dictload.cpp" />
+		<Unit filename="dictload.h" />
+		<Unit filename="edict.cpp" />
+		<Unit filename="edict.h" />
+		<Unit filename="file_utils.cpp" />
+		<Unit filename="file_utils.h" />
+		<Unit filename="global.h" />
+		<Unit filename="jben.cpp" />
+		<Unit filename="jben.h" />
+		<Unit filename="jben.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="jutils.cpp" />
+		<Unit filename="jutils.h" />
+		<Unit filename="kanjidic.cpp" />
+		<Unit filename="kanjidic.h" />
+		<Unit filename="kanjilist.cpp" />
+		<Unit filename="kanjilist.h" />
+		<Unit filename="maingui.cpp" />
+		<Unit filename="maingui.h" />
+		<Unit filename="panel_config.cpp" />
+		<Unit filename="panel_config.h" />
+		<Unit filename="panel_kanjidict.cpp" />
+		<Unit filename="panel_kanjidict.h" />
+		<Unit filename="panel_kanjidrill.cpp" />
+		<Unit filename="panel_kanjidrill.h" />
+		<Unit filename="panel_kanjilisteditor.cpp" />
+		<Unit filename="panel_kanjilisteditor.h" />
+		<Unit filename="panel_vocablisteditor.cpp" />
+		<Unit filename="panel_vocablisteditor.h" />
+		<Unit filename="panel_worddict.cpp" />
+		<Unit filename="panel_worddict.h" />
+		<Unit filename="preferences.cpp" />
+		<Unit filename="preferences.h" />
+		<Unit filename="redrawablepanel.cpp" />
+		<Unit filename="redrawablepanel.h" />
+		<Unit filename="scrolledcheck.cpp" />
+		<Unit filename="scrolledcheck.h" />
+		<Unit filename="string_utils.cpp" />
+		<Unit filename="string_utils.h" />
+		<Unit filename="vocablist.cpp" />
+		<Unit filename="vocablist.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
