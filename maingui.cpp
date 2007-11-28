@@ -161,7 +161,7 @@ MainGUI::MainGUI() : wxFrame((wxFrame *)NULL, -1,
 #endif
 	tabsMain->AddPage(tabsKanji,_T("Kanji"),true);
 	tabsMain->AddPage(tabsWords,_T("Words"),false);
-	tabsMain->AddPage(tabsConfig,_T("Configuation"),false);
+	tabsMain->AddPage(tabsConfig,_T("Configuration"),false);
 	tabMajor = (wxNotebookPage *) tabsKanji;
 
 	panelKanjiDict = new PanelKanjiDict(tabsKanji);
