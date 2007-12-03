@@ -65,16 +65,14 @@ KanjiDic *KanjiDic::LoadKanjiDic(const char *filename, int& returnCode) {
 	return k;
 }
 
-/* This could be sped up:
-   Add a function for determining the first EUC-JP character (1,2,3 bytes),
-   and then convert a string containing just that character.
-*/
+/* This could be sped up: copy the first UTF-8 character into a string, then
+   run a conversion on that.  Trivial though. */
 KanjiDic::KanjiDic(char *kanjidicRawData) {
 	char *token = strtok(kanjidicRawData, "\n");
 	wxString wxToken;
 	while(token) {
 		if( (strlen(token)>0) && (token[0]!='#') ) {
-			EUCToWx(token, wxToken);
+			UTF8ToWx(token, wxToken);
 			/* Convert token to proper format */
 			wxToken = ConvertKanjidicEntry(wxToken);
 			/* Add to hash table */
@@ -117,7 +115,7 @@ wxString KanjiDic::GetKanjidicStr(wxChar c) {
 	BoostHM<wxChar,string>::iterator it = kanjiHash.find(c);
 	if(it==kanjiHash.end()) return _T("");
 	wxString s;
-	EUCToWx(it->second, s);
+	UTF8ToWx(it->second, s);
 	return ConvertKanjidicEntry(s);
 }
 

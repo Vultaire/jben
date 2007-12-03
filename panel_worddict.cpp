@@ -140,7 +140,7 @@ void PanelWordDict::UpdateHtmlOutput() {
 			  li!=resultList.end();
 			  li++) {
 				if(resultString.length()!=0) resultString.append(_T('\n'));
-				EUCToWx(jben->edict->GetEdictString(*li), temp);
+				UTF8ToWx(jben->edict->GetEdictString(*li), temp);
 				resultString.append(temp);
 			}
 			/* Convert search results to destination format

@@ -41,8 +41,8 @@ extern wxCSConv transcoder;
 bool IsFurigana(wxChar c);
 bool IsHiragana(wxChar c);
 bool IsKatakana(wxChar c);
-bool EUCToWx(const string& eucStr, wxString& wxStr);
-bool WxToEUC(const wxString& wxStr, string& eucStr);
+bool UTF8ToWx(const string& utfStr, wxString& wxStr);
+bool WxToUTF8(const wxString& wxStr, string& utfStr);
 
 /* int AddKanjiFromFile(wxWindow *owner); */
 

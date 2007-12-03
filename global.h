@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #define AUTHOR_NAME  "Paul Goins"
 #define PROGRAM_NAME "J-Ben"
-#define VERSION_STR  "1.1.0"
+#define VERSION_STR  "1.1.1"
 #define COPYRIGHT_DATE "2007"
 
 #include "jben.h"

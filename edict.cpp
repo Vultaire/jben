@@ -90,7 +90,7 @@ Edict::Edict(char *edictRawData) {
 	while(token) {
 		if(strlen(token)>0) {
 			/* 0. Make wxString copy of the token */
-			EUCToWx(token, wxToken);
+			UTF8ToWx(token, wxToken);
 			/* 1. Store full string in vector */
 			edictData.push_back(token);
 			vIndex++;
@@ -217,13 +217,13 @@ bool Edict::Search(const wxString& query, list<int>& results,
 	   same time. */
 
 	vector<string> entryData;
-	string eucQuery;
+	string utfQuery;
 	vector<string>::iterator vSubIt;
 	size_t indexSubstr, indexDataStart, indexDataEnd;
 	int priorityLevel;
 	char c;
 
-	WxToEUC(query, eucQuery);
+	WxToUTF8(query, utfQuery);
 	i = 0;
 	for(vIt=edictData.begin(); vIt!=edictData.end(); vIt++) {
 		priorityLevel = -1; /* -1 == not a match*/
@@ -238,10 +238,10 @@ bool Edict::Search(const wxString& query, list<int>& results,
 				/* Special handling needed for case-insensitive English
 				   searching. */
 				string lwrData = StrToLower(*vSubIt);
-				string lwrQuery = StrToLower(eucQuery);
+				string lwrQuery = StrToLower(utfQuery);
 				indexSubstr = lwrData.find(lwrQuery, 0);
 			} else {
-				indexSubstr = vSubIt->find(eucQuery, 0);
+				indexSubstr = vSubIt->find(utfQuery, 0);
 			}
 			if(indexSubstr!=string::npos) {
 				/* A match was found.
@@ -313,29 +313,29 @@ bool Edict::Search(const wxString& query, list<int>& results,
 				   block. */
 				if(indexSubstr==indexDataStart) {
 					priorityLevel = max(priorityLevel, priorityBeginsWith);
-					if(eucQuery.length()==indexDataEnd+1 - indexDataStart) {
+					if(utfQuery.length()==indexDataEnd+1 - indexDataStart) {
 						priorityLevel = max(priorityLevel, priorityExact);
 #ifdef DEBUG
-						printf("MATCH! Type: EXACT: (%s = %s)\n", eucQuery.c_str(),
+						printf("MATCH! Type: EXACT: (%s = %s)\n", utfQuery.c_str(),
 							   vSubIt->c_str());
 #endif
 					} else {
 #ifdef DEBUG
-						printf("MATCH! Type: Begins With (%s = %s)\n", eucQuery.c_str(),
+						printf("MATCH! Type: Begins With (%s = %s)\n", utfQuery.c_str(),
 							   vSubIt->c_str());
 #endif
 					}
-				} else if(indexSubstr == indexDataEnd+1 - eucQuery.length()) {
+				} else if(indexSubstr == indexDataEnd+1 - utfQuery.length()) {
 					priorityLevel = max(priorityLevel, priorityEndsWith);
 #ifdef DEBUG
-						printf("MATCH! Type: Ends With (%s = %s)\n", eucQuery.c_str(),
+						printf("MATCH! Type: Ends With (%s = %s)\n", utfQuery.c_str(),
 							   vSubIt->c_str());
 #endif
 				} else {
 					priorityLevel = max(priorityLevel, priorityOther);
 #ifdef DEBUG
 						printf("MATCH! Type: Other (%s = %s)\nDS=%d, DE=%d\n",
-							   eucQuery.c_str(),
+							   utfQuery.c_str(),
 							   vSubIt->substr(indexDataStart,
 											  indexDataEnd+1-indexDataStart).c_str(),
 							   indexDataStart, indexDataEnd);

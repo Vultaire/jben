@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "jutils.h"
 
-wxCSConv transcoder(_T("euc-jp"));
+wxCSConv transcoder(_T("utf8"));
 
 bool IsFurigana(wxChar c) {
 	if(IsHiragana(c) || IsKatakana(c)) return true;
@@ -42,30 +42,14 @@ bool IsKatakana(wxChar c) {
 	return false;
 }
 
-bool EUCToWx(const string& eucStr, wxString& wxStr) {
-	int srcLength = eucStr.length();
+bool UTF8ToWx(const string& utfStr, wxString& wxStr) {
+	int srcLength = utfStr.length();
 	int destLength = (srcLength+1) * sizeof(wxChar);
 
-/* OLD (DEPRECATED) CODE */
-#if 1
 	transcoder.MB2WC(
 	  wxStr.GetWriteBuf(destLength),
-	  eucStr.c_str(), destLength);
+	  utfStr.c_str(), destLength);
 	wxStr.UngetWriteBuf();
-#endif
-/* NEW CODE */
-/* Disabled: Documentation seems TOTALLY counter-intuitive.  It says that
-   "ToWChar" converts a wide string to a multibyte... or by my understanding
-   of the English language, that it converts FROM a wide character string TO
-   a multi-byte one.  Totally backwards.   Therefore, disabled; I'll use
-   the function which is more clearly documented. */
-#if 0
-	transcoder.ToWChar(
-	  wxStr.GetWriteBuf(destLength),
-	  destLength,
-	  eucStr.c_str());
-	wxStr.UngetWriteBuf();
-#endif
 
 	/* This will be a performance hit if used, I think.  But I'll leave it
 	   in as a comment for possible future memory savings. */
@@ -73,26 +57,17 @@ bool EUCToWx(const string& eucStr, wxString& wxStr) {
 	return true;
 }
 
-bool WxToEUC(const wxString& wxStr, string& eucStr) {
-	/* EUC-JP can take up to 3 bytes for each single UNICODE character.
+bool WxToUTF8(const wxString& wxStr, string& utfStr) {
+	/* UTF8 can take up to 4 bytes for each single UNICODE character.
 	   So, instead of sizeof(wxChar) or similar, we just use a hard-coded
 	   "3". */
 	int srcLength = wxStr.length();
-	int destLength = (srcLength+1) * 3;
+	int destLength = (srcLength+1) * 4;
 	char *temp = new char[destLength];
-/* OLD (DEPRECATED) CODE */
-#if 1
+
 	transcoder.WC2MB(temp, wxStr.c_str(), destLength);
-#endif
-/* NEW CODE */
-/* Reason for why this is disabled is mentioned one function above. */
-#if 0
-	transcoder.FromWChar(
-	  temp,
-	  destLength,
-	  wxStr.c_str());
-#endif
-	eucStr = temp;
+
+	utfStr = temp;
 	delete[] temp;
 	return true;
 }
