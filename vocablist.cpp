@@ -26,12 +26,62 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "wx/tokenzr.h"
 
 VocabList::VocabList() {
+/*	vocabList.reserve(1000); */ /* We might want to do this later...? */
 }
 
-void VocabList::Add(const wxString& s) {
-	if(vocabList.insert(s).second==false) {
-		wxMessageBox(wxString(s).append(_T(" was not inserted, since it is already in the list.")), _T("Notice"), wxOK | wxICON_INFORMATION, jben->gui);
+/* "BinarySearch" searches for a query string and returns its index.
+   If the string is not found, it returns the index at which the query
+   should be inserted.  matchFound indicates whether the return value is
+   a match or merely an insertion point. */
+int VocabList::BinarySearch(const wxString& query, bool* matchFound) {
+	int listLength = vocabList.size();
+	int lowBound = 0, highBound = listLength-1;
+	int compareVal, index=0;
+
+	/* Special case: empty list */
+	if(listLength<=0) {
+		if(matchFound) *matchFound = false;
+		return 0;
 	}
+
+	/* Search for a match.  Return when found. */
+	while(lowBound <= highBound) {
+		index = (lowBound+highBound)/2;
+		compareVal = query.compare(vocabList[index]);
+		if(compareVal==0) {
+			if(matchFound) *matchFound = true;
+			return index;
+		} else if(compareVal<0) {
+			highBound = index-1;
+		} else {
+			lowBound = index+1;
+		}
+	}
+
+	/* Match was not found.  "index" will be our insertion point, and
+	   matchFound is false. */
+	if(matchFound) *matchFound = false;
+	if(compareVal>0) index++; /* If query is greater than the final item we
+								 looked at, then we want to insert
+								 afterwards. */
+	return index;
+}
+
+/* "Add" inserts an item into the study list.
+   It uses a custom binary search function to find an insertion point for the
+   string, and to check if the string is already in the list.
+   No duplicate strings are allowed in the list, and such duplicates are quietly
+   discarded. */
+bool VocabList::Add(const wxString& s) {
+	bool matchFound;
+	int insertPoint;
+
+	insertPoint = BinarySearch(s, &matchFound);
+	if(!matchFound) {
+		vocabList.insert(vocabList.begin() + insertPoint, s);
+		return true;
+	}
+	return false;
 }
 
 int VocabList::AddList(const wxString& s) {
@@ -42,7 +92,7 @@ int VocabList::AddList(const wxString& s) {
 	while(t.HasMoreTokens()) {
 		token = t.GetNextToken();
 		if(token.length()>0) {
-			if(vocabList.insert(token).second) count++;
+			if(Add(token)) count++;
 			else duplicates++;
 		}
 	}
@@ -57,17 +107,17 @@ int VocabList::AddList(const wxString& s) {
 
 wxString VocabList::ToString(wxChar separator) {
 		wxString result;
-		int i=0;
-		set<wxString>::iterator it=vocabList.begin();
+
+		vector<wxString>::iterator it = vocabList.begin();
 		if(it!=vocabList.end()) {
 			result.append(*it);
-			i++;
-			for(++it; it!=vocabList.end(); it++) {
+			it++;
+			for(; it!=vocabList.end(); it++) {
 				result.append(separator);
 				result.append(*it);
-				i++;
 			}
 		}
+		
 		return result;
 }
 
@@ -78,45 +128,28 @@ void VocabList::Clear() {
 int VocabList::Size() {return vocabList.size();}
 
 const wxString& VocabList::operator[](unsigned int index) {
-	set<wxString>::iterator it = vocabList.begin();
+	/* new, simpler code, with index being 0-based */
+	return vocabList[index];
+	/* old code follows */
+#if 0	
+	/* "index" is 1-based. */
+	vector<wxString>::iterator it = vocabList.begin();
 	for(unsigned int i=1;i<=index;i++) {
 		if(it!=vocabList.end()) it++;
 	}
 	return *it;
+#endif
 }
 
 int VocabList::GetIndexByWord(const wxString& s) {
-	/*set<wxString>::iterator it = vocabList.find(s);*/
-
-	/* Yes, this is a horrible solution.  Probably it'll be faster to
-	   redefine vocabList as a vector, and start by creating the vocabList
-	   as a set and then copying it over, just as is done with the Edict
-	   constructor.  This code is just to get things working. */
-
+	/* Index returned should be 0-based. -1 indicates not found. */
+	bool found;
+	int index = BinarySearch(s, &found);
 #ifdef DEBUG
-	printf("DEBUG: Searching for \"%ls\"...\n", s.c_str());
+	printf("GetIndexByWord: BinarySearch (%ls) returned found=%d and index=%d.\n", s.c_str(), (int)found, index);
 #endif
-	set<wxString>::iterator it = vocabList.begin();
-	if(it==vocabList.end()) return -1;
-	if(*it==s) {
-#ifdef DEBUG
-		printf("Search of \"%ls\" found \"%ls\" at index 0.\n", s.c_str(), it->c_str());
-#endif
-		return 0;
-	}
-
-	int i=1;
-	for(it++; it!=vocabList.end(); it++) {
-		if(*it==s) {
-#ifdef DEBUG
-			printf("Search of \"%ls\" found \"%ls\" at index %d.\n", s.c_str(), it->c_str(), i);
-#endif
-			return i;
-		}
-		i++;
-	}
-
-	return -1;
+	if(!found) return -1;
+	return index;
 }
 
-set<wxString>& VocabList::GetVocabList() {return vocabList;}
+vector<wxString>& VocabList::GetVocabList() {return vocabList;}

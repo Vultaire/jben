@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #endif
 
 /*#include "kanjidic.h"*/
-#include <set>
+#include <vector>
 using namespace std;
 
 #define ST_GRADE     1
@@ -43,16 +43,17 @@ using namespace std;
 class VocabList {
 public:
 	VocabList();
-	void Add(const wxString& s);
+	bool Add(const wxString& s);
 	int AddList(const wxString& s);
 	wxString ToString(wxChar separator=_T('\n'));
 	int Size();
 	void Clear();
 	const wxString& operator[](unsigned int index);
 	int GetIndexByWord(const wxString& s);
-	set<wxString>& GetVocabList();
+	vector<wxString>& GetVocabList();
 private:
-	set<wxString> vocabList;
+	vector<wxString> vocabList;
+	int BinarySearch(const wxString& query, bool* matchFound);
 };
 
 #endif

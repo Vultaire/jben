@@ -135,7 +135,7 @@ void KanjiList::InplaceMerge(vector<wxChar>& v, BoostHM<wxChar,int>& indexer, in
 /*
 SortKanjiList sorts the currently loaded kanji list based upon a specified
 KANJIDIC field, like F (frequency) or G (jouyou grade).  Sorting is done
-via a merged sort.  This is probably overkill, but I wanted to try doing
+via a merged sort.  This might be overkill, but I wanted to try doing
 it, so I did.
 */
 void KanjiList::Sort(int sortType, bool reverseOrder) {

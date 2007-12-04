@@ -50,6 +50,8 @@ bool JBen::OnInit() {
 	                                 That's why I spin off a few iterations of rand()
 	                                 before really using it. */
 
+	/* DictionaryLoader was intended to be a splash screen for loading the dictionaries.  However,
+	   currently this is a fast enough operation that I decided it was unnecessary. */
 #if 0
 	/* Display splash screen which shows progress bars while loading
 	   dictionaries.  (Yes, this is fluff.) */

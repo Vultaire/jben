@@ -53,9 +53,6 @@ KanjiDic *KanjiDic::LoadKanjiDic(const char *filename, int& returnCode) {
 		/* Create the kanjidic object with our string data. */
 		k = new KanjiDic(rawData);
 
-#ifdef DEBUG
-		printf("KanjiDic created. (%p)\n", k);
-#endif
 		returnCode = KD_SUCCESS;
 	}
 	else
@@ -86,24 +83,10 @@ KanjiDic::KanjiDic(char *kanjidicRawData) {
 		}
 		token = strtok(NULL, "\n");
 	}
-
-#if 0
-#ifdef DEBUG
-	int i = 50;
-	printf("Displaying the first 50 lines found in the kanjidic hash table...\n");
-	for(BoostHM<wxChar,string>::iterator ki=kanjiHash.begin(); ki!=kanjiHash.end(); ki++) {
-		i--;
-		puts(ki->second.mb_str(*wxConvCurrent));
-		if(i<=0) break;
-	}
-#endif
-#endif
 }
 
 KanjiDic::~KanjiDic() {
-#ifdef DEBUG
-	printf("KanjiDic destroyed. (%p)\n", this);
-#endif
+	/* Currently: nothing here. */
 }
 
 /* This function returns a wxString containing the desired line of the
@@ -199,42 +182,17 @@ wxString KanjiDic::KanjidicToHtml(const wxString& kanjidicStr, long options, lon
 	if(options & (KDO_SOD_STATIC | KDO_SOD_ANIM) != 0) {
 		wxCSConv transcoder(_T("utf-8"));
 		if(transcoder.IsOk()) {
-			char dest[5];
-#ifdef DEBUG
-			printf("DEBUG: Converting %lc to utf-8...\n", kanjidicStr[0]);
-#endif
+			string utfStr;
+			/* Get a UTF8-encoded string for the kanji. */
+			WxToUTF8(kanjidicStr[0], utfStr);
+			sTemp.clear();
 
-			/* This section of the unicode support is not so clearly documented.
-		   	This is my understanding based upon wxWidgets 2.8.4:
-		   	wxCSConv::WC2MB (arg1,arg2,arg3);
-		   	arg1: destination array
-		   	arg2: source array
-		   	arg3: size of destination array
-
-		   	There is nothing to specify what length of the source array to use, therefore if only a
-		   	substring is to be converted, the substring must be explicitly created prior to this call.
-		   	The size should be the length of the source array times 4, since UTF-8 sequences can be
-		   	potentially 4 bytes apiece. */
-			memset((void *)dest, '\0', 5);
-			sTemp = kanjidicStr[0];
-			size_t convertedLen = transcoder.WC2MB(dest, sTemp.c_str(), sTemp.length()*4);
-#ifdef DEBUG
-			printf("DEBUG: %d characters converted.\n", convertedLen);
-#endif
-			unsigned int hexVal=0;
-			for(unsigned int i=0;i<convertedLen;i++) {
-				/* The destination string should be in low byte->high byte order, which is
-			   	opposite of the norm for an int.  Thus, we reverse the byte order as we OR them in. */
-				hexVal |= ( ((unsigned char)dest[i]) << (8u * (convertedLen-i-1u)) );
-#ifdef DEBUG
-				printf("DEBUG: Byte %d = %02X\n", i, (unsigned char)dest[i]);
-#endif
+			/* Convert to a low-to-high-byte hex string. */
+			for(unsigned int i=0;i<utfStr.length();i++) {
+				sTemp.Append(
+					wxString::Format(_T("%02x"),
+									 (unsigned char)utfStr[i]));
 			}
-
-			sTemp = wxString::Format(_T("%x"), hexVal);
-#ifdef DEBUG
-			printf("DEBUG: Displaying HTML for hex code %ls\n", sTemp.c_str());
-#endif
 
 			wxString sod;
 			/* Load static SOD, if present */
@@ -563,7 +521,6 @@ wxString KanjiDic::KanjidicToHtml(const wxString& kanjidicStr, long options, lon
 #ifdef DEBUG
 	printf("DEBUG: header=[%ls]\n", header.c_str());
 #endif
-	/* result.append(_T("<font size=\"-1\"><ul>")); */
 	result.append(_T("<ul>"));
 	if((options & KDO_READINGS) != 0) {
 		if(onyomi.length() > 0) result.append(_T("<li>Onyomi Readings: ")).append(onyomi).append(_T("</li>"));
@@ -606,21 +563,21 @@ wxString KanjiDic::KanjidicToHtml(const wxString& kanjidicStr, long options, lon
 		if(dictionaryInfo.length()>0) result.append(_T("<li>Dictionary Codes:<ul>")).append(dictionaryInfo).append(_T("</ul></li>"));
 	}
 	if((options & KDO_VOCABCROSSREF) != 0) {
-		set<wxString> *vList = &(jben->vocabList->GetVocabList());
+		vector<wxString> *vList = &(jben->vocabList->GetVocabList());
 		wxChar thisKanji = kanjidicStr[0];
-		set<wxString> crossRefList;
-		set<wxString>::iterator sIt;
-		for(sIt=vList->begin(); sIt!=vList->end(); sIt++) {
-			if(sIt->find(thisKanji)!=wxString::npos) {
-				crossRefList.insert(*sIt);
+		vector<wxString> crossRefList;
+		vector<wxString>::iterator vIt;
+		for(vIt=vList->begin(); vIt!=vList->end(); vIt++) {
+			if(vIt->find(thisKanji)!=wxString::npos) {
+				crossRefList.push_back(*vIt);
 			}
 		}
 		if(crossRefList.size()>0) {
 			result.append(_T("<li>This kanji is used by words in your study list:<br><font size=\"7\">"));
-			sIt = crossRefList.begin();
-			result.append(*sIt);
-			for(++sIt; sIt!=crossRefList.end(); sIt++) {
-				result.append(_T("&nbsp; ")).append(*sIt);
+			vIt = crossRefList.begin();
+			result.append(*vIt);
+			for(++vIt; vIt!=crossRefList.end(); vIt++) {
+				result.append(_T("&nbsp; ")).append(*vIt);
 			}
 			result.append(_T("</font></li>"));
 		}
@@ -635,7 +592,6 @@ wxString KanjiDic::KanjidicToHtml(const wxString& kanjidicStr, long options, lon
 	if((options & KDO_UNHANDLED) != 0) {
 		if(unhandled.length()>0) result.append(_T("<li>Unhandled: ")).append(unhandled).append(_T("</li>"));
 	}
-	/* result.append(_T("</ul></font>"); */
 	result.append(_T("</ul>"));
 
 	return result;
@@ -653,14 +609,6 @@ int KanjiDic::GetIntField(wxChar kanji, const wxString& marker) {
 	kanjiEntry = GetKanjidicStr(kanji);
 	if(kanjiEntry.length()>0) {
 		index = kanjiEntry.find(markerStr);
-#ifdef DEBUG
-#if 0
-		size_t index2 = kanjiEntry.find(markerStr, index+1);
-		if(index2!=wxString::npos)
-			fprintf(stderr, "Warning: possible multiple definitions!\n"
-			"Marker=%ls, Character=%lc, String Index=%d\n", marker, ki->first, index2);
-#endif
-#endif
 		if(index!=wxString::npos) {
 			temp = kanjiEntry.substr(
 				index+markerLen,

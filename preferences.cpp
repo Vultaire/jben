@@ -51,41 +51,24 @@ Preferences::Preferences(const wxChar *filename) {
 					if(subToken==_T("kanjidicoptionmask")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
-#ifdef DEBUG
-						printf("kanjidicoptionmask = [%ls]\n", subToken.c_str());
-						if(!subToken.ToULong(&kanjidicOptions, 0))
-							printf("WARNING: Could not convert to \"long\"!\n\tAt %s:%d\n", __FILE__,__LINE__);
-#else
 						subToken.ToULong(&kanjidicOptions, 0);
-#endif
 					} else if(subToken==_T("kanjidicdictionarymask")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
-#ifdef DEBUG
-						printf("kanjidicdictionarymask = [%ls]\n", subToken.c_str());
-						if(!subToken.ToULong(&kanjidicDictionaries, 0))
-							printf("WARNING: Could not convert to \"long\"!\n\tAt %s:%d\n", __FILE__,__LINE__);
-#else
 						subToken.ToULong(&kanjidicDictionaries, 0);
-#endif
 					} else if(subToken==_T("kanjilist")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
-#ifdef DEBUG
-						printf("kanjilist = [%ls]\n", subToken.c_str());
-#endif
 						jben->kanjiList->AddFromString(subToken);
 					} else if(subToken==_T("vocablist")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
-
+						printf("String to parse: [%ls]\n", subToken.c_str());
 						wxStringTokenizer tSub(subToken, _T(";"));
 						while(tSub.HasMoreTokens()) {
 							subToken = tSub.GetNextToken();
+							printf("Subtoken: [%ls]\n", subToken.c_str());
 							if(subToken.length()>0) {
-#ifdef DEBUG
-								printf("vocabList += [%ls]\n", subToken.c_str());
-#endif
 								jben->vocabList->Add(subToken);
 							}
 						}
@@ -103,11 +86,6 @@ Preferences::Preferences(const wxChar *filename) {
 			} /* if(tokenlen>0, token[0]!=# */
 		} /* while(hasmoretokens) */
 	} /* if(file opened) */
-
-#ifdef DEBUG
-	printf("Option Mask: %08lX\nDictionary Mask: %08lX\n",
-		kanjidicOptions, kanjidicDictionaries);
-#endif
 }
 
 Preferences::~Preferences() {

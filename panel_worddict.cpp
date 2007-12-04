@@ -116,6 +116,7 @@ void PanelWordDict::Redraw() {
 
 	/* Update most controls */
 	textSearch->ChangeValue(currentSearchString);
+	/* currentIndex is 0-based, so don't forget to adjust it. */
 	textIndex->ChangeValue(wxString::Format(_T("%d"), currentIndex+1));
 	lblIndex->SetLabel(wxString::Format(_T(" of %d vocab"), jben->vocabList->Size()));
 	/* We need to tell our sizer to refresh to accomodate the resizing of the label. */

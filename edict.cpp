@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <string>
 using namespace std;
 
-#define SEARCH_MAX 250
+/*#define SEARCH_MAX 250*/
 
 Edict *Edict::LoadEdict(const char *filename, int& returnCode) {
 	Edict *e=NULL;
@@ -59,9 +59,6 @@ Edict *Edict::LoadEdict(const char *filename, int& returnCode) {
 		/* Create the kanjidic object with our string data. */
 		e = new Edict(rawData);
 
-#ifdef DEBUG
-		printf("Edict created. (%p)\n", e);
-#endif
 		returnCode = ED_SUCCESS;
 	}
 	else
@@ -101,9 +98,7 @@ Edict::Edict(char *edictRawData) {
 }
 
 Edict::~Edict() {
-#ifdef DEBUG
-	printf("Edict destroyed. (%p)\n", this);
-#endif
+	/* Currently, nothing needs to be done here. */
 }
 
 /* This function walks through the string, watching the parentheses, and copying
@@ -147,12 +142,6 @@ wxString Edict::StripParenFields(const wxString& src) {
 		}
 	}
 
-#if 0
-#ifdef DEBUG
-	printf("StripParenFields:\n\tOrig:[%ls]\n\tNew:[%ls]\n",
-		src.c_str(), result.c_str());
-#endif
-#endif
 	return result;
 }
 
@@ -232,7 +221,7 @@ bool Edict::Search(const wxString& query, list<int>& results,
 		} else {
 			GetJapanese(*vIt, entryData);
 		}
-		
+
 		for(vSubIt=entryData.begin(); vSubIt!=entryData.end(); vSubIt++) {
 			if(englishSearch) {
 				/* Special handling needed for case-insensitive English
@@ -315,53 +304,24 @@ bool Edict::Search(const wxString& query, list<int>& results,
 					priorityLevel = max(priorityLevel, priorityBeginsWith);
 					if(utfQuery.length()==indexDataEnd+1 - indexDataStart) {
 						priorityLevel = max(priorityLevel, priorityExact);
-#ifdef DEBUG
-						printf("MATCH! Type: EXACT: (%s = %s)\n", utfQuery.c_str(),
-							   vSubIt->c_str());
-#endif
 					} else {
-#ifdef DEBUG
-						printf("MATCH! Type: Begins With (%s = %s)\n", utfQuery.c_str(),
-							   vSubIt->c_str());
-#endif
 					}
 				} else if(indexSubstr == indexDataEnd+1 - utfQuery.length()) {
 					priorityLevel = max(priorityLevel, priorityEndsWith);
-#ifdef DEBUG
-						printf("MATCH! Type: Ends With (%s = %s)\n", utfQuery.c_str(),
-							   vSubIt->c_str());
-#endif
 				} else {
 					priorityLevel = max(priorityLevel, priorityOther);
-#ifdef DEBUG
-						printf("MATCH! Type: Other (%s = %s)\nDS=%d, DE=%d\n",
-							   utfQuery.c_str(),
-							   vSubIt->substr(indexDataStart,
-											  indexDataEnd+1-indexDataStart).c_str(),
-							   indexDataStart, indexDataEnd);
-#endif
 				}
 			}
 		}
 		/* Add to appropriate list */
 		if(priorityLevel>=0) {
-			if(priorityResults[0].size()
+			/*if(priorityResults[0].size()
 			  +priorityResults[1].size()
 			  +priorityResults[2].size()
-			  +priorityResults[3].size()< SEARCH_MAX) {
-				priorityResults[priorityLevel].push_back(i);
-			} else break;
+			  +priorityResults[3].size()< SEARCH_MAX) {*/
+			priorityResults[priorityLevel].push_back(i);
+			/*} else break;*/
 		}
-
-#if 0
-		if(entryData.size()>0) {
-			printf("Entry %d: Substrings found:\n", i);
-			for(vSubIt=entryData.begin(); vSubIt!=entryData.end(); vSubIt++)
-				printf("\t[%s]\n", vSubIt->c_str());
-		} else {
-			printf("Entry %d: no substrings found.\n", i);
-		}
-#endif
 
 		entryData.clear();
 		i++;
@@ -376,6 +336,9 @@ bool Edict::Search(const wxString& query, list<int>& results,
 		}
 	}
 
+#ifdef DEBUG
+	printf("Search result count: %d\n", results.size());
+#endif
 	if(results.size()>0) return true;
 	return false;
 }
@@ -403,7 +366,7 @@ wxString Edict::ResultToHTML(const wxString& rawResult) {
 				jStr.replace(indexBreak,1,_T(", "),0,2);
 				indexBreak = jStr.find_first_of(_T(';'));
 			}
-			
+
 			htmlStr.append(jStr);
 			htmlStr.append(_T("</font><br>"));
 
@@ -425,7 +388,6 @@ wxString Edict::ResultToHTML(const wxString& rawResult) {
 			}
 			htmlStr.append(eStr);
 		}
-		
 		htmlStr.append(_T("</p>"));
 	}
 
@@ -436,17 +398,14 @@ void Edict::GetEnglish(const string& edictStr, vector<string>& dest) {
 	char *tokenizedString = new char[edictStr.length()+1];
 	char *token;
 
-	/*printf("DEBUG: GetEnglish(%s)\n", edictStr.c_str());*/
 	strcpy(tokenizedString, edictStr.c_str());
 	token = strtok(tokenizedString, "/");
 	/* Skip to the second token, since the first is just the Japanese readings */
 	if(token) {
-		/*printf("First token: [%s]\n", token);*/
 		token = strtok(NULL, "/");
 	}
-	
+
 	while(token) {
-		/*printf("Next token found: [%s]\n", token);*/
 		if(strlen(token)>0) dest.push_back(token);
 		token = strtok(NULL, "/");
 	}
@@ -454,8 +413,6 @@ void Edict::GetEnglish(const string& edictStr, vector<string>& dest) {
 	delete[] tokenizedString;
 }
 
-/* Rewrite this code to handle the different tokenization of the Japanese part
-   of the string. */
 void Edict::GetJapanese(const string& edictStr, vector<string>& dest) {
 	/* Grab the portion of the string relevant for Japanese readings */
 	size_t indexFinal = edictStr.find_first_of('/');

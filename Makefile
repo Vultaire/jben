@@ -1,11 +1,11 @@
 # RELEASE flags
-CXXFLAGS = -Wall -s -O2 `wx-config --cxxflags`
-CPPFLAGS = `wx-config --cppflags`
+#CXXFLAGS = -Wall -s -O2 `wx-config --cxxflags`
+#CPPFLAGS = `wx-config --cppflags`
 
 # DEBUG flags
-##CXXFLAGS = -Wall -Werror -g `wx-config --cxxflags`
-#CXXFLAGS = -Wall -g `wx-config --cxxflags`
-#CPPFLAGS = -DDEBUG `wx-config --cppflags`
+#CXXFLAGS = -Wall -Werror -g `wx-config --cxxflags`
+CXXFLAGS = -Wall -g `wx-config --cxxflags`
+CPPFLAGS = -DDEBUG `wx-config --cppflags`
 
 # Profiling mode: DEBUG flags, plus -pg, but without -DDEBUG
 ##CXXFLAGS = -Wall -Werror -g `wx-config --cxxflags` -pg
