@@ -34,7 +34,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <string>
 using namespace std;
 
-/*#define SEARCH_MAX 250*/
+/* SEARCH_MAX is our hard-coded cutoff point for searches.  It should be high
+   enough not to interfere with normal "single page" operation, but it should
+   also prevent the user from doing something too stupid and having to wait a
+   minute or so because they searched for the letter "e" by mistake.
+
+   The most commonly used kanji in EDICT2 appears to be 人, at 1889 characters.
+   Thus, let's make our panic breakoff point at 2000 characters. */
+#define SEARCH_MAX 2000
 
 Edict *Edict::LoadEdict(const char *filename, int& returnCode) {
 	Edict *e=NULL;
@@ -315,12 +322,20 @@ bool Edict::Search(const wxString& query, list<int>& results,
 		}
 		/* Add to appropriate list */
 		if(priorityLevel>=0) {
-			/*if(priorityResults[0].size()
+			if(priorityResults[0].size()
 			  +priorityResults[1].size()
 			  +priorityResults[2].size()
-			  +priorityResults[3].size()< SEARCH_MAX) {*/
-			priorityResults[priorityLevel].push_back(i);
-			/*} else break;*/
+			  +priorityResults[3].size()< SEARCH_MAX) {
+				priorityResults[priorityLevel].push_back(i);
+			} else {
+#ifdef DEBUG
+				printf("PANIC: SEARCH_MAX results reached!\n");
+#endif
+				wxMessageBox(wxString::Format(_T("Over %d results were found.  The search has been stopped."), SEARCH_MAX),
+							 _T("Excessive search results"),
+							 wxOK | wxICON_INFORMATION, NULL);
+				break;
+			}
 		}
 
 		entryData.clear();
