@@ -11,7 +11,7 @@ string StrToLower(const string& original) {
 bool GetIndexAfterParens(const string& s, size_t indexParen, size_t& indexNext,
 						 char cOpenParen, char cCloseParen) {
 	int parenCount = 1;
-	size_t index = indexParen+1;
+	size_t index = indexParen;
 	string sParenChars("  ");
 	sParenChars[0]=cOpenParen;
 	sParenChars[1]=cCloseParen;
@@ -19,7 +19,7 @@ bool GetIndexAfterParens(const string& s, size_t indexParen, size_t& indexNext,
 	while(parenCount>0) {
 		/* Skip "index" ahead to after the closing parenthesis, or to the
 		   end if not found. */
-		index = s.find_first_of(sParenChars, index);
+		index = s.find_first_of(sParenChars, index+1);
 		if(index==string::npos) break;
 		if(s.at(index)==cOpenParen)
 			parenCount++;
