@@ -63,11 +63,15 @@ Preferences::Preferences(const wxChar *filename) {
 					} else if(subToken==_T("vocablist")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
+#ifdef DEBUG
 						printf("String to parse: [%ls]\n", subToken.c_str());
+#endif
 						wxStringTokenizer tSub(subToken, _T(";"));
 						while(tSub.HasMoreTokens()) {
 							subToken = tSub.GetNextToken();
+#ifdef DEBUG
 							printf("Subtoken: [%ls]\n", subToken.c_str());
+#endif
 							if(subToken.length()>0) {
 								jben->vocabList->Add(subToken);
 							}

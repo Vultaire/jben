@@ -206,21 +206,20 @@ bool Edict::Search(const wxString& query, list<int>& results,
 		}
 	}
 
-	/* NEW search code: non-accelerated search using only the data in EDICT2,
-	   no extra memory-consuming indices.  BESIDES, if we do more than a
-	   "begins with" or "exact match" search, we have to do a non-indexed
-	   search to catch the other stuff anyway... so let's just do it all at the
-	   same time. */
+	/* Main search code begins below */
 
 	vector<string> entryData;
-	string utfQuery;
+	string utfQuery, lwrQuery, lwrData;
 	vector<string>::iterator vSubIt;
 	size_t indexSubstr, indexDataStart, indexDataEnd;
 	int priorityLevel;
 	char c;
 
 	WxToUTF8(query, utfQuery);
+	lwrQuery = StrToLower(utfQuery); /* For English searching, store a
+										lowercase query */
 	i = 0;
+	
 	for(vIt=edictData.begin(); vIt!=edictData.end(); vIt++) {
 		priorityLevel = -1; /* -1 == not a match*/
 		if(englishSearch) {
@@ -231,11 +230,56 @@ bool Edict::Search(const wxString& query, list<int>& results,
 
 		for(vSubIt=entryData.begin(); vSubIt!=entryData.end(); vSubIt++) {
 			if(englishSearch) {
-				/* Special handling needed for case-insensitive English
-				   searching. */
-				string lwrData = StrToLower(*vSubIt);
-				string lwrQuery = StrToLower(utfQuery);
+				/* English searching requires 2 special conditions:
+				   1. Case-insensitive searching (maybe optional, later)
+				   2. Recognition of word bounds (so we don't match character
+				      sequences inside of a word.) */
+
+				/* Convert target string to lower case */
+				lwrData = StrToLower(*vSubIt);
+
+				/* Find the first match that is bounded by non-alpha characters
+				   or beginning/end of string. */
 				indexSubstr = lwrData.find(lwrQuery, 0);
+				while(indexSubstr!=string::npos) {
+#ifdef DEBUG
+					printf("Checking possible match:\n"
+						   "Query:       [%s]\n"
+						   "Data string: [%s]\n"
+						   "Index of match: %d\n",
+						   lwrQuery.c_str(), lwrData.c_str(), indexSubstr);
+#endif
+					if(
+						/* Check for beginning of data string or preceding
+						   non-alpha char */
+						(indexSubstr==0 || !isalpha(lwrData[indexSubstr-1])) &&
+						/* Check for end of data string or following non-alpha
+						   char */
+						(indexSubstr+lwrQuery.length() == lwrData.length() ||
+						 !isalpha(lwrData[indexSubstr+lwrQuery.length()]))
+						) break;
+					/* If the match didn't meet all the above criteria, try to
+					   find the next one. */
+#ifdef DEBUG
+					printf("Match not good.  Displaying verbose data:\n");
+					if(indexSubstr==0)
+						printf("* Beginning of query matches beginning of data. (OK)\n");
+					else if(!isalpha(lwrData[indexSubstr-1]))
+						printf("* Preceding character '%c' is non-alpha. (OK)\n",
+							   lwrData[indexSubstr-1]);
+					else
+						printf("* Start match is invalid. (FAIL)\n");
+					if(indexSubstr+lwrQuery.length() == lwrData.length())
+						printf("* End of query matches end of data. (OK)\n");
+					else if(!isalpha(lwrData[indexSubstr+lwrQuery.length()]))
+						printf("* Following character '%c' is non-alpha. (OK)\n",
+							   lwrData[indexSubstr+lwrQuery.length()]);
+					else
+						printf("* End match is invalid. (FAIL)\n");
+						
+#endif
+					indexSubstr = lwrData.find(lwrQuery, indexSubstr+1);
+				}
 			} else {
 				indexSubstr = vSubIt->find(utfQuery, 0);
 			}
