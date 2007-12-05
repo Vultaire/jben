@@ -36,7 +36,7 @@ VocabList::VocabList() {
 int VocabList::BinarySearch(const wxString& query, bool* matchFound) {
 	int listLength = vocabList.size();
 	int lowBound = 0, highBound = listLength-1;
-	int compareVal, index=0;
+	int compareVal=0, index=0;
 
 	/* Special case: empty list */
 	if(listLength<=0) {
@@ -117,7 +117,7 @@ wxString VocabList::ToString(wxChar separator) {
 				result.append(*it);
 			}
 		}
-		
+
 		return result;
 }
 
@@ -131,7 +131,7 @@ const wxString& VocabList::operator[](unsigned int index) {
 	/* new, simpler code, with index being 0-based */
 	return vocabList[index];
 	/* old code follows */
-#if 0	
+#if 0
 	/* "index" is 1-based. */
 	vector<wxString>::iterator it = vocabList.begin();
 	for(unsigned int i=1;i<=index;i++) {

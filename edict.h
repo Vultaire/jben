@@ -34,9 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef WX_PRECOMP
 	#include "wx/wx.h"
 #endif
-#include "boosthashes.h"
 #include "boosthm.h"
-#include "boosthmm.h"
 #include <list>
 #include <vector>
 #include <utility>

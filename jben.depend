@@ -5712,52 +5712,52 @@
 	"global.h"
 	"wx/tokenzr.h"
 
-1189488632 source:d:\code\boosthashes.cpp
+1194824354 source:d:\code\boosthashes.cpp
 	"boosthashes.h"
 
-1189489270 d:\code\boosthashes.h
+1194824354 d:\code\boosthashes.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	<boost/functional/hash.hpp>
 	<string>
 
-1189488634 source:d:\code\coveredtextbox.cpp
+1194824354 source:d:\code\coveredtextbox.cpp
 	"coveredtextbox.h"
 
-1189489290 d:\code\coveredtextbox.h
+1194824354 d:\code\coveredtextbox.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"wx/textctrl.h"
 
-1192874902 source:d:\code\dialog_addkanjibyfreq.cpp
+1194824354 source:d:\code\dialog_addkanjibyfreq.cpp
 	"dialog_addkanjibyfreq.h"
 
-1192874864 d:\code\dialog_addkanjibyfreq.h
+1194824354 d:\code\dialog_addkanjibyfreq.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"wx/spinctrl.h"
 
-1192875188 source:d:\code\dialog_addkanjibygrade.cpp
+1194824354 source:d:\code\dialog_addkanjibygrade.cpp
 	"dialog_addkanjibygrade.h"
 
-1192874846 d:\code\dialog_addkanjibygrade.h
+1194824354 d:\code\dialog_addkanjibygrade.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"wx/combobox.h"
 
-1191390764 source:d:\code\dictload.cpp
+1194824354 source:d:\code\dictload.cpp
 	"dictload.h"
 	"global.h"
 	"kanjidic.h"
 	"edict.h"
 
-1189489326 d:\code\dictload.h
+1194824354 d:\code\dictload.h
 
-1192878229 d:\code\global.h
+1196642644 d:\code\global.h
 	"jben.h"
 	"preferences.h"
 
-1189489346 d:\code\jben.h
+1194824354 d:\code\jben.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"maingui.h"
@@ -5766,7 +5766,7 @@
 	"vocablist.h"
 	"edict.h"
 
-1191062790 d:\code\maingui.h
+1194824354 d:\code\maingui.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"dialog_addkanjibygrade.h"
@@ -5779,25 +5779,25 @@
 	"panel_config.h"
 	"wx/notebook.h"
 
-1189838850 d:\code\panel_kanjidict.h
+1194824354 d:\code\panel_kanjidict.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"redrawablepanel.h"
 	"wx/html/htmlwin.h"
 	"wx/stattext.h"
 
-1189838586 d:\code\redrawablepanel.h
+1194824354 d:\code\redrawablepanel.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 
-1190950068 d:\code\panel_worddict.h
+1194824354 d:\code\panel_worddict.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"redrawablepanel.h"
 	"wx/html/htmlwin.h"
 	"wx/stattext.h"
 
-1190860948 d:\code\panel_kanjidrill.h
+1194824354 d:\code\panel_kanjidrill.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"redrawablepanel.h"
@@ -5805,17 +5805,17 @@
 	"coveredtextbox.h"
 	<vector>
 
-1189838864 d:\code\panel_kanjilisteditor.h
+1194824354 d:\code\panel_kanjilisteditor.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"redrawablepanel.h"
 
-1189838870 d:\code\panel_vocablisteditor.h
+1194824354 d:\code\panel_vocablisteditor.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"redrawablepanel.h"
 
-1192870578 d:\code\panel_config.h
+1194824354 d:\code\panel_config.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"redrawablepanel.h"
@@ -5823,40 +5823,38 @@
 	"wx/checkbox.h"
 	"scrolledcheck.h"
 
-1189489458 d:\code\scrolledcheck.h
+1194824354 d:\code\scrolledcheck.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"wx/scrolwin.h"
 	"wx/checkbox.h"
 
-1191390456 d:\code\kanjidic.h
+1194824354 d:\code\kanjidic.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"boosthm.h"
 
-1191069292 d:\code\boosthm.h
+1194824354 d:\code\boosthm.h
 	<boost/multi_index_container.hpp>
 	<boost/multi_index/hashed_index.hpp>
 	<boost/multi_index/member.hpp>
 
-1191389228 d:\code\kanjilist.h
+1194824354 d:\code\kanjilist.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	"kanjidic.h"
 	"boosthm.h"
 	<vector>
 
-1190953804 d:\code\vocablist.h
+1196663732 d:\code\vocablist.h
 	"wx/wxprec.h"
 	"wx/wx.h"
-	<set>
+	<vector>
 
-1191567704 d:\code\edict.h
+1196846978 d:\code\edict.h
 	"wx/wxprec.h"
 	"wx/wx.h"
-	"boosthashes.h"
 	"boosthm.h"
-	"boosthmm.h"
 	<list>
 	<vector>
 	<utility>
@@ -5867,11 +5865,11 @@
 	<boost/multi_index/member.hpp>
 	<iostream>
 
-1189489450 d:\code\preferences.h
+1194824354 d:\code\preferences.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 
-1192870502 source:d:\code\edict.cpp
+1196839676 source:d:\code\edict.cpp
 	"edict.h"
 	"file_utils.h"
 	"wx/tokenzr.h"
@@ -5884,34 +5882,34 @@
 	<fstream>
 	<string>
 
-1189489336 d:\code\file_utils.h
+1194824354 d:\code\file_utils.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 
-1189488650 source:d:\code\file_utils.cpp
+1194824354 source:d:\code\file_utils.cpp
 	"file_utils.h"
 	"wx/file.h"
 	"wx/ffile.h"
 	"wx/strconv.h"
 
-1189513746 source:d:\code\jben.cpp
+1196664558 source:d:\code\jben.cpp
 	"global.h"
 	"dictload.h"
 	"jben.h"
 	<stdlib.h>
 
-1190949636 source:d:\code\jben.rc
+1194824354 source:d:\code\jben.rc
 	"wx/msw/wx.rc"
 
-1191389034 source:d:\code\jutils.cpp
+1196642274 source:d:\code\jutils.cpp
 	"jutils.h"
 
-1191383218 d:\code\jutils.h
+1196642434 d:\code\jutils.h
 	"wx/wxprec.h"
 	"wx/wx.h"
 	<string>
 
-1192870698 source:d:\code\kanjidic.cpp
+1196732058 source:d:\code\kanjidic.cpp
 	"kanjidic.h"
 	"file_utils.h"
 	"jutils.h"
@@ -5920,12 +5918,12 @@
 	"global.h"
 	<fstream>
 
-1191389326 source:d:\code\kanjilist.cpp
+1196732120 source:d:\code\kanjilist.cpp
 	"kanjilist.h"
 	"global.h"
 	<algorithm>
 
-1192871616 source:d:\code\maingui.cpp
+1196215228 source:d:\code\maingui.cpp
 	"global.h"
 	"maingui.h"
 	"wx/msgdlg.h"
@@ -5933,34 +5931,34 @@
 	"wx/ffile.h"
 	"jben.xpm"
 
-1190949630 d:\code\jben.xpm
+1194824354 d:\code\jben.xpm
 
-1192871488 source:d:\code\panel_config.cpp
+1194825198 source:d:\code\panel_config.cpp
 	"panel_config.h"
 	"kanjidic.h"
 	"global.h"
 
-1189838400 source:d:\code\panel_kanjidict.cpp
+1194824354 source:d:\code\panel_kanjidict.cpp
 	"panel_kanjidict.h"
 	"global.h"
 	<stdlib.h>
 
-1190861360 source:d:\code\panel_kanjidrill.cpp
+1194824354 source:d:\code\panel_kanjidrill.cpp
 	"panel_kanjidrill.h"
 	"global.h"
 	"maingui.h"
 	<stdlib.h>
 	<algorithm>
 
-1189838774 source:d:\code\panel_kanjilisteditor.cpp
+1194824354 source:d:\code\panel_kanjilisteditor.cpp
 	"panel_kanjilisteditor.h"
 	"global.h"
 
-1189838784 source:d:\code\panel_vocablisteditor.cpp
+1194824354 source:d:\code\panel_vocablisteditor.cpp
 	"panel_vocablisteditor.h"
 	"global.h"
 
-1189517672 source:d:\code\preferences.cpp
+1196839918 source:d:\code\preferences.cpp
 	"preferences.h"
 	"file_utils.h"
 	"wx/tokenzr.h"
@@ -5968,25 +5966,25 @@
 	"wx/ffile.h"
 	"global.h"
 
-1189488818 source:d:\code\scrolledcheck.cpp
+1194824354 source:d:\code\scrolledcheck.cpp
 	"scrolledcheck.h"
 
-1191067012 source:d:\code\vocablist.cpp
+1196846956 source:d:\code\vocablist.cpp
 	"vocablist.h"
 	"global.h"
 	"wx/tokenzr.h"
 
-1191563920 source:d:\code\panel_worddict.cpp
+1196732942 source:d:\code\panel_worddict.cpp
 	"panel_worddict.h"
 	"global.h"
 	"jutils.h"
 
-1189838346 source:d:\code\redrawablepanel.cpp
+1194824354 source:d:\code\redrawablepanel.cpp
 	"redrawablepanel.h"
 
-1191923810 d:\code\string_utils.h
+1195352502 d:\code\string_utils.h
 	<string>
 
-1191925472 source:d:\code\string_utils.cpp
+1196740212 source:d:\code\string_utils.cpp
 	"string_utils.h"
 

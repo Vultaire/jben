@@ -66,10 +66,7 @@
 		<ResourceCompiler>
 			<Add directory="D:\wxMSW-2.8.4\include" />
 		</ResourceCompiler>
-		<Unit filename="boosthashes.cpp" />
-		<Unit filename="boosthashes.h" />
 		<Unit filename="boosthm.h" />
-		<Unit filename="boosthmm.h" />
 		<Unit filename="coveredtextbox.cpp" />
 		<Unit filename="coveredtextbox.h" />
 		<Unit filename="dialog_addkanjibyfreq.cpp" />

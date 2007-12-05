@@ -46,7 +46,7 @@ print 'Finished creating all archives for ' + packageName + '!'
 
 archiveDir = 'jben/archives/' + packageName
 print 'Creating directory "' + archiveDir + '...'
-command = 'mkdir ' + archiveDir
+command = 'mkdir -p ' + archiveDir
 p = P(command, shell=True)
 (garbage,result)=waitpid(p.pid,0)
 if(result!=0):
