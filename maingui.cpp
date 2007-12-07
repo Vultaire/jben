@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
    Currently we just have code for handling the parent booklet (tabsMain). */
 
 #include "global.h"
+#include "version.h"
 #include "maingui.h"
 #include "wx/msgdlg.h"
 #include "file_utils.h"

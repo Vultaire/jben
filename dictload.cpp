@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "edict.h"
 
 #if 0
+#include "version.h"
 /* Splash window style constructor */
 DictionaryLoader::DictionaryLoader() :
   wxFrame((wxFrame *)NULL, -1, _T("Starting " PROGRAM_NAME), wxPoint(-1,-1),
