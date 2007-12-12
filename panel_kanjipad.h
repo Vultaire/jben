@@ -46,10 +46,10 @@ using namespace std;
 class PanelKanjiPad: public wxPanel {
 public:
 	PanelKanjiPad(wxWindow *owner, wxWindowID id=wxID_ANY,
-			 const wxPoint& pos=wxDefaultPosition,
-			 const wxSize& size=wxDefaultSize,
-			 long style=wxBORDER_SIMPLE,
-			 const wxString& name = _T("panelkanjipad"));
+				  const wxPoint& pos=wxDefaultPosition,
+				  const wxSize& size=wxDefaultSize,
+				  long style=wxBORDER_SIMPLE,
+				  const wxString& name = _T("panelkanjipad"));
 	/* Public methods */
 	void Clear();
 	list< list<wxPoint> > const* GetStrokes();

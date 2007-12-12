@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "wx/msgdlg.h"
 #include "file_utils.h"
 #include "wx/ffile.h"
+#include "frame_kanjipad.h"
 
 #ifndef __WXMSW__
 	#include "jben.xpm"
@@ -50,6 +51,7 @@ enum {
 #endif
 	ID_menuKanjiSortByGrade,
 	ID_menuKanjiSortByFreq,
+	ID_menuKanjiSearchKanjiPad,
 	ID_menuHelpLicense,
 	ID_tabsMain,
 	ID_tabsKanji,
@@ -72,6 +74,7 @@ BEGIN_EVENT_TABLE(MainGUI, wxFrame)
 #endif
 	EVT_MENU(ID_menuKanjiSortByGrade, MainGUI::OnKanjiSortByGrade)
 	EVT_MENU(ID_menuKanjiSortByFreq, MainGUI::OnKanjiSortByFreq)
+	EVT_MENU(ID_menuKanjiSearchKanjiPad, MainGUI::OnKanjiSearchKanjiPad)
 
 	EVT_MENU(ID_menuHelpAbout, MainGUI::OnHelpAbout)
 	EVT_MENU(ID_menuHelpLicense, MainGUI::OnHelpLicense)
@@ -92,11 +95,13 @@ MainGUI::MainGUI() : wxFrame((wxFrame *)NULL, -1,
                      wxDefaultPosition, wxSize(600,400)) {
 /*                     wxDefaultPosition, wxDefaultSize) { */
 	this->SetIcon(wxICON(iconJben));
-	wxInitAllImageHandlers();	/* This is needed for PNG support - GIFs seem to load fine without it. */
+	wxInitAllImageHandlers();	/* This is needed for PNG support - GIFs seem to
+								   load fine without it. */
 
-	dialogAddKanjiByGrade = new DialogAddKanjiByGrade(this);
-	dialogAddKanjiByFreq = new DialogAddKanjiByFreq(this);
-
+	/* Don't create these objects until/unless needed. */
+	dialogAddKanjiByFreq = NULL;
+	dialogAddKanjiByGrade = NULL;
+	
 	wxMenuBar *menuBar;
 	wxMenu *menu, *subMenu;
 	tabMinor = NULL;
@@ -107,21 +112,33 @@ MainGUI::MainGUI() : wxFrame((wxFrame *)NULL, -1,
 	menu->Append(ID_menuFileQuit, _T("E&xit..."));
 	menuBar->Append(menu, _T("&File"));
 
+	/* Kanji Menu */
 	kanjiMenu = new wxMenu;
+	/* Submenu: Search for Kanji (probably a temporary menu, for now) */
+	subMenu = new wxMenu;
+	subMenu->Append(ID_menuKanjiSearchKanjiPad, _T("By &Handwriting"));
+	kanjiMenu->AppendSubMenu(subMenu, _T("&Find Kanji"));
+	/* Submenu: Add Kanji to List */
 	subMenu = new wxMenu;
 	subMenu->Append(ID_menuKanjiAddFromFile, _T("&From File..."));
 	subMenu->Append(ID_menuKanjiAddByGrade, _T("By Jouyou &Grade Level..."));
-	subMenu->Append(ID_menuKanjiAddByFreq, _T("By Newspaper F&requency Ranking..."));
-	kanjiMenu->AppendSubMenu(subMenu, _T("&Add Kanji"));
+	subMenu->Append(ID_menuKanjiAddByFreq,
+					_T("By Newspaper F&requency Ranking..."));
+	kanjiMenu->AppendSubMenu(subMenu, _T("&Add Kanji to List"));
+	/* Submenu: Sort Kanji in List*/
 	subMenu = new wxMenu;
 	subMenu->Append(ID_menuKanjiSortByGrade, _T("By Jouyou &Grade Level"));
-	subMenu->Append(ID_menuKanjiSortByFreq, _T("By Newspaper F&requency Ranking"));
-	kanjiMenu->AppendSubMenu(subMenu, _T("S&ort Kanji"));
-	kanjiMenu->Append(ID_menuKanjiSaveToFile, _T("&Save Kanji List to File..."));
+	subMenu->Append(ID_menuKanjiSortByFreq,
+					_T("By Newspaper F&requency Ranking"));
+	kanjiMenu->AppendSubMenu(subMenu, _T("S&ort Kanji in List"));
+	/* Other Kanji Menu options */
+	kanjiMenu->Append(ID_menuKanjiSaveToFile,
+					  _T("&Save Kanji List to File..."));
 	if(jben->kanjiList->Size()==0)
 		kanjiMenu->Enable(ID_menuKanjiSaveToFile, false);
 	kanjiMenu->AppendSeparator();
-	kanjiMenu->Append(ID_menuKanjiClearList, _T("&Clear Kanji List"));
+	kanjiMenu->Append(ID_menuKanjiClearList,
+					  _T("&Clear Kanji List"));
 	if(jben->kanjiList->Size()==0)
 		kanjiMenu->Enable(ID_menuKanjiClearList, false);
 #ifdef DEBUG
@@ -174,24 +191,17 @@ MainGUI::MainGUI() : wxFrame((wxFrame *)NULL, -1,
 	tabMinor = (wxNotebookPage *) panelKanjiDict;
 
 	panelWordDict = new PanelWordDict(tabsWords);
-	/* ADVANCED IDEA: Use radical database to create a multi-choice test option for vocab and kanji.
-	   That is, like on the JLPT for reading/writing Kanji, use kanji which share one or more radicals
-	   or readings as alternate options when possible. (Without this, panelVocabTest seems somewhat
-	   pointless at this time. */
+	/* ADVANCED IDEA: Use radical database to create a multi-choice test option
+	   for vocab and kanji.  That is, like on the JLPT for reading/writing
+	   Kanji, use kanji which share one or more radicals or readings as
+	   alternate options when possible. (Without this, panelVocabTest seems
+	   somewhat pointless at this time.) */
 	panelVocabListEditor = new PanelVocabListEditor(tabsWords);
 	tabsWords->AddPage(panelWordDict,_T("Dictionary"),true);
 	tabsWords->AddPage(panelVocabListEditor,_T("Study List"),false);
 
 	panelConfig = new PanelConfig(tabsConfig);
 	tabsConfig->AddPage(panelConfig,_T("Main Options"),true);
-
-#if 0
-	/* An attempted workaround, which did not work. */
-	int w, h, x, y;
-	this->GetSize(&w, &h);
-	this->GetPosition(&x, &y);
-	this->SetSize(x, y, w, h, wxSIZE_FORCE);
-#endif
 }
 
 void MainGUI::OnFileQuit(wxCommandEvent& event) {
@@ -222,6 +232,8 @@ void MainGUI::OnKanjiAddFromFile(wxCommandEvent& event) {
 }
 
 void MainGUI::OnKanjiAddByGrade(wxCommandEvent& event) {
+	if(!dialogAddKanjiByGrade)
+		dialogAddKanjiByGrade = new DialogAddKanjiByGrade(this);
 	int result = dialogAddKanjiByGrade->ShowModal();
 	if(result==wxID_OK) {
 		/*printf("Selected grades: %d to %d\n",
@@ -244,6 +256,8 @@ void MainGUI::OnKanjiAddByGrade(wxCommandEvent& event) {
 }
 
 void MainGUI::OnKanjiAddByFreq(wxCommandEvent& event) {
+	if(!dialogAddKanjiByFreq)
+		dialogAddKanjiByFreq = new DialogAddKanjiByFreq(this);
 	int result = dialogAddKanjiByFreq->ShowModal();
 	if(result==wxID_OK) {
 		/*printf("Selected frequencies: %d to %d\n",
@@ -269,8 +283,8 @@ void MainGUI::OnKanjiSaveToFile(wxCommandEvent& event) {
 	/* NOTE: We may add the flag wxFD_CHANGE_DIR later, if we add in code
 	   to save the full path for the jben.cfg file. */
 	wxFileDialog *fd = new wxFileDialog(
-		this, _T("Save Kanji List to File"), wxEmptyString, wxEmptyString, _T("*"),
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+		this, _T("Save Kanji List to File"), wxEmptyString, wxEmptyString,
+		_T("*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if(fd->ShowModal()==wxID_OK) {
 		wxString kanjiList = jben->kanjiList->ToString(20);
 		wxString filename = fd->GetPath();
@@ -296,12 +310,6 @@ void MainGUI::OnKanjiDumpList(wxCommandEvent& event) {
 #endif
 
 void MainGUI::OnHelpAbout(wxCommandEvent& event) {
-/*	wxMessageBox(_T(PROGRAM_NAME " " VERSION_STR "\n"
-	                "Copyright " COPYRIGHT_DATE " by " AUTHOR_NAME "\n\n"
-	                "Powered by wxWidgets:\n"
-	                "http://www.wxwidgets.org/\n"
-	                AUTHOR_NAME " is not affiliated with the wxWidgets team in any way."),
-	             _T("About " PROGRAM_NAME), wxOK | wxICON_INFORMATION);*/
 	wxMessageBox(_T(
 		PROGRAM_NAME " v" VERSION_STR
 		"\nBy " AUTHOR_NAME
@@ -380,11 +388,10 @@ bool MainGUI::TabChangeHandler(wxNotebookPage *page) {
 	if(page == panelConfig) {
 		if(panelConfig->ChangeDetected()) {
 			result = wxMessageBox(
-				_T("You have made changes to your configuration.  Do you want to save them?" /*"\n\n"
-			   	"Yes: Save Changes\n"
-			   	"No: Abandon Changes\n"
-			   	"Cancel: Continue making changes"*/),
-				_T("Unsaved Changes Detected!"), wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
+				_T("You have made changes to your configuration.  Do you want "
+				   "to save them?"),
+				_T("Unsaved Changes Detected!"),
+				wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
 			if(result==wxYES) {
 				panelConfig->Commit();
 			} else if(result==wxNO) {
@@ -397,11 +404,10 @@ bool MainGUI::TabChangeHandler(wxNotebookPage *page) {
 	else if(page == panelKanjiListEditor) {
 		if(panelKanjiListEditor->ChangeDetected()) {
 			result = wxMessageBox(
-				_T("You have made changes to the kanji list.  Do you want to save them?" /*"\n\n"
-			   	"Yes: Save Changes\n"
-			   	"No: Abandon Changes\n"
-			   	"Cancel: Continue making changes"*/),
-				_T("Unsaved Changes Detected!"), wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
+				_T("You have made changes to the kanji list.  Do you want to "
+				   "save them?"),
+				_T("Unsaved Changes Detected!"),
+				wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
 			if(result==wxYES) {
 				panelKanjiListEditor->Commit();
 			} else if(result==wxNO) {
@@ -414,11 +420,10 @@ bool MainGUI::TabChangeHandler(wxNotebookPage *page) {
 	else if(page == panelVocabListEditor) {
 		if(panelVocabListEditor->ChangeDetected()) {
 			result = wxMessageBox(
-				_T("You have made changes to the vocab list.  Do you want to save them?" /*"\n\n"
-			   	"Yes: Save Changes\n"
-			   	"No: Abandon Changes\n"
-			   	"Cancel: Continue making changes"*/),
-				_T("Unsaved Changes Detected!"), wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
+				_T("You have made changes to the vocab list.  Do you want to "
+				   "save them?"),
+				_T("Unsaved Changes Detected!"),
+				wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
 			if(result==wxYES) {
 				panelVocabListEditor->Commit();
 			} else if(result==wxNO) {
@@ -431,7 +436,9 @@ bool MainGUI::TabChangeHandler(wxNotebookPage *page) {
 	else if(page == panelKanjiDrill) {
 		if(panelKanjiDrill->TestInProgress()) {
 			result =
-				wxMessageBox(_T("A test is in progress.  Switching tabs will abort the test.  Are you sure you want to do this?"),
+				wxMessageBox(_T("A test is in progress.  Switching tabs will "
+								"abort the test.  Are you sure you want to do "
+								"this?"),
 				_T("Test in progress!"), wxYES_NO | wxICON_EXCLAMATION, this);
 			if(result==wxYES) {
 				panelKanjiDrill->Stop();
@@ -446,90 +453,9 @@ bool MainGUI::TabChangeHandler(wxNotebookPage *page) {
 void MainGUI::OnTabChanging(wxNotebookEvent& event) {
 	int index = event.GetOldSelection();
 	if(index==-1) return;
-	/* Original code */
-	/*wxNotebookPage *page = tabsMain->GetPage(index);*/
-	/* First revision for multi-level tabs */
-	/*wxNotebook *tabs = (wxNotebook *) tabsMain->GetPage(index);
-	wxNotebookPage *page = tabs->GetPage(index);*/
 
-	/* New code, using tab tracking vars in MainGUI class */
 	if(!TabChangeHandler(tabMinor)) event.Veto();
 }
-
-/* OLD CODE! */
-#if 0
-void MainGUI::OnMajorTabChanging(wxNotebookEvent& event) {
-	int index = event.GetOldSelection();
-	if(index==-1) return;
-	/*wxNotebookPage *page = tabsMain->GetPage(index);*/
-	wxNotebook *tabs = (wxNotebook *) tabsMain->GetPage(index);
-	wxNotebookPage *page = tabs->GetPage(index);
-	int result;
-	if(page == panelConfig) {
-		if(panelConfig->ChangeDetected()) {
-			result = wxMessageBox(
-				_T("You have made changes to your configuration.  Do you want to save them?" /*"\n\n"
-			   	"Yes: Save Changes\n"
-			   	"No: Abandon Changes\n"
-			   	"Cancel: Continue making changes"*/),
-				_T("Unsaved Changes Detected!"), wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
-			if(result==wxYES) {
-				panelConfig->Commit();
-			} else if(result==wxNO) {
-				panelConfig->Revert();
-			} else if(result==wxCANCEL) {
-				event.Veto();
-			}
-		}
-	}
-	else if(page == panelKanjiListEditor) {
-		if(panelKanjiListEditor->ChangeDetected()) {
-			result = wxMessageBox(
-				_T("You have made changes to the kanji list.  Do you want to save them?" /*"\n\n"
-			   	"Yes: Save Changes\n"
-			   	"No: Abandon Changes\n"
-			   	"Cancel: Continue making changes"*/),
-				_T("Unsaved Changes Detected!"), wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
-			if(result==wxYES) {
-				panelKanjiListEditor->Commit();
-			} else if(result==wxNO) {
-				panelKanjiListEditor->Revert();
-			} else if(result==wxCANCEL) {
-				event.Veto();
-			}
-		}
-	}
-	else if(page == panelVocabListEditor) {
-		if(panelVocabListEditor->ChangeDetected()) {
-			result = wxMessageBox(
-				_T("You have made changes to the vocab list.  Do you want to save them?" /*"\n\n"
-			   	"Yes: Save Changes\n"
-			   	"No: Abandon Changes\n"
-			   	"Cancel: Continue making changes"*/),
-				_T("Unsaved Changes Detected!"), wxYES_NO | wxCANCEL | wxICON_QUESTION, this);
-			if(result==wxYES) {
-				panelVocabListEditor->Commit();
-			} else if(result==wxNO) {
-				panelVocabListEditor->Revert();
-			} else if(result==wxCANCEL) {
-				event.Veto();
-			}
-		}
-	}
-	else if(page == panelKanjiDrill) {
-		if(panelKanjiDrill->TestInProgress()) {
-			result =
-				wxMessageBox(_T("A test is in progress.  Switching tabs will abort the test.  Are you sure you want to do this?"),
-				_T("Test in progress!"), wxYES_NO | wxICON_EXCLAMATION, this);
-			if(result==wxYES) {
-				panelKanjiDrill->Stop();
-			} else {
-				event.Veto();
-			}
-		}
-	}
-}
-#endif
 
 void MainGUI::OnKanjiSortByGrade(wxCommandEvent& ev) {
 	jben->kanjiList->Sort(ST_GRADE);
@@ -541,6 +467,13 @@ void MainGUI::OnKanjiSortByFreq(wxCommandEvent& ev) {
 	this->Redraw();
 }
 
+void MainGUI::OnKanjiSearchKanjiPad(wxCommandEvent& ev) {
+	/* Multiple instances are allowed - just spin off an instance. */
+	FrameKanjiPad *kanjiPad =
+		new FrameKanjiPad(this, -1, _T("J-Ben: KanjiPad"));
+	kanjiPad->Show();
+}
+
 void MainGUI::Redraw() {
 	bool state = (jben->kanjiList->Size()>0);
 	kanjiMenu->Enable(ID_menuKanjiSaveToFile, state);
@@ -549,24 +482,6 @@ void MainGUI::Redraw() {
 	if(tabMinor) {
 		((RedrawablePanel *)tabMinor)->Redraw();
 	}
-
-	/* This is no longer valid; tabsMain only contains other wxNotebooks now. */
-	/*( (RedrawablePanel *) tabsMain->GetCurrentPage() )->Redraw();*/
-
-	/* OLD CODE */
-	/*
-	if(tabs->GetCurrentPage()==panelKanjiDict) {
-		panelKanjiDict->Redraw();
-	} else if(tabs->GetCurrentPage()==panelKanjiDrill) {
-		panelKanjiDrill->Redraw();
-	} else if(tabs->GetCurrentPage()==panelKanjiListEditor) {
-		panelKanjiListEditor->Redraw();
-	} else if(tabs->GetCurrentPage()==panelVocabListEditor) {
-		panelVocabListEditor->Redraw();
-	} else if(tabs->GetCurrentPage()==panelConfig) {
-		panelConfig->Redraw();
-	}
-	*/
 }
 
 void MainGUI::OnClose(wxCloseEvent& event) {
@@ -580,7 +495,8 @@ void MainGUI::OnClose(wxCloseEvent& event) {
 	if(tabsMain->GetCurrentPage()==panelKanjiDrill &&
 	  panelKanjiDrill->TestInProgress()) {
 		int result =
-			wxMessageBox(_T("A test is in progress.  Are you sure you want to quit?"),
+			wxMessageBox(_T("A test is in progress.  Are you sure you want to "
+							"quit?"),
 			_T("Test in progress!"), wxYES_NO | wxICON_EXCLAMATION, this);
 		if(result==wxYES) {
 			panelKanjiDrill->Stop();

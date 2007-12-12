@@ -47,10 +47,10 @@ BEGIN_EVENT_TABLE(FrameKanjiPad, wxFrame)
 	EVT_LIST_ITEM_ACTIVATED(ID_lcKanjiSelector, FrameKanjiPad::OnKanjiSelected)
 END_EVENT_TABLE()
 
-FrameKanjiPad::FrameKanjiPad() : wxFrame((wxFrame *)NULL, -1,
-										 _T("wxKanjiPad"),
-										 wxDefaultPosition,
-										 wxSize(300,350)) {
+FrameKanjiPad
+::FrameKanjiPad(wxWindow *owner, wxWindowID id, const wxString& title,
+				const wxPoint& pos, const wxSize& size)
+: wxFrame(owner, id, title, pos, size) {
 	/* Create all the simple stuff */
 	pnlKanjiPad = new PanelKanjiPad(this, -1,
 									wxDefaultPosition, wxDefaultSize,

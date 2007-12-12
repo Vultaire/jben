@@ -69,7 +69,8 @@ public:
 #ifdef DEBUG
 	void OnKanjiDumpList(wxCommandEvent& event);
 #endif
-
+	void OnKanjiSearchKanjiPad(wxCommandEvent& event);
+	
 	void OnHelpAbout(wxCommandEvent& event);
 	void OnHelpLicense(wxCommandEvent& event);
 

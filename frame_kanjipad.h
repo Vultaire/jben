@@ -41,7 +41,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 class FrameKanjiPad: public wxFrame {
 public:
-	FrameKanjiPad();
+	FrameKanjiPad(wxWindow *owner=(wxWindow *)NULL,
+				  wxWindowID id = -1,
+				  const wxString& title = _T("wxKanjiPad"),
+				  const wxPoint& pos = wxDefaultPosition,
+				  const wxSize& size = wxSize(300,350));
 	void OnClose(wxCloseEvent& ev);
 	void OnButtonSearch(wxCommandEvent& ev);
 	void OnButtonClear(wxCommandEvent& ev);
