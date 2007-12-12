@@ -2,4 +2,6 @@
 *.o
 jben
 jben.cfg
+kpengine
 sods/sod*
+*~
