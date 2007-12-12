@@ -37,6 +37,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 	#include "wx/wx.h"
 #endif
 
+#include "wx/listctrl.h"
 #include "panel_kanjipad.h"
 
 class FrameKanjiPad: public wxFrame {

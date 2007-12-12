@@ -69,9 +69,15 @@ FrameKanjiPad
 	wxFont fntKanjiSelector(this->GetFont());
 	fntKanjiSelector.SetPointSize(32);
 	lcKanjiSelector->SetFont(fntKanjiSelector);
+	wxMessageBox(wxString::Format(_T("Font size: %d\n"), lcKanjiSelector->GetFont().GetPointSize()), _T("DEBUG"));
 	/* Resize the kanji selector to fit the font appropriately */
+	/* NOTE: this doesn't work properly in WIN32!!!  Error seems to be based in
+	   cdc.GetTextExtent, since the font returned above does look correct! */
+	/* Furthermore, spacing seems messed up! */
+	/* JUST IN CASE: Try to get a new copy of wxWidgets and build it! */
 	wxClientDC cdc(lcKanjiSelector);
 	wxSize szFnt = cdc.GetTextExtent(_T("漢"));
+	wxMessageBox(wxString::Format(_T("Font size: %dx%d\n"), szFnt.GetWidth(), szFnt.GetHeight()), _T("DEBUG"));
 	szFnt.SetWidth(-1);
 	szFnt.SetHeight(szFnt.GetHeight()+12); /* Hard-coded hack */
 	lcKanjiSelector->SetSize(szFnt);
@@ -97,6 +103,7 @@ void FrameKanjiPad::OnClose(wxCloseEvent& ev) {
 
 void FrameKanjiPad::OnButtonSearch(wxCommandEvent& ev) {
 	if(pnlKanjiPad->Search()) {
+		lcKanjiSelector->ClearAll();
 		for(int i=0;i<KANJIPAD_MAX_KANJI;i++) {
 			if(pnlKanjiPad->results[i]==_T('\0')) break;
 			lcKanjiSelector->InsertItem(i, wxString(pnlKanjiPad->results[i]));
