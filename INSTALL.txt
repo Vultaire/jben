@@ -35,6 +35,14 @@ If you want to give it a try, do the following:
 * build using the following command:
   mingw32-make PLATFORM=windows BUILD=<release|debug|profile>
 
+Expert: Canadian Cross Linux->Windows builds
+(Most people can safely skip this section.)
+
+To attempt a "canadian cross" build, run:
+   make CANUCK=1 PLATFORM=windows BUILD=<release|debug|profile> \
+   CC=<cross-compiling gcc> CXX=<cross-compiling g++>
+(This has not yet been tested; I'm working on it!)
+
 
 Installing J-Ben
 ================

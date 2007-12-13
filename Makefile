@@ -9,9 +9,9 @@ BUILD = release
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
 # CHANGE THESE 4 VARIABLES
-	mingwbase = D:\MinGW
-	boostbase = D:\boost_1_34_1
-	wxbase = D:\wxMSW-2.8.4
+	mingwbase = D:/MinGW
+	boostbase = D:/boost_1_34_1
+	wxbase = D:/wxMSW-2.8.7
 	wxbuildflags = -DWXUSINGDLL -DwxUSE_UNICODE
 # NOTE: wxWidgets is assumed to be built with wxUSINGDLL and wxUSE_UNICODE.
 # Also, I'm currently using a release build of wxWidgets regardless of
@@ -21,21 +21,24 @@ ifeq ($(PLATFORM),windows)
 	wincxxflags = -pipe -mthreads
 	winlinkflags = -mwindows
 
-	wxinclude = $(wxbase)\include
-	wxcontribinc = $(wxbase)\contrib\include
-	wxlibinc = $(wxbase)\lib\gcc_dll\mswu
+	wxinclude = $(wxbase)/include
+	wxcontribinc = $(wxbase)/contrib/include
+	wxlibinc = $(wxbase)/lib/gcc_dll/mswu
 
-	wxliblink = $(wxbase)\lib\gcc_dll
+	wxliblink = $(wxbase)/lib/gcc_dll
 	SharedCXXFLAGS = $(wincxxflags)
 	SharedCPPFLAGS = $(wxbuildflags) $(wxplatformflags) \
-		-I$(wxinclude) -I$(wxcontribinc) -I$(wxlibinc) -I$(boostbase) -I$(mingwbase)\include
-	libs = -L$(wxliblink) -L$(mingwbase)\lib -lwxmsw28u_html -lwxmsw28u_core \
+		-I$(wxinclude) -I$(wxcontribinc) -I$(wxlibinc) -I$(boostbase) -I$(mingwbase)/include
+	libs = -L$(wxliblink) -L$(mingwbase)/lib -lwxmsw28u_html -lwxmsw28u_core \
 		-lwxbase28u $(winlinkflags)
 endif
 
 ##################################
 # DO NOT EDIT BEYOND THIS POINT! #
 ##################################
+
+### make options ###
+SHELL = /bin/sh
 
 ### C++ options ###
 CXX = g++
@@ -95,7 +98,7 @@ util.o: kanjipad/util.c
 	$(CC) $(CFLAGS) -c -o util.o -DFOR_PILOT_COMPAT -Ikanjipad/jstroke kanjipad/util.c
 
 jben.res:
-	windres.exe -i jben.rc -J rc -o jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)\include
+	windres.exe -i jben.rc -J rc -o jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
 
 clean:
 	rm $(target) $(kpengine) *.o jben.res
@@ -115,7 +118,7 @@ else # Windows build using native MinGW and gnuwin32 coreutils/sed
 	@rm -f $@.mktmp
 endif
 else # Standard build on Linux
-	$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
+	@$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 endif
