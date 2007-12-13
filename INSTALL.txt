@@ -1,0 +1,64 @@
+Building J-Ben
+==============
+
+Dependencies:
+
+J-Ben is dependent on (at least) two different development packages.
+* wxWidgets: J-Ben is being developed using wxWidgets 2.8.7.  It may and
+  probably will work on slightly earlier versions, but I can't guarantee
+  everything will work right.
+* The Boost Libraries: J-Ben should work with boost 1.34.1 or later.
+
+If building for Linux, you will also need a development package for:
+* GTK+ 2: Tested using debian's libgtk2.0-dev package, version 2.12.1-1
+
+Linux users:
+
+Ensure you have the development packages for libboost and
+wxWidgets installed.  Then, just "make".  There is no "make install" at this
+time, sorry.  It will be added later.
+
+Windows users:
+
+While Linux building should be mostly non-problematic, the Windows
+build support is NOT robust.  It's designed specifically for use with MinGW
+without the MSYS environment.
+
+If you want to give it a try, do the following:
+* Ensure mingw's bin folder is in your path
+* Install the coreutils and sed packages from the gnuwin32 project.
+  This means the binaries and the dependencies.  You'll probably come across
+  duplicate DLLs while unzipping these packages.  This should be okay, just
+  keep the newer copy of any duplicate DLLs.
+* Make sure the coreutils/sed binaries are in your path.
+* Change the 4 variables in the "WINDOWS-SPECIFIC" below as needed
+* build using the following command:
+  mingw32-make PLATFORM=windows BUILD=<release|debug|profile>
+
+
+Installing J-Ben
+================
+
+Currently there is no proper installer mechanism for the program; I've been
+mostly focused on the program itself since it is still quite lacking in several
+areas.  I will address installation at a future date.
+
+For Windows users, adding a start menu shortcut should be a trivial affair, if
+desired.  Just do it yourself.
+
+For Linux users, you could add the program's directory to your path via your
+~/.bashrc file, or you could make a script like the following:
+
+#!/bin/sh
+cd <path_to_jben>
+./jben
+
+Put that in /usr/bin or similar, do a chmod +x on it and that'll make things
+simpler.
+
+
+Problems
+========
+
+If you have any issues building J-Ben, please contact the author.  Contact
+information is in README.txt.

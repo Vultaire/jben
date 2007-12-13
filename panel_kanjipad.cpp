@@ -1,14 +1,11 @@
 /*
 Project: wxKanjiPad
 Author:  Paul Goins
+Website: http://www.vultaire.net/software/wxkanjipad/files/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
 File: panel_kanjipad.cpp
-
-This file is part of wxKanjiPad, a port of KanjiPad to wxWidgets with
-some minor additional modifications.  It uses and is based off the
-modified kanjipad source code used in im-ja (http://im-ja.sourceforge.net/).
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

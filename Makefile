@@ -1,23 +1,6 @@
 # J-Ben Makefile for Linux and Windows
 
-# Linux users: Ensure you have the development packages for libboost and
-# wxWidgets installed.  Then, just "make".  There is no "make install" at this
-# time, sorry.  It will be added later.
-
-# Windows users:
-# While Linux building should be mostly non-problematic, the Windows
-# build support is NOT robust.  It's designed specifically for use with MinGW.
-# If you want to give it a try, do the following:
-# * Ensure mingw's bin folder is in your path
-# * Install the coreutils and sed packages from the gnuwin32 project.
-#   This means the binaries and the dependencies.  You'll probably come across
-#   duplicate DLLs while unzipping these packages.  This should be okay, just
-#   keep the newer copy of any duplicate DLLs.
-# * Make sure the coreutils/sed binaries are in your path.
-# * Change the 4 variables in the "WINDOWS-SPECIFIC" below as needed
-# * build using the following command:
-#   mingw32-make PLATFORM=windows BUILD=<release|debug|profile>
-
+### User-editable options ###
 # PLATFORM: either windows or gtk20
 PLATFORM = gtk20
 # BUILD: either release, debug, or profile
@@ -34,7 +17,6 @@ ifeq ($(PLATFORM),windows)
 # Also, I'm currently using a release build of wxWidgets regardless of
 # debug/release build flags - I may change this later.
 
-# Below should all be okay, I think.
 	wxplatformflags = -D__GNUWIN32__ -D__WXMSW__
 	wincxxflags = -pipe -mthreads
 	winlinkflags = -mwindows
@@ -51,7 +33,11 @@ ifeq ($(PLATFORM),windows)
 		-lwxbase28u $(winlinkflags)
 endif
 
-# DO NOT EDIT BEYOND THIS POINT!
+##################################
+# DO NOT EDIT BEYOND THIS POINT! #
+##################################
+
+### C++ options ###
 CXX = g++
 
 ifeq ($(PLATFORM),gtk20)
@@ -74,13 +60,14 @@ ifeq ($(BUILD),profile)
 	CPPFLAGS = $(SharedCPPFLAGS)
 endif
 
+### C options ###
 # These flags will be used for compiling the kpengine program, upon which our
 # character handwriting recognition is dependent.
 CC = gcc
 CFLAGS = -Wall -s -O2
 
-#sources = $(wildcard *.cpp) # OLD, SIMPLE LINE
-sources = $(shell ls -t *.cpp) # NEW LINE, using ls sorted by file modification time.  Makes most recently compiled files compile first.
+### Build object configuration ###
+sources = $(shell ls -t *.cpp) # Compile most recently edicted files first.
 
 ifeq ($(PLATFORM),windows)
 	objects = $(sources:.cpp=.o) jben.res
@@ -92,6 +79,7 @@ else
 	kpengine = kpengine
 endif
 
+### Targets ###
 all: $(target) $(kpengine)
 
 $(target) : $(objects)
@@ -112,16 +100,21 @@ jben.res:
 clean:
 	rm $(target) $(kpengine) *.o jben.res
 
+### Object dependency tracking ###
 include $(sources:.cpp=.d)
 %.d : %.cpp
 	@echo Recreating $@...
 ifeq ($(PLATFORM),windows)
+ifeq ($(CANUCK)),1)	# Canadian cross: Linux->MinGW compilation
+	$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+else # Windows build using native MinGW and gnuwin32 coreutils/sed
 	@$(CXX) -MM $(CPPFLAGS) $< > $@.mktmp
 	@sed "s,\($*\)\.o[ :]*,\1.o $@ : ,g" < $@.mktmp > $@
 	@rm -f $@.mktmp
-else
-	@set -e; \
-	rm -f $@; \
+endif
+else # Standard build on Linux
 	$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
