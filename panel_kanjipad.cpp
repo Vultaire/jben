@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 BEGIN_EVENT_TABLE(PanelKanjiPad, wxPanel)
 	EVT_LEFT_DOWN(PanelKanjiPad::OnMouseDown)
 	EVT_LEFT_UP(PanelKanjiPad::OnMouseUp)
+	EVT_LEAVE_WINDOW(PanelKanjiPad::OnLeaveWindow)
 	EVT_MOTION(PanelKanjiPad::OnMouseMove)
 	EVT_RIGHT_DOWN(PanelKanjiPad::OnMouseRightDown)
 	EVT_PAINT(PanelKanjiPad::OnPaint)
@@ -57,12 +58,18 @@ void PanelKanjiPad::OnMouseDown(wxMouseEvent& ev) {
 }
 
 void PanelKanjiPad::OnMouseUp(wxMouseEvent& ev) {
-	isDrawing=false;
+	if(isDrawing) {
+		isDrawing=false;
 #ifdef DEBUG
-	printf("MouseUp: [%d/%d]\n", currentStroke.back().x, currentStroke.back().y);
+		printf("MouseUp: [%d/%d]\n", currentStroke.back().x, currentStroke.back().y);
 #endif
-	strokes.push_back(currentStroke);
-	currentStroke.clear();
+		strokes.push_back(currentStroke);
+		currentStroke.clear();
+	}
+}
+
+void PanelKanjiPad::OnLeaveWindow(wxMouseEvent& ev) {
+	if(isDrawing) OnMouseUp(ev);
 }
 
 void PanelKanjiPad::OnMouseMove(wxMouseEvent& ev) {
@@ -232,6 +239,7 @@ void PanelKanjiPad::AfterEngineCall(wxProcessEvent& ev) {
 				}
 			}
 
+			buffer[0] = '\0';
 			if(kpStderr->CanRead()) {
 				kpStderr->Read(buffer, 80);
 			}

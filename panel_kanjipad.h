@@ -54,6 +54,7 @@ public:
 	/* Events */
 	void OnMouseDown(wxMouseEvent& ev);
 	void OnMouseUp(wxMouseEvent& ev);
+	void OnLeaveWindow(wxMouseEvent& ev);
 	void OnMouseMove(wxMouseEvent& ev);
 	void OnMouseRightDown(wxMouseEvent& ev);
 	void OnPaint(wxPaintEvent& ev);
