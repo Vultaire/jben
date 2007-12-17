@@ -52,8 +52,15 @@ FrameKanjiPad
 	pnlKanjiPad = new PanelKanjiPad(this, -1,
 									wxDefaultPosition, wxDefaultSize,
 									wxBORDER_SUNKEN);
+#ifdef __WXMSW__
+	/* Windows builds will not automatically handle Alt-S/Alt-C yet, so
+	   don't display underlines for Search and Clear. */	
+	btnSearch = new wxButton(this, ID_btnSearch, _T("Search"));
+	btnClear = new wxButton(this, ID_btnClear, _T("Clear"));
+#else
 	btnSearch = new wxButton(this, ID_btnSearch, _T("&Search"));
 	btnClear = new wxButton(this, ID_btnClear, _T("&Clear"));
+#endif
 
 	/* Create the kanji selector */
 	/* Our kanji selector should use a larger font than standard.
