@@ -1,8 +1,10 @@
-Use the below regex commands to check for and replace SKIP codes in a stock KANJIDIC.
+Use the below regex commands to check for and remove SKIP codes in a stock
+KANJIDIC.
 
 To search for lines containing SKIP codes/miscodes:
 grep -e ' [[:alpha:]]*P[[:digit:]]\+-[[:digit:]]\+-[[:digit:]]\+ ' < kanjidic
 
-To remove SKIP codes/miscodes:
-sed -e 's/ [[:alpha:]]*P[[:digit:]]\+-[[:digit:]]\+-[[:digit:]]\+ / /' < kanjidic.src > kanjidic.dest
-NOTE: it takes a total of 7 passes to get rid of all codes.  After 7 passes, verify using the above grep command.
+To remove SKIP codes/miscodes (NEW):
+sed -e 's/ [[:alpha:]]*P[[:digit:]]\+-[[:digit:]]\+-[[:digit:]]\+ / /g' < kanjidic.src > kanjidic.dest
+NOTE: it takes a total of 3 passes to get rid of all codes.  Verify the final
+file using the grep statement listed above.
