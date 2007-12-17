@@ -2,6 +2,8 @@
 *.o
 jben
 jben.cfg
+jben.res
+*.exe
 kpengine
 sods/sod*
 *~
