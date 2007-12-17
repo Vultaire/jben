@@ -6,3 +6,10 @@
   from gnuwin32.  Include/lib dirs must be specified in the Makefile, but this
   should be a simple matter.  Finally, MSYS is NOT used by this makefile; it is
   run from a regular command prompt using mingw32-make.
+* Updated EDICT2 and KANJIDIC to newer versions.
+* Removed all the files in the old_files directory.  None of them are relevant
+  any longer.
+* Moved Code::Blocks build files to old_files.  With the new Windows make
+  support, I think they're now obsolete, but I'll keep them around for a few
+  more versions at least.
+* Added README.txt, INSTALL.txt and CHANGELOG.txt to project.
