@@ -67,13 +67,13 @@ FrameKanjiPad
 	fntKanjiSelector.SetPointSize(32);
 	lcKanjiSelector->SetFont(fntKanjiSelector);
 	/* Resize the kanji selector to fit the font appropriately */
-	/* NOTE: to get the proper size under WIN32, we must explicitly pass the font into
-	   the control's wxClientDC, even though the font for the object was already set
-          before obtaining the DC. */
+	/* NOTE: to get the proper size under WIN32, we must explicitly pass the
+	   font into the control's wxClientDC, even though the font for the object
+	   was already set before obtaining the DC. */
 	wxClientDC cdc(lcKanjiSelector);
 	cdc.SetFont(fntKanjiSelector);
 	wxSize szFnt = cdc.GetTextExtent(_T("漢"));
-	lcKanjiSelector->SetColumnWidth(-1, szFnt.GetWidth()+6); /* hard-coded padding */
+	lcKanjiSelector->SetColumnWidth(-1, szFnt.GetWidth()+6); /*hard-coded val*/
 	szFnt.SetWidth(-1);
 	szFnt.SetHeight(szFnt.GetHeight()+12); /* Hard-coded padding */
 	lcKanjiSelector->SetSize(szFnt);

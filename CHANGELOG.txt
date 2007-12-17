@@ -1,0 +1,8 @@
+1.1.2:
+* Integrated KanjiPad.  Code based on or borrowed from the KanjiPad code used by
+  im-ja.  Accessible through Kanji -> Find Kanji -> By Handwriting.
+* Major makefile changes.  Now supports normal Linux building as well as win32
+  builds.  Win32 builds require MinGW with mingw32-make plus sed and coreutils
+  from gnuwin32.  Include/lib dirs must be specified in the Makefile, but this
+  should be a simple matter.  Finally, MSYS is NOT used by this makefile; it is
+  run from a regular command prompt using mingw32-make.
