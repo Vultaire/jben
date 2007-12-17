@@ -330,6 +330,10 @@ void MainGUI::OnHelpLicense(wxCommandEvent& event) {
 		"http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt\n\n"
 		"EDICT2 and KANJIDIC distributed under a separate license specified at\n"
 		"http://www.csse.monash.edu.au/~jwb/edrdg/license.htm\n\n"
+		"Hand writing recognition is based upon code from im-ja:\n"
+		"http://im-ja.sourceforge.net/\n"
+		"Which uses code based upon KanjiPad by Owen Taylor:\n"
+		"http://fishsoup.net/software/kanjipad/\n\n"
 
 #ifdef USE_SKIP
 		"Regarding SKIP index data from KANJIDIC:\n"
