@@ -1,0 +1,27 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY installation SYSTEM "installation.xml">
+<!ENTITY general_usage SYSTEM "general_usage.xml">
+<!ENTITY kanji_tools SYSTEM "kanji_tools.xml">
+<!ENTITY vocab_tools SYSTEM "vocab_tools.xml">
+<!ENTITY configuration SYSTEM "configuration.xml">
+]>
+<book>
+  <bookinfo>
+	<title>J-Ben User Manual</title>
+	<author>
+	  <firstname>Paul</firstname>
+	  <surname>Goins</surname>
+	</author>
+	<copyright>
+	  <year>2007</year>
+	  <holder>Paul Goins</holder>
+	</copyright>
+  </bookinfo>
+  &installation;
+  &general_usage;
+  &kanji_tools;
+  &vocab_tools;
+  &configuration;
+</book>
