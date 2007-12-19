@@ -9,15 +9,15 @@
 ]>
 <book>
   <bookinfo>
-	<title>J-Ben User Manual</title>
-	<author>
-	  <firstname>Paul</firstname>
-	  <surname>Goins</surname>
-	</author>
-	<copyright>
-	  <year>2007</year>
-	  <holder>Paul Goins</holder>
-	</copyright>
+    <title>J-Ben User Manual</title>
+    <author>
+      <firstname>Paul</firstname>
+      <surname>Goins</surname>
+    </author>
+    <copyright>
+      <year>2007</year>
+      <holder>Paul Goins</holder>
+    </copyright>
   </bookinfo>
   &installation;
   &general_usage;
