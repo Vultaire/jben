@@ -4,12 +4,13 @@
 CC = gcc
 CFLAGS = -Wall -s -O2
 
-$(kpengine) : kpengine.o scoring.o util.o
-	$(mkdircmd) $(BINDIR)
-	$(CC) $(CFLAGS) -o $(kpengine) kpengine.o scoring.o util.o
-kpengine.o: kanjipad/kpengine.c
-	$(CC) $(CFLAGS) -c -o kpengine.o -DFOR_PILOT_COMPAT -Ikanjipad kanjipad/kpengine.c
-scoring.o: kanjipad/scoring.c
-	$(CC) $(CFLAGS) -c -o scoring.o -DFOR_PILOT_COMPAT -Ikanjipad/jstroke kanjipad/scoring.c
-util.o: kanjipad/util.c
-	$(CC) $(CFLAGS) -c -o util.o -DFOR_PILOT_COMPAT -Ikanjipad/jstroke kanjipad/util.c
+kpadsources = $(shell ls -t kanjipad/*.c) # Compile most recently edicted files first.
+kpadobjects = $(sources:%.c=$(OBJDIR)/%.o)
+
+$(kpengine) : $(kpadobjects)
+	$(mkdircmd) $(BINDIR)/kanjipad
+	$(CC) $(CFLAGS) -o $(kpengine) $(OBJDIR)/kanjipad/kpengine.o $(OBJDIR)/kanjipad/scoring.o $(OBJDIR)/kanjipad/util.o
+
+$(OBJDIR)/kanjipad/%.o: kanjipad/%.c
+	$(mkdircmd) $(OBJDIR)/kanjipad
+	$(CC) $(CFLAGS) -c -o $@ -DFOR_PILOT_COMPAT -Ikanjipad $<
