@@ -15,8 +15,9 @@ ifeq ($(PLATFORM),windows)
 	wxbuildflags = -DWXUSINGDLL -DwxUSE_UNICODE
 # NOTE: wxWidgets is assumed to be built with wxUSINGDLL and wxUSE_UNICODE.
 # Also, I'm currently using a release build of wxWidgets regardless of
-# debug/release build flags - I may change this later.
+# whether a debug or release build is chosen.  I may change this later.
 
+# The following variables probably should NOT be changed.
 	wxplatformflags = -D__GNUWIN32__ -D__WXMSW__
 	wincxxflags = -pipe -mthreads
 	winlinkflags = -mwindows
@@ -37,18 +38,20 @@ endif
 # DO NOT EDIT BEYOND THIS POINT! #
 ##################################
 
-### make options ###
+# make options
 SHELL = /bin/sh
+OBJDIR = obj/$(PLATFORM)/$(BUILD)
+BINDIR = bin/$(PLATFORM)/$(BUILD)
 
-### C++ options ###
-CXX = g++
-
+# Get flags/libs for GTK builds
 ifeq ($(PLATFORM),gtk20)
 	SharedCXXFLAGS = `wx-config --cxxflags` `pkg-config --cflags gtk+-2.0`
 	SharedCPPFLAGS = `wx-config --cppflags`
 	libs = `wx-config --libs` `pkg-config --libs gtk+-2.0`
 endif
 
+# C++ options
+CXX = g++
 ifeq ($(BUILD),release)
 	CXXFLAGS = -Wall -s -O2 $(SharedCXXFLAGS)
 	CPPFLAGS = $(SharedCPPFLAGS)
@@ -63,39 +66,50 @@ ifeq ($(BUILD),profile)
 	CPPFLAGS = $(SharedCPPFLAGS)
 endif
 
-### C options ###
-# These flags will be used for compiling the kpengine program, upon which our
-# character handwriting recognition is dependent.
-CC = gcc
-CFLAGS = -Wall -s -O2
-
-### Build object configuration ###
 sources = $(shell ls -t *.cpp) # Compile most recently edicted files first.
 
+# Build object configuration
 ifeq ($(PLATFORM),windows)
-	objects = $(sources:.cpp=.o) jben.res
-	target = jben.exe
-	kpengine = kpengine.exe
+	objects = $(sources:%.cpp=$(OBJDIR)/%.o) jben.res
+	target = $(BINDIR)/jben.exe
+	kpengine = $(BINDIR)/kpengine.exe
 else
-	objects = $(sources:.cpp=.o)
-	target = jben
-	kpengine = kpengine
+	objects = $(sources:%.cpp=$(OBJDIR)/%.o)
+	target = $(BINDIR)/jben
+	kpengine = $(BINDIR)/kpengine
+endif
+
+# Select build environment type
+ifeq ($(CANUCK),1)
+	buildenv = posix
+else
+
+ifeq ($(PLATFORM),windows)
+	buildenv = windows
+else
+	buildenv = posix
+endif
+
+endif
+
+# Define commands based on build environment
+ifeq ($(buildenv),windows)
+	mkdircmd = @mkdir
+else
+	mkdircmd = @mkdir -p
 endif
 
 ### Targets ###
+
 all: $(target) $(kpengine)
 
-$(target) : $(objects)
-	$(CXX) $(CXXFLAGS) -o $(target) $(objects) $(libs)
+# Include dependency makefiles
+include kanjipad/Makefile
 
-$(kpengine) : kpengine.o scoring.o util.o
-	$(CC) $(CFLAGS) -o $(kpengine) kpengine.o scoring.o util.o
-kpengine.o: kanjipad/kpengine.c
-	$(CC) $(CFLAGS) -c -o kpengine.o -DFOR_PILOT_COMPAT -Ikanjipad kanjipad/kpengine.c
-scoring.o: kanjipad/scoring.c
-	$(CC) $(CFLAGS) -c -o scoring.o -DFOR_PILOT_COMPAT -Ikanjipad/jstroke kanjipad/scoring.c
-util.o: kanjipad/util.c
-	$(CC) $(CFLAGS) -c -o util.o -DFOR_PILOT_COMPAT -Ikanjipad/jstroke kanjipad/util.c
+# Rules for main project
+$(target) : $(objects)
+	$(mkdircmd) $(BINDIR)
+	$(CXX) $(CXXFLAGS) -o $(target) $(objects) $(libs)
 
 jben.res:
 	windres.exe -i jben.rc -J rc -o jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
@@ -103,22 +117,17 @@ jben.res:
 clean:
 	rm $(target) $(kpengine) *.o jben.res
 
-### Object dependency tracking ###
-include $(sources:.cpp=.d)
-%.d : %.cpp
+# Object dependency tracking
+include $(sources:%.cpp=$(OBJDIR)/%.d)
+$(OBJDIR)/%.d : %.cpp
 	@echo Recreating $@...
-ifeq ($(PLATFORM),windows)
-ifeq ($(CANUCK)),1)	# Canadian cross: Linux->MinGW compilation
-	$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
-else # Windows build using native MinGW and gnuwin32 coreutils/sed
+	@$(mkdircmd) $(OBJDIR)
+ifeq ($(buildenv),windows)
 	@$(CXX) -MM $(CPPFLAGS) $< > $@.mktmp
-	@sed "s,\($*\)\.o[ :]*,\1.o $@ : ,g" < $@.mktmp > $@
+	@sed "s,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g" < $@.mktmp > $@
 	@rm -f $@.mktmp
-endif
-else # Standard build on Linux
+else
 	@$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	sed 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 endif
