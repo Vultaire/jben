@@ -38,6 +38,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "kanjilist.h"
 #include "vocablist.h"
 #include "edict.h"
+#include "preferences.h"
+#include "radicals.h"
 
 class JBen: public wxApp {
 public:
@@ -46,6 +48,7 @@ public:
 	VocabList *vocabList;
 	Edict *edict;
 	MainGUI *gui;
+	Preferences *prefs;
 private:
 	virtual bool OnInit();
 	virtual int OnExit();

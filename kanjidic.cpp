@@ -145,7 +145,7 @@ wxString KanjiDic::ConvertKanjidicEntry(const wxString& s) {
 }
 
 wxString KanjiDic::KanjidicToHtml(const wxString& kanjidicStr) {
-	return KanjidicToHtml(kanjidicStr, prefs->kanjidicOptions, prefs->kanjidicDictionaries);
+	return KanjidicToHtml(kanjidicStr, jben->prefs->kanjidicOptions, jben->prefs->kanjidicDictionaries);
 }
 
 wxString KanjiDic::KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries) {

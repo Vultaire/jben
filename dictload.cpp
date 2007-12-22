@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "global.h"
 #include "kanjidic.h"
 #include "edict.h"
+#include "radicals.h"
 
 #if 0
 #include "version.h"
@@ -46,6 +47,10 @@ int DictionaryLoader::LoadDictionaries() {
 	if(result != KD_SUCCESS) return DL_KANJIDIC_NOT_FOUND;
 	jben->edict = Edict::LoadEdict("edict2", result);
 	if(result != ED_SUCCESS) return DL_EDICT_NOT_FOUND;
+	jben->kradfile = Radicals::LoadKRad("kradfile", result);
+	if(result != KRAD_SUCCESS) return DL_KRADFILE_NOT_FOUND;
+	jben->radkfile = Radicals::LoadRadK("radkfile", result);
+	if(result != RADK_SUCCESS) return DL_RADKFILE_NOT_FOUND;
 
 	return DL_SUCCESS;
 }

@@ -25,10 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define global_h
 
 #include "jben.h"
-#include "preferences.h"
 
 extern JBen *jben;
-extern Preferences *prefs;
 
 /* SKIP support should not be compiled in at this point until we can ensure that
    SKIP data can not be copied to the clipboard.

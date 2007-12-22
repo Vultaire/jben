@@ -28,6 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define DL_KANJIDIC_NOT_FOUND 0x1
 #define DL_EDICT_NOT_FOUND    0x2
 #define DL_FILE_IO_ERROR      0x4
+#define DL_KRADFILE_NOT_FOUND 0x8
+#define DL_RADKFILE_NOT_FOUND 0x10
 
 /* This class used to be intended as a splash window,
    but loading KANJIDIC takes almost no time. Maybe after
