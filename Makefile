@@ -71,7 +71,7 @@ sources = $(shell ls -t *.cpp) # Compile most recently edited files first.
 
 # Build object configuration
 ifeq ($(PLATFORM),windows)
-	objects = $(sources:%.cpp=$(OBJDIR)/%.o) jben.res
+	objects = $(sources:%.cpp=$(OBJDIR)/%.o) $(OBJDIR)/jben.res
 	target = $(BINDIR)/jben.exe
 else
 	objects = $(sources:%.cpp=$(OBJDIR)/%.o)
@@ -102,22 +102,16 @@ endif
 
 all: $(target) kpengine
 
-## Include dependency makefiles
-#include kanjipad/Makefile
-
-# Rules for main project
-
 .PHONY : kpengine clean cleandep cleanall
 
-$(target) : $(OBJDIR) $(objects)
+$(target) : $(objects)
 	$(mkdircmd) $(BINDIR)
 	$(CXX) $(CXXFLAGS) -o $(target) $(objects) $(libs)
 
-$(OBJDIR):
-	$(mkdircmd) $(OBJDIR)
 
-jben.res:
-	windres.exe -i jben.rc -J rc -o jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
+$(OBJDIR)/jben.res:
+	$(mkdircmd) $(OBJDIR)
+	windres.exe -i jben.rc -J rc -o $(OBJDIR)/jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
 
 kpengine:
 	cd kanjipad && make && cd ..
@@ -131,6 +125,10 @@ cleandep:
 
 cleanall : clean cleandep
 
+$(OBJDIR)/%.o : %.cpp
+	$(mkdircmd) $(OBJDIR)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(@F:%.o=%.cpp)
+
 # Object dependency tracking
 include $(sources:%.cpp=$(DEPDIR)/%.d)
 $(DEPDIR)/%.d : %.cpp
@@ -140,6 +138,7 @@ $(DEPDIR)/%.d : %.cpp
 ifeq ($(buildenv),windows)
 	@sed "s,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g" < $@.mktmp > $@
 else
+#	@sed 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : $(OBJDIR) ,g' < $@.mktmp > $@
 	@sed 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' < $@.mktmp > $@
 endif
 	@rm $@.mktmp
