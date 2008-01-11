@@ -121,7 +121,7 @@ public:
 	static wxString KanjidicToHtml(const wxString& kanjidicStr);
 	static wxString KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries);
 	int GetIntField(wxChar kanji, const wxString& marker);
-	const BoostHM<wxChar, string> *GetHashTable();
+	const BoostHM<wxChar, string> *GetHashTable() const;
 	wxString GetOnyomiStr(wxChar c);
 	wxString GetKunyomiStr(wxChar c);
 	wxString GetEnglishStr(wxChar c);

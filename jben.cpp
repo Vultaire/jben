@@ -22,23 +22,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "global.h"
-#include "dictload.h"
 #include "jben.h"
 
 #include <stdlib.h>
 
 JBen *jben;
-Preferences *prefs;
 
 /* The application entry point */
 IMPLEMENT_APP(JBen)
 
 bool JBen::OnInit() {
-	int result;
-
 	jben = this;
-	edict = (Edict *)NULL;
-	kdict = (KanjiDic *)NULL;
 	kanjiList = (KanjiList *)NULL;
 	vocabList = (VocabList *)NULL;
 	gui = (MainGUI *)NULL;
@@ -46,41 +40,28 @@ bool JBen::OnInit() {
 	/* Start our random number generator */
 	srand(time(NULL));
 	for(int i=0;i<50;i++) rand(); /* On some platforms I've seen rand() behave
-	                                 fairly predictably for the first iteration or so.
-	                                 That's why I spin off a few iterations of rand()
-	                                 before really using it. */
+	                                 fairly predictably for the first iteration
+									 or so.  That's why I spin off a few
+									 iterations of rand() before really using
+									 it. */
 
-	/* DictionaryLoader was intended to be a splash screen for loading the dictionaries.  However,
-	   currently this is a fast enough operation that I decided it was unnecessary. */
-#if 0
-	/* Display splash screen which shows progress bars while loading
-	   dictionaries.  (Yes, this is fluff.) */
-	DictionaryLoader *d = new DictionaryLoader();
-	d->Show(true);
-	SetTopWindow(d);
-	result = d->LoadDictionaries();
-	d->Destroy();
-#endif
-	/* For now, DictionaryLoader is a non-GUI class.  Just make the object, run the function, and be done with it. */
-	DictionaryLoader *d = new DictionaryLoader();
-	result = d->LoadDictionaries();
-	delete d;
+	/* Dictionary loading, etc., depends on our config file. */
+	g_prefs = prefs = new Preferences(_T("jben.cfg"));
 
-	if(result==DL_SUCCESS) {
-		kanjiList = new KanjiList(kdict->GetHashTable());
+	dicts = new Dictionaries();
+
+	if(dicts->GetEdict())
 		vocabList = new VocabList();
-		prefs = new Preferences(_T("jben.cfg"));
-		/* Show the main GUI. */
-		gui = new MainGUI();
-		/* On Linux, for some reason there's a placeholder "loading" mini-window which pops up during creation of this object.  Why??*/
-		gui->Show(true);
-		SetTopWindow(gui);
-		return true;
-	} else {
-		wxMessageBox(wxString::Format(_T("Error during startup, DictionaryLoader result = 0x%X\n"), result),
-			_T("DictionaryLoader error"), wxOK | wxICON_ERROR);
-		return false;
-	}
+	else vocabList = NULL;
+	if(dicts->GetKanjiDic())
+		kanjiList = new KanjiList(dicts->GetKanjiDic()->GetHashTable());
+	else kanjiList = NULL;
+
+	gui = new MainGUI();
+	gui->Show(true);
+	SetTopWindow(gui);
+
+	return true;
 }
 
 int JBen::OnExit() {
@@ -88,9 +69,9 @@ int JBen::OnExit() {
 	printf("JBen::OnExit being processed...\n");
 #endif
 	if(prefs) delete prefs;
-	if(edict) delete edict;
+	if(dicts) delete dicts;
 	if(kanjiList) delete kanjiList;
-	if(kdict) delete kdict;
+	if(vocabList) delete vocabList;
 #ifdef DEBUG
 	printf("Terminating program.\n");
 #endif

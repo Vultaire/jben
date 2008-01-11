@@ -34,21 +34,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #endif
 
 #include "maingui.h"
-#include "kanjidic.h"
+#include "preferences.h"
+#include "dictionaries.h"
 #include "kanjilist.h"
 #include "vocablist.h"
-#include "edict.h"
-#include "preferences.h"
-#include "radicals.h"
 
 class JBen: public wxApp {
 public:
-	KanjiDic *kdict;
-	KanjiList *kanjiList;
-	VocabList *vocabList;
-	Edict *edict;
+	/* Public objects */
 	MainGUI *gui;
 	Preferences *prefs;
+	Dictionaries *dicts;
+	KanjiList *kanjiList;
+	VocabList *vocabList;
 private:
 	virtual bool OnInit();
 	virtual int OnExit();

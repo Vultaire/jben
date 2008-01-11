@@ -28,6 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "wx/ffile.h"
 #include "global.h"
 
+Preferences* g_prefs;
+
 Preferences::Preferences(const wxChar *filename) {
 	cfgFile = wxFileName(wxGetCwd(), filename).GetFullPath();
 	wxString s;
@@ -48,44 +50,59 @@ Preferences::Preferences(const wxChar *filename) {
 				if(index!=wxString::npos) {
 					subToken = token.substr(0, index);
 					subToken = subToken.MakeLower();
+
 					if(subToken==_T("kanjidicoptionmask")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
 						subToken.ToULong(&kanjidicOptions, 0);
+
 					} else if(subToken==_T("kanjidicdictionarymask")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
 						subToken.ToULong(&kanjidicDictionaries, 0);
+
 					} else if(subToken==_T("kanjilist")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
 						jben->kanjiList->AddFromString(subToken);
+
 					} else if(subToken==_T("vocablist")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
-#ifdef DEBUG
-						printf("String to parse: [%ls]\n", subToken.c_str());
-#endif
 						wxStringTokenizer tSub(subToken, _T(";"));
 						while(tSub.HasMoreTokens()) {
 							subToken = tSub.GetNextToken();
-#ifdef DEBUG
-							printf("Subtoken: [%ls]\n", subToken.c_str());
-#endif
 							if(subToken.length()>0) {
 								jben->vocabList->Add(subToken);
 							}
 						}
+
+					} else if(subToken==_T("edict")) {
+						subToken = token.substr(index+1);
+						stringOpts["edict"]
+							= subToken.Trim(false).Trim(true);
+
+					} else if(subToken==_T("kanjidic")) {
+						subToken = token.substr(index+1);
+						stringOpts["kanjidic"]
+							= subToken.Trim(false).Trim(true);
+
+					} else if(subToken==_T("kradfile")) {
+						subToken = token.substr(index+1);
+						stringOpts["kradfile"]
+							= subToken.Trim(false).Trim(true);
+
+					} else if(subToken==_T("radkfile")) {
+						subToken = token.substr(index+1);
+						stringOpts["radkfile"]
+							= subToken.Trim(false).Trim(true);
+
 					} else {
-						/* Unhandled - do nothing*/
+						/* Unhandled - do nothing */
 					}
 				} else {
-					/* No space/tab was found.  Check no-arg options */
-					/* Currently there are none.  There might never be any again, actually. */
-#if 0
-					token = token.MakeLower().Trim(false).Trim(true);
-					/*if(token==_T("vocablist")) ReadingVocabList=true;*/ /* Sets KanjiList-reading mode */
-#endif
+					/* No space/tab was found.  Check no-arg options, if any.
+					   (Currently there are none.) */
 				}
 			} /* if(tokenlen>0, token[0]!=# */
 		} /* while(hasmoretokens) */

@@ -33,15 +33,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 	#include "wx/wx.h"
 #endif
 
+#include "boosthm.h"
+
 class Preferences {
 public:
 	Preferences(const wxChar *filename);
 	~Preferences();
 	wxString GetPreferences();
 
+	/* Filename for config file */
+	wxString cfgFile;
+
+	/* Options contained within config file */
 	unsigned long kanjidicOptions;
 	unsigned long kanjidicDictionaries;
-	wxString cfgFile;
+	/* KanjiList and VocabList are auto-generated while saving.
+	   However, if the lists are not loaded, we want to save back the original
+	   back - that's why we store them. */
+	wxString kanjiList;
+	wxString vocabList;
+
+	/* Use a hash table for storing all other options we may add. */
+	BoostHM<wxString, wxString> stringOpts;
 };
+
+extern Preferences* g_prefs;
 
 #endif
