@@ -42,6 +42,7 @@ endif
 SHELL = /bin/sh
 OBJDIR = obj/$(PLATFORM)/$(BUILD)
 BINDIR = bin/$(PLATFORM)/$(BUILD)
+DEPDIR = dep/$(PLATFORM)/$(BUILD)
 
 # Get flags/libs for GTK builds
 ifeq ($(PLATFORM),gtk20)
@@ -72,11 +73,9 @@ sources = $(shell ls -t *.cpp) # Compile most recently edited files first.
 ifeq ($(PLATFORM),windows)
 	objects = $(sources:%.cpp=$(OBJDIR)/%.o) jben.res
 	target = $(BINDIR)/jben.exe
-	kpengine = $(BINDIR)/kpengine.exe
 else
 	objects = $(sources:%.cpp=$(OBJDIR)/%.o)
 	target = $(BINDIR)/jben
-	kpengine = $(BINDIR)/kpengine
 endif
 
 # Select build environment type
@@ -94,40 +93,53 @@ endif
 
 # Define commands based on build environment
 ifeq ($(buildenv),windows)
-	mkdircmd = @mkdir
+	mkdircmd = mkdir
 else
-	mkdircmd = @mkdir -p
+	mkdircmd = mkdir -p
 endif
 
 ### Targets ###
 
-all: $(target) $(kpengine)
+all: $(target) kpengine
 
-# Include dependency makefiles
-include kanjipad/Makefile
+## Include dependency makefiles
+#include kanjipad/Makefile
 
 # Rules for main project
-$(target) : $(objects)
+
+.PHONY : kpengine clean cleandep cleanall
+
+$(target) : $(OBJDIR) $(objects)
 	$(mkdircmd) $(BINDIR)
 	$(CXX) $(CXXFLAGS) -o $(target) $(objects) $(libs)
+
+$(OBJDIR):
+	$(mkdircmd) $(OBJDIR)
 
 jben.res:
 	windres.exe -i jben.rc -J rc -o jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
 
+kpengine:
+	cd kanjipad && make && cd ..
+
 clean:
-	rm $(target) $(kpengine) *.o jben.res
+	cd kanjipad && make clean && cd ..
+	rm -rfv bin obj jben.res
+
+cleandep:
+	rm -rfv dep
+
+cleanall : clean cleandep
 
 # Object dependency tracking
-include $(sources:%.cpp=$(OBJDIR)/%.d)
-$(OBJDIR)/%.d : %.cpp
+include $(sources:%.cpp=$(DEPDIR)/%.d)
+$(DEPDIR)/%.d : %.cpp
 	@echo Recreating $@...
-	@$(mkdircmd) $(OBJDIR)
-ifeq ($(buildenv),windows)
+	@$(mkdircmd) $(DEPDIR)
 	@$(CXX) -MM $(CPPFLAGS) $< > $@.mktmp
+ifeq ($(buildenv),windows)
 	@sed "s,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g" < $@.mktmp > $@
-	@rm -f $@.mktmp
 else
-	@$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
+	@sed 's,\($*\)\.o[ :]*,$(OBJDIR)/\1.o $@ : ,g' < $@.mktmp > $@
 endif
+	@rm $@.mktmp

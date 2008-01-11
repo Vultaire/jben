@@ -17,31 +17,33 @@ CFLAGS = -Wall -s -O2
 # Don't edit beyond here! #
 ###########################
 
-KPADOBJDIR = obj/$(PLATFORM)/$(BUILD)
-KPADBINDIR = bin/$(PLATFORM)/$(BUILD)
+OBJDIR = obj/$(PLATFORM)/$(BUILD)
+BINDIR = bin/$(PLATFORM)/$(BUILD)
 
 # Build object configuration
 ifeq ($(PLATFORM),windows)
-	kpengine = $(KPADBINDIR)/kpengine.exe
-	mkdircmd = @mkdir
-	rmdircmd = @rmdir /s
+	kpengine = $(BINDIR)/kpengine.exe
+	mkdircmd = mkdir
+	rmdircmd = rmdir /s
 else
-	kpengine = $(KPADBINDIR)/kpengine
-	mkdircmd = @mkdir -p
-	rmdircmd = @rm -rfv
+	kpengine = $(BINDIR)/kpengine
+	mkdircmd = mkdir -p
+	rmdircmd = rm -rfv
 endif
 
-kpadsources = $(shell ls -t *.c) # Compile most recently edited files first.
-kpadobjects = $(kpadsources:%.c=$(KPADOBJDIR)/%.o)
+sources = $(shell ls -t *.c) # Compile most recently edited files first.
+objects = $(sources:%.c=$(OBJDIR)/%.o)
 
-$(kpengine) : $(kpadobjects)
-	echo Sources: $(kpadobjects)
-	echo Objects: $(kpadobjects)
-	$(mkdircmd) $(KPADBINDIR)
-	$(CC) $(CFLAGS) -o $(kpengine) $(KPADOBJDIR)/kpengine.o $(KPADOBJDIR)/scoring.o $(KPADOBJDIR)/util.o
+.PHONY : clean
 
-$(KPADOBJDIR)/%.o: %.c
-	$(mkdircmd) $(KPADOBJDIR)
+$(kpengine) : $(objects)
+	echo Sources: $(objects)
+	echo Objects: $(objects)
+	$(mkdircmd) $(BINDIR)
+	$(CC) $(CFLAGS) -o $(kpengine) $(OBJDIR)/kpengine.o $(OBJDIR)/scoring.o $(OBJDIR)/util.o
+
+$(OBJDIR)/%.o: %.c
+	$(mkdircmd) $(OBJDIR)
 	$(CC) $(CFLAGS) -c -o $@ -DFOR_PILOT_COMPAT $<
 
 clean:
