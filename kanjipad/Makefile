@@ -1,16 +1,49 @@
+# J-Ben Makefile for Linux and Windows
+# Makefile for kpengine executable
+
+### User-editable options ###
+# PLATFORM: either windows or gtk20
+PLATFORM = gtk20
+# BUILD: either release, debug, or profile
+BUILD = release
+
 ### C options ###
 # These flags will be used for compiling the kpengine program, upon which our
 # character handwriting recognition is dependent.
 CC = gcc
 CFLAGS = -Wall -s -O2
 
-kpadsources = $(shell ls -t kanjipad/*.c) # Compile most recently edicted files first.
-kpadobjects = $(sources:%.c=$(OBJDIR)/%.o)
+###########################
+# Don't edit beyond here! #
+###########################
+
+KPADOBJDIR = obj/$(PLATFORM)/$(BUILD)
+KPADBINDIR = bin/$(PLATFORM)/$(BUILD)
+
+# Build object configuration
+ifeq ($(PLATFORM),windows)
+	kpengine = $(KPADBINDIR)/kpengine.exe
+	mkdircmd = @mkdir
+	rmdircmd = @rmdir /s
+else
+	kpengine = $(KPADBINDIR)/kpengine
+	mkdircmd = @mkdir -p
+	rmdircmd = @rm -rfv
+endif
+
+kpadsources = $(shell ls -t *.c) # Compile most recently edited files first.
+kpadobjects = $(kpadsources:%.c=$(KPADOBJDIR)/%.o)
 
 $(kpengine) : $(kpadobjects)
-	$(mkdircmd) $(BINDIR)/kanjipad
-	$(CC) $(CFLAGS) -o $(kpengine) $(OBJDIR)/kanjipad/kpengine.o $(OBJDIR)/kanjipad/scoring.o $(OBJDIR)/kanjipad/util.o
+	echo Sources: $(kpadobjects)
+	echo Objects: $(kpadobjects)
+	$(mkdircmd) $(KPADBINDIR)
+	$(CC) $(CFLAGS) -o $(kpengine) $(KPADOBJDIR)/kpengine.o $(KPADOBJDIR)/scoring.o $(KPADOBJDIR)/util.o
 
-$(OBJDIR)/kanjipad/%.o: kanjipad/%.c
-	$(mkdircmd) $(OBJDIR)/kanjipad
-	$(CC) $(CFLAGS) -c -o $@ -DFOR_PILOT_COMPAT -Ikanjipad $<
+$(KPADOBJDIR)/%.o: %.c
+	$(mkdircmd) $(KPADOBJDIR)
+	$(CC) $(CFLAGS) -c -o $@ -DFOR_PILOT_COMPAT $<
+
+clean:
+	$(rmdircmd) bin
+	$(rmdircmd) obj

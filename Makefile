@@ -66,7 +66,7 @@ ifeq ($(BUILD),profile)
 	CPPFLAGS = $(SharedCPPFLAGS)
 endif
 
-sources = $(shell ls -t *.cpp) # Compile most recently edicted files first.
+sources = $(shell ls -t *.cpp) # Compile most recently edited files first.
 
 # Build object configuration
 ifeq ($(PLATFORM),windows)
