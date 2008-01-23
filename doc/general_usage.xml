@@ -1,3 +1,112 @@
 <chapter>
 	<title>General Usage</title>
+	<sect1>
+		<title>The Dictionaries</title>
+
+		<para>
+			J-Ben provides a bidirectional word dictionary and a kanji
+			(character) dictionary. These dictionaries are dependent upon the
+			freely available EDICT2 and KANJIDIC dictionary files from Monash
+			University.
+		</para>
+
+		<sect2>
+			<title>The Word Dictionary</title>
+			<para>
+				The word dictionary performs a very simple search based upon the
+				ENTIRE QUERY - it doesn't try to match all the words or some of
+				the words, but rather treats your query as a phrase and matches
+				only the whole phrase. Results are arranged with exact matches
+				first, followed by "begins with" matches, "ends with" matches,
+				and finally, everything else. Japanese searches work best
+				because of the structure of EDICT2, but English searches work
+				fairly well as well.
+			</para>
+
+			<para>
+				The word dictionary ties into the <link linkend="vsl">vocab
+				study list</link>. You can step through or jump to a random word
+				in your vocab list using the buttons at the bottom of the
+				dictionary tab.
+			</para>
+		</sect2>
+
+		<sect2>
+			<title>The Kanji (Character) Dictionary</title>
+			<para>
+				The kanji dictionary searches for one or more kanji characters
+				and displays detailed information about each one. Because of
+				the amount of data available for each character, and because
+				most people don't need much of the data available, the output
+				can be customized through the <link linkend="cfg">configuration
+				tab</link>.
+			</para>
+			<para>
+				Information provided includes the following:
+			</para>
+			<para>
+				The kanji dictionary can be supplemented with kanji stroke order
+				diagrams. J-Ben is licensed to use the 3rd public release of
+				the
+				<ulink url="http://www.kanjicafe.com/using_soder.htm">SODER
+				project</ulink>'s stroke order diagrams, however to save on
+				download size these are not included in the main J-Ben packages.
+				They are available from the
+				<ulink url="http://www.vultaire.net/software/jben/download.php">
+				J-Ben download page</ulink> along with the rest of the J-Ben
+				packages. Download one of these packages and decompress it into
+				the "sods" directory of J-Ben. If there is no "sods" directory,
+				create one. Then, in the <link linkend="cfs">configuration
+				tab</link>, enable either regular or animated stroke order
+				diagrams, and you should be set. (As a last note, packages
+				directly from KanjiCafe can also be used, but they need marked
+				as utf8-hex.)
+			</para>
+
+			<para>
+				The kanji dictionary ties into both the <link
+				linkend="ksl">kanji</link> and <link linkend="vsl">vocab study
+				list</link>s. You can move through your kanji study list using
+				the forward, backward, and random buttons at the bottom of the
+				dictionary tab. Further, if you search for a single kanji and
+				it is in your list, the dictionary will recognize this and
+				allow you to step through your list from the current character.
+				Finally, all character searches are cross-referenced with your
+				vocab study list, and if any of your vocab contain the kanji,
+				they will be listed as well.
+			</para>
+		</sect2>
+
+	</sect1>
+	<sect1>
+		<title>Kanji Drilling</title>
+	</sect1>
+	<sect1>
+		<title>Study Lists</title>
+		<sect2 id="ksl">
+			<title>The Kanji Study List</title>
+
+			<para>Blah de blah, used by this, used by that.</para>
+
+			<sect3>
+				<title>Adding characters to the list</title>
+			</sect3>
+
+			<sect3>
+				<title>Managing the list</title>
+			</sect3>
+
+			<sect3>
+				<title>Exporting and importing study lists</title>
+			</sect3>
+
+		</sect2>
+		<sect2 id="vsl">
+			<title>The Vocab Study List</title>
+
+			<para>
+				Blah de blah, used by these things, edited in this way,	done.
+			</para>
+		</sect2>
+	</sect1>
 </chapter>

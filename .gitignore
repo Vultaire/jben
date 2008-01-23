@@ -8,4 +8,4 @@ kpengine
 sods/sod*
 *~
 archives
-doc/html
+doc/*html

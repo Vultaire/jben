@@ -3,8 +3,6 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 <!ENTITY installation SYSTEM "installation.xml">
 <!ENTITY general_usage SYSTEM "general_usage.xml">
-<!ENTITY kanji_tools SYSTEM "kanji_tools.xml">
-<!ENTITY vocab_tools SYSTEM "vocab_tools.xml">
 <!ENTITY configuration SYSTEM "configuration.xml">
 ]>
 <book>
@@ -21,7 +19,5 @@
 	</bookinfo>
 	&installation;
 	&general_usage;
-	&kanji_tools;
-	&vocab_tools;
 	&configuration;
 </book>
