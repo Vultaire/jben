@@ -31,7 +31,7 @@
 			</para>
 		</sect2>
 
-		<sect2>
+		<sect2 id="kdict">
 			<title>The Kanji (Character) Dictionary</title>
 			<para>
 				The kanji dictionary searches for one or more kanji characters
@@ -78,26 +78,120 @@
 		</sect2>
 
 	</sect1>
-	<sect1>
+	<sect1 id="kdrill">
 		<title>Kanji Drilling</title>
+
+		<para>
+			- To be written -
+		</para>
 	</sect1>
 	<sect1>
 		<title>Study Lists</title>
 		<sect2 id="ksl">
 			<title>The Kanji Study List</title>
 
-			<para>Blah de blah, used by this, used by that.</para>
+			<para>
+				The kanji study list is used for storing any kanji characters
+				you are studying. It's used by the <link linkend="kdict">kanji
+				dictionary</link> and is required for
+				<link linkend="kdrill">kanji drilling mode</link>. This list
+				can be added to and sorted based on newspaper frequency and
+				Jouyou grade level.
+			</para>
 
 			<sect3>
 				<title>Adding characters to the list</title>
+
+				<para>
+					If you don't know where to start on studying kanji, I
+					personally recommend using the Kanji menu to add kanji to
+					your list by Jouyou grade level. This is done by selecting
+					Kanji -&gt; Add Kanji to List -&gt; By Jouyou Grade Level,
+					and selecting a range of grades to add from the dialog which
+					appears. Alternatively, you can select By Newspaper
+					Frequency Ranking and choose kanji to add in that way.
+				</para>
+
+				<para>
+					Alternatively, you can <link linkend="klistimport">import a
+					list from a text file</link>, or you can <link
+					linkend="klistedit">manually edit the list</link> using the
+					Kanji Study List tab.
+				</para>
+			</sect3>
+
+			<sect3 id="klistedit">
+				<title>Manually editing the list</title>
+
+				<para>
+					The Kanji Study List tab lets you manually edit your kanji
+					list. You can type kanji in by hand, or copy and paste them
+					from another application.
+				</para>
+
+				<para>
+					When you hit the Commit button, your changes are saved.
+					Only kanji which are in the kanji dictionary will be
+					retained; any other characters are discarded. Duplicates
+					are also automatically removed. So, you could simply copy
+					and paste a vocab list into the kanji list editor, hit
+					commit, and you would end up with a list of all the kanji
+					used in that list.
+				</para>
+
+				<para>
+					If you don't like the changes you've made, just hit the
+					Revert button, and the list will return to the way it was.
+				</para>
 			</sect3>
 
 			<sect3>
-				<title>Managing the list</title>
+				<title>Sorting the list</title>
+
+				<para>
+					After adding characters to the list, it is strongly
+					recommended to sort the list.  Via the Kanji -&gt; Sort
+					Kanji in List menu, you can sort your current study list by
+					Jouyou grade level and newspaper frequency ranking.
+					Currently you can only sort in ascending order.
+				</para>
+
+				<para>
+					Personally, I like to apply both sorting methods.  First I
+					sort by newspaper ranking, so that the most common
+					characters are first in the list.  Next, I sort by Jouyou
+					level.  This will sort the characters from the lowest
+					Jouyou level to the highest (with uncategorized characters
+					at the very end).  However, within the grade levels it will
+					maintain the newspaper frequency sort, meaning that as I
+					study each grade level, I'm exposed to the likely more
+					important characters first.
+				</para>
 			</sect3>
 
-			<sect3>
+			<sect3 id="klistimport">
 				<title>Exporting and importing study lists</title>
+
+				<para>
+					The current kanji list can be exported to a plain text file
+					using the Kanji -&gt; Save Kanji List to File... menu.
+					Likewise, this text file (or any other plain text file) can
+					be imported using the Kanji -&gt; Add Kanji to List -> From
+					File... menu.  However, you may want to <link
+					linkend="klistclear">clear the study list</link> first.
+				</para>
+			</sect3>
+
+			<sect3 id="klistclear">
+				<title>Clearing the study list</title>
+
+				<para>
+					All operations on the kanji list are additive: even
+					importing a list from a file doesn't replace the list, but
+					rather just adds to it.  In the case you actually want to
+					replace the current kanji list with another, or just start
+					from scratch, select Clear Kanji List from the Kanji menu.
+				</para>
 			</sect3>
 
 		</sect2>
@@ -105,7 +199,13 @@
 			<title>The Vocab Study List</title>
 
 			<para>
-				Blah de blah, used by these things, edited in this way,	done.
+				The vocab study list is a newer feature and is primarily used
+				as as cross-referencing resource for the kanji dictionary. Due
+				to its lower importance, there is currently only one way to edit
+				this list, and that is through the Words -&gt; Study List tab.
+				The list is formatted with each line representing one Japanese
+				word or phrase. Either manually type in the list, or copy and
+				paste it from another program, and press Commit. That's it!
 			</para>
 		</sect2>
 	</sect1>

@@ -1,3 +1,55 @@
 <chapter id="cfg">
 	<title>Configuration</title>
+
+	<para>
+		Configuring J-Ben is done through the Configuration tab. Currently all
+		options pertain to the kanji dictionary. Later versions will have
+		options to control many more things, such as word dictionary output,
+		fonts, and paths to the dictionary files used (which is especially
+		important on Linux).
+	</para>
+	<sect1>
+		<title>Configuring the Kanji Dictionary</title>
+
+		<para>
+			Most configuration options have to do with the various data
+			contained within KANJIDIC. KANJIDIC has tons of information, and
+			much of it is overkill for the purpose of most students. A set of
+			fairly sane defaults are chosen, but you can modify these as
+			necessary. Most options are self-explanatory.
+		</para>
+
+		<para>
+			If you own a paper kanji dictionary, or a set of kanji flash cards,
+			you may want to check through the dictionary reference codes. Index
+			codes for many dictionaries and several flash card sets are
+			included. For example, I personally use the Kodansha Kanji
+			Learner's Dictionary by Jack Halpern, so I usually have this code
+			enabled so I can very easily reference it if I'm not satisfied with
+			the output of KANJIDIC.
+		</para>
+
+		<para>
+			If you set up a <link linkend="vsl">vocab study list</link>, then
+			there's a useful option to display words in your vocab list which
+			use the kanji you're looking up. This option is strongly
+			recommended. If there's nothing in your study list, or nothing that
+			matches your search, then this option doesn't display any extra
+			information.
+		</para>
+
+		<para>
+			The "other information" option is for the various other "excessive"
+			data contained in KANJIDIC but which I feel most Japanese learners
+			usually will not need. This includes JIS and Unicode hex codes,
+			various radical index numbers, Korean and "Pinyin" romanizations,
+			dictionary cross-reference codes, and any other KANJIDIC fields not
+			handled elsewhere.
+		</para>
+
+		<para>
+			Finally, if you install one or more of the KanjiCafe.com stroke
+			order diagram packs, you can toggle whether to show them here.
+		</para>
+	</sect1>
 </chapter>
