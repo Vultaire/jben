@@ -139,9 +139,9 @@ void PanelKanjiDict::UpdateHtmlOutput() {
 	int len = currentSearchString.length();
 	for(int i=0;i<len;i++) {
 		c = currentSearchString[i];
-		kanjiEntry = jben->kdict->GetKanjidicStr(c);
+		kanjiEntry = jben->dicts->GetKanjidic()->GetKanjidicStr(c);
 		if(kanjiEntry.length()>0) {
-			htmlContent.append(KanjiDic::KanjidicToHtml(kanjiEntry));
+			htmlContent.append(Kanjidic::KanjidicToHtml(kanjiEntry));
 		}
 	}
 

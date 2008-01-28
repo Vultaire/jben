@@ -11,17 +11,17 @@ public:
 	Dictionaries();
 	~Dictionaries();
 	bool LoadEdict   (const char* filename);
-	bool LoadKanjiDic(const char* filename);
+	bool LoadKanjidic(const char* filename);
 	bool LoadKRadFile(const char* filename);
 	bool LoadRadKFile(const char* filename);
 	/* constant access to private vars */
 	const Edict*    GetEdict();
-	const KanjiDic* GetKanjiDic();
+	const Kanjidic* GetKanjidic();
 	const KRadFile* GetKRadFile();
 	const RadKFile* GetRadKFile();
 private:
 	Edict*    edict;
-	KanjiDic* kdict;
+	Kanjidic* kanjidic;
 	KRadFile* kradfile;
 	RadKFile* radkfile;
 };

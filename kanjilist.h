@@ -42,7 +42,7 @@ using namespace std;
 
 class KanjiList {
 public:
-	KanjiList(const BoostHM<wxChar,string> *kanjiDicHash);
+	KanjiList(const BoostHM<wxChar,string>* const kanjiDicHash);
 	int AddFromString(const wxString& s);
 	int AddByGrade(int lowGrade, int highGrade);
 	int AddByFrequency(int lowFreq, int highFreq);

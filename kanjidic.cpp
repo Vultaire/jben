@@ -30,8 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <fstream>
 using namespace std;
 
-KanjiDic *KanjiDic::LoadKanjiDic(const char *filename, int& returnCode) {
-	KanjiDic *k=NULL;
+Kanjidic *Kanjidic::LoadKanjidic(const char *filename, int& returnCode) {
+	Kanjidic *k=NULL;
 	char *rawData = NULL;
 	unsigned int size;
 
@@ -51,7 +51,7 @@ KanjiDic *KanjiDic::LoadKanjiDic(const char *filename, int& returnCode) {
 #endif
 
 		/* Create the kanjidic object with our string data. */
-		k = new KanjiDic(rawData);
+		k = new Kanjidic(rawData);
 
 		returnCode = KD_SUCCESS;
 	}
@@ -64,7 +64,7 @@ KanjiDic *KanjiDic::LoadKanjiDic(const char *filename, int& returnCode) {
 
 /* This could be sped up: copy the first UTF-8 character into a string, then
    run a conversion on that.  Trivial though. */
-KanjiDic::KanjiDic(char *kanjidicRawData) {
+Kanjidic::Kanjidic(char *kanjidicRawData) {
 	char *token = strtok(kanjidicRawData, "\n");
 	wxString wxToken;
 	while(token) {
@@ -85,7 +85,7 @@ KanjiDic::KanjiDic(char *kanjidicRawData) {
 	}
 }
 
-KanjiDic::~KanjiDic() {
+Kanjidic::~Kanjidic() {
 	/* Currently: nothing here. */
 }
 
@@ -94,7 +94,7 @@ KanjiDic::~KanjiDic() {
    in this call since strings are only used for more compressed internal
    storage.  This is followed by a slight reformatting of the string for
    better presentation. */
-wxString KanjiDic::GetKanjidicStr(wxChar c) {
+wxString Kanjidic::GetKanjidicStr(wxChar c) {
 	BoostHM<wxChar,string>::iterator it = kanjiHash.find(c);
 	if(it==kanjiHash.end()) return _T("");
 	wxString s;
@@ -108,7 +108,7 @@ wxString KanjiDic::GetKanjidicStr(wxChar c) {
  * - Changing あ.いう notation to あ(いう), a la JWPce/JFC.
  * - Changing -あい notation to 〜あい, also a la JWPce/JFC.
  */
-wxString KanjiDic::ConvertKanjidicEntry(const wxString& s) {
+wxString Kanjidic::ConvertKanjidicEntry(const wxString& s) {
 	size_t index, lastIndex;
 	wxString temp = s;
 
@@ -144,11 +144,11 @@ wxString KanjiDic::ConvertKanjidicEntry(const wxString& s) {
 	return temp;
 }
 
-wxString KanjiDic::KanjidicToHtml(const wxString& kanjidicStr) {
+wxString Kanjidic::KanjidicToHtml(const wxString& kanjidicStr) const {
 	return KanjidicToHtml(kanjidicStr, jben->prefs->kanjidicOptions, jben->prefs->kanjidicDictionaries);
 }
 
-wxString KanjiDic::KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries) {
+wxString Kanjidic::KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries) const {
 /*	return wxString(_T("<p>"))
 		.append(s[0])
 		.append(_T("</p>"));*/
@@ -597,7 +597,7 @@ wxString KanjiDic::KanjidicToHtml(const wxString& kanjidicStr, long options, lon
 	return result;
 }
 
-int KanjiDic::GetIntField(wxChar kanji, const wxString& marker) {
+int Kanjidic::GetIntField(wxChar kanji, const wxString& marker) const {
 	wxString markerStr, kanjiEntry, temp;
 	size_t index=0;
 	long value=-1;
@@ -620,7 +620,7 @@ int KanjiDic::GetIntField(wxChar kanji, const wxString& marker) {
 	return (int)value;
 }
 
-const BoostHM<wxChar,string> *KanjiDic::GetHashTable() {
+const BoostHM<wxChar,string>* const Kanjidic::GetHashTable() const {
 	return &kanjiHash;
 }
 
@@ -630,19 +630,19 @@ enum {
 	KDR_English
 };
 
-wxString KanjiDic::GetOnyomiStr(wxChar c) {
+wxString Kanjidic::GetOnyomiStr(wxChar c) const {
 	return GetKanjidicReading(c, KDR_Onyomi);
 }
 
-wxString KanjiDic::GetKunyomiStr(wxChar c) {
+wxString Kanjidic::GetKunyomiStr(wxChar c) const {
 	return GetKanjidicReading(c, KDR_Kunyomi);
 }
 
-wxString KanjiDic::GetEnglishStr(wxChar c) {
+wxString Kanjidic::GetEnglishStr(wxChar c) const {
 	return GetKanjidicReading(c, KDR_English);
 }
 
-wxString KanjiDic::GetKanjidicReading(wxChar c, int readingType) {
+wxString Kanjidic::GetKanjidicReading(wxChar c, int readingType) {
 	wxString result;
 	wxString kanjidicStr = GetKanjidicStr(c);
 

@@ -43,7 +43,7 @@ DictionaryLoader::DictionaryLoader() {
 
 int DictionaryLoader::LoadDictionaries() {
 	int result;
-	jben->kdict = KanjiDic::LoadKanjiDic("kanjidic", result);
+	jben->kdict = Kanjidic::LoadKanjidic("kanjidic", result);
 	if(result != KD_SUCCESS) return DL_KANJIDIC_NOT_FOUND;
 	jben->edict = Edict::LoadEdict("edict2", result);
 	if(result != ED_SUCCESS) return DL_EDICT_NOT_FOUND;

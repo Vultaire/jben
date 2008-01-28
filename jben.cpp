@@ -40,7 +40,7 @@ bool JBen::OnInit() {
 	/* Start our random number generator */
 	srand(time(NULL));
 	for(int i=0;i<50;i++) rand(); /* On some platforms I've seen rand() behave
-	                                 fairly predictably for the first iteration
+									 fairly predictably for the first iteration
 									 or so.  That's why I spin off a few
 									 iterations of rand() before really using
 									 it. */
@@ -53,8 +53,8 @@ bool JBen::OnInit() {
 	if(dicts->GetEdict())
 		vocabList = new VocabList();
 	else vocabList = NULL;
-	if(dicts->GetKanjiDic())
-		kanjiList = new KanjiList(dicts->GetKanjiDic()->GetHashTable());
+	if(dicts->GetKanjidic())
+		kanjiList = new KanjiList(dicts->GetKanjidic()->GetHashTable());
 	else kanjiList = NULL;
 
 	gui = new MainGUI();

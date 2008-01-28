@@ -112,21 +112,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
    This is a lot of output, so it's probably for debug purposes only. */
 #define KDD_ALL    0xFFFFFFFF
 
-class KanjiDic {
+class Kanjidic {
 public:
-	static KanjiDic *LoadKanjiDic(const char *filename, int& returnCode);
-	~KanjiDic();
+	static Kanjidic *LoadKanjidic(const char *filename, int& returnCode);
+	~Kanjidic();
 
-	wxString GetKanjidicStr(wxChar c);
-	static wxString KanjidicToHtml(const wxString& kanjidicStr);
-	static wxString KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries);
-	int GetIntField(wxChar kanji, const wxString& marker);
-	const BoostHM<wxChar, string> *GetHashTable() const;
-	wxString GetOnyomiStr(wxChar c);
-	wxString GetKunyomiStr(wxChar c);
-	wxString GetEnglishStr(wxChar c);
+	wxString GetKanjidicStr(wxChar c) const;
+	static wxString KanjidicToHtml(const wxString& kanjidicStr) const;
+	static wxString KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries) const;
+	int GetIntField(wxChar kanji, const wxString& marker) const;
+	const BoostHM<wxChar, string>* const GetHashTable() const;
+	wxString GetOnyomiStr(wxChar c) const;
+	wxString GetKunyomiStr(wxChar c) const;
+	wxString GetEnglishStr(wxChar c) const;
 private:
-	KanjiDic(char *kanjidicRawData);
+	Kanjidic(char *kanjidicRawData);
 	static wxString ConvertKanjidicEntry(const wxString& s);
 	wxString GetKanjidicReading(wxChar c, int readingType);
 

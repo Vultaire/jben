@@ -232,7 +232,9 @@ void PanelKanjiDrill::OnStart(wxCommandEvent& ev) {
 
 void PanelKanjiDrill::Stop() {
 	double score=0.0;
-	if(totalTested>0) score = round(100000*(double)correct/(double)totalTested)/1000;
+	if(totalTested>0) score = round(100000*
+									(double)correct/
+									(double)totalTested)/1000;
 	wxString kanjiMissed;
 	for(vector<wxChar>::iterator vi=missedKanji.begin(); vi!=missedKanji.end(); vi++)
 		kanjiMissed.append(*vi);
@@ -349,20 +351,30 @@ void PanelKanjiDrill::ShowNextKanji() {
 	}
 
 	/* Update CoveredTextBoxes with new info from KANJIDIC. */
-	txtKanji->Cover(); txtOnyomi->Cover(); txtKunyomi->Cover(); txtEnglish->Cover();
+	txtKanji->Cover();
+	txtOnyomi->Cover();
+	txtKunyomi->Cover();
+	txtEnglish->Cover();
 	txtKanji->SetHiddenStr(wxString(currentKanji));
-	txtOnyomi->SetHiddenStr(jben->kdict->GetOnyomiStr(currentKanji));
-	txtKunyomi->SetHiddenStr(jben->kdict->GetKunyomiStr(currentKanji));
-	txtEnglish->SetHiddenStr(jben->kdict->GetEnglishStr(currentKanji));
+	txtOnyomi->SetHiddenStr(jben->dicts->GetKanjidic()
+							->GetOnyomiStr(currentKanji));
+	txtKunyomi->SetHiddenStr(jben->dicts->GetKanjidic()
+							 ->GetKunyomiStr(currentKanji));
+	txtEnglish->SetHiddenStr(jben->dicts->GetKanjidic()
+							 ->GetEnglishStr(currentKanji));
 
 	/* Update the test status label */
 	double score=0.0;
-	if(totalTested>0) score = round(100000*(double)correct/(double)totalTested)/1000;
+	if(totalTested>0) score = round(100000*
+									(double)correct/
+									(double)totalTested)/1000;
 	if(!extraPractice) {
 		lblTestProgress->SetLabel(wxString::Format(
 			_T("Current score: %d/%d (%0.3f%%)     Test Progress: %d/%d (%0.3f%% done)"),
 			correct, totalTested, score,
-			totalTested, totalToTest, round(100000*double(totalTested)/double(totalToTest))/1000));
+			totalTested, totalToTest, round(100000*
+											double(totalTested)/
+											double(totalToTest))/1000));
 	} else {
 		lblTestProgress->SetLabel(wxString::Format(
 			_T("Extra practice: %d remaining     Final score: %d/%d (%0.3f%%)"),
