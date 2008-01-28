@@ -61,7 +61,7 @@
 			</para>
 
 			<para>
-				Display of stroke order diagrams can be toggled here.  This is
+				Display of stroke order diagrams can be toggled here. This is
 				dependent upon <link linkend="kksod_install">installing a set of
 				stroke order diagrams</link>.
 			</para>
@@ -85,7 +85,72 @@
 		<title>Kanji Drilling</title>
 
 		<para>
-			- To be written -
+			J-Ben provides an easy-to-use kanji "flash card" mode. After
+			defining a <link linkend="ksl">kanji study list</link>, the Kanji
+			Practice tab is enabled.  The kanji practice mode is intended as a
+			basic self-study tool, and does not ask you to input any answers to
+			questions or anything similar. It will display information about a
+			kanji with some of the information hidden from view, and it is your
+			job to guess, either mentally or on a separate sheet of paper, what
+			the missing information is. After doing this, you can look at the
+			hidden fields, and you decide for yourself whether or not you
+			remembered the character properly or not. This is a self-graded
+			test; you decide for each character whether you got it "Correct" or
+			"Wrong", and the program will simply track your answers and help you
+			study the ones you had trouble with.  The program will continue to
+			drill you through the characters you mark as "Wrong", and at the end
+			of the test will present you with a score and a list of the
+			characters you got wrong.
+		</para>
+
+		<para>
+			The first step in using this mode is to select which characters to
+			test yourself on. You start by choosing how many characters you
+			want to test, and then you pick whether to select the kanji randomly
+			from your list or in order from a certain index of your list. The
+			former method may be better for general review, while the latter
+			would be good for practicing through sets of new characters in your
+			list.
+		</para>
+
+		<para>
+			The second step is choosing the type of test. If you want to
+			practice writing characters by hand, you will probably want to try
+			the "writing kanji" option. However, if just reading the characters
+			is sufficient, which may be fairly true if you only read or type
+			Japanese, then you might be better served focusing on "reading
+			kanji".
+		</para>
+
+		<para>
+			After clicking "Start Drill", test mode begins. While in test mode,
+			you will not be allowed to change to other tabs in the program. The
+			screen will display 4 textboxes containing information about the
+			kanji: the character itself, its on-yomi (sound-based) reading, its
+			kun-yomi (Japanese style) reading, and its meaning in English.
+			Some of the textboxes will be covered up, depending on which test
+			mode you chose: for "writing kanji" only the kanji character is
+			covered, while for "reading kanji" everything except the kanji
+			character is covered. You can uncover each of the textboxes simply
+			by clicking on them.  After reviewing each flash card, you choose
+			whether you got it "Correct" or "Wrong", and then the program will
+			go to the next card in your list.
+		</para>
+
+		<para>
+			After running through all of the flash cards, if you marked any of
+			them as wrong, the program will continue to drill you through the
+			ones you missed.  At this point your score won't change; this is
+			just extra practice and if you want you can click "Stop Test" to
+			skip it.  I recommend running through this, though.  The extra
+			review ends once you've marked each kanji as "Correct".
+		</para>
+
+		<para>
+			At the end of the test (or if you select "Stop Test"), the Test
+			Results message box will appear.  It will tell you what your score
+			was, how much of the test you finished, and which kanji you missed,
+			if any.
 		</para>
 	</sect1>
 	<sect1>
@@ -153,19 +218,19 @@
 
 				<para>
 					After adding characters to the list, it is strongly
-					recommended to sort the list.  Via the Kanji -&gt; Sort
+					recommended to sort the list. Via the Kanji -&gt; Sort
 					Kanji in List menu, you can sort your current study list by
 					Jouyou grade level and newspaper frequency ranking.
 					Currently you can only sort in ascending order.
 				</para>
 
 				<para>
-					Personally, I like to apply both sorting methods.  First I
+					Personally, I like to apply both sorting methods. First I
 					sort by newspaper ranking, so that the most common
-					characters are first in the list.  Next, I sort by Jouyou
-					level.  This will sort the characters from the lowest
+					characters are first in the list. Next, I sort by Jouyou
+					level. This will sort the characters from the lowest
 					Jouyou level to the highest (with uncategorized characters
-					at the very end).  However, within the grade levels it will
+					at the very end). However, within the grade levels it will
 					maintain the newspaper frequency sort, meaning that as I
 					study each grade level, I'm exposed to the likely more
 					important characters first.
@@ -180,7 +245,7 @@
 					using the Kanji -&gt; Save Kanji List to File... menu.
 					Likewise, this text file (or any other plain text file) can
 					be imported using the Kanji -&gt; Add Kanji to List -> From
-					File... menu.  However, you may want to <link
+					File... menu. However, you may want to <link
 					linkend="klistclear">clear the study list</link> first.
 				</para>
 			</sect3>
@@ -191,7 +256,7 @@
 				<para>
 					All operations on the kanji list are additive: even
 					importing a list from a file doesn't replace the list, but
-					rather just adds to it.  In the case you actually want to
+					rather just adds to it. In the case you actually want to
 					replace the current kanji list with another, or just start
 					from scratch, select Clear Kanji List from the Kanji menu.
 				</para>
