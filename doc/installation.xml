@@ -98,4 +98,26 @@ cd &lt;path_to_jben>
 		<para>Put that in /usr/bin or similar, do a chmod +x on it and that'll
 		make things simpler.</para>
 	</sect1>
+
+	<sect1 id="kksod_install">
+		<title>Optional: Installing Stroke Order Diagrams</title>
+
+		<para>
+			The kanji dictionary can be supplemented with kanji stroke order
+			diagrams. J-Ben is licensed to use the 3rd public release of
+			the
+			<ulink url="http://www.kanjicafe.com/using_soder.htm">SODER
+			project</ulink>'s stroke order diagrams, however to save on download
+			size these are not included in the main J-Ben packages. They are
+			available from the<ulink
+			url="http://www.vultaire.net/software/jben/download.php">J-Ben
+			download page</ulink> along with the rest of the J-Ben packages.
+			Download one of these packages and decompress it into the "sods"
+			directory of J-Ben. If there is no "sods" directory, create one.
+			Then, in the <link linkend="cfs">configuration tab</link>, enable
+			either regular or animated stroke order diagrams, and you should be
+			set. (As a last note, packages directly from KanjiCafe can also be
+			used, but they need marked as utf8-hex.)
+		</para>
+ 	</sect1>
 </chapter>

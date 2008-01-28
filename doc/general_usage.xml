@@ -33,6 +33,7 @@
 
 		<sect2 id="kdict">
 			<title>The Kanji (Character) Dictionary</title>
+
 			<para>
 				The kanji dictionary searches for one or more kanji characters
 				and displays detailed information about each one. Because of
@@ -41,32 +42,34 @@
 				can be customized through the <link linkend="cfg">configuration
 				tab</link>.
 			</para>
+
 			<para>
-				Information provided includes the following:
+				Information provided includes (but is not limited to) the
+				following:
+				<itemizedlist>
+					<listitem>Japanese-style readings (kun-yomi) and
+					"Chinese-style" sound-based readings (on-yomi)</listitem>
+					<listitem>Special readings for use in names
+					(nanori)</listitem>
+					<listitem>Stroke count</listitem>
+					<listitem>Jouyou grade level</listitem>
+					<listitem>Dictionary reference codes</listitem>
+					<listitem>Korean and "Pinyin" readings</listitem>
+					<listitem>JIS and Unicode values in hexadecimal</listitem>
+					<listitem>Various radical information</listitem>
+				</itemizedlist>
 			</para>
+
 			<para>
-				The kanji dictionary can be supplemented with kanji stroke order
-				diagrams. J-Ben is licensed to use the 3rd public release of
-				the
-				<ulink url="http://www.kanjicafe.com/using_soder.htm">SODER
-				project</ulink>'s stroke order diagrams, however to save on
-				download size these are not included in the main J-Ben packages.
-				They are available from the
-				<ulink url="http://www.vultaire.net/software/jben/download.php">
-				J-Ben download page</ulink> along with the rest of the J-Ben
-				packages. Download one of these packages and decompress it into
-				the "sods" directory of J-Ben. If there is no "sods" directory,
-				create one. Then, in the <link linkend="cfs">configuration
-				tab</link>, enable either regular or animated stroke order
-				diagrams, and you should be set. (As a last note, packages
-				directly from KanjiCafe can also be used, but they need marked
-				as utf8-hex.)
+				Display of stroke order diagrams can be toggled here.  This is
+				dependent upon <link linkend="kksod_install">installing a set of
+				stroke order diagrams</link>.
 			</para>
 
 			<para>
 				The kanji dictionary ties into both the <link
 				linkend="ksl">kanji</link> and <link linkend="vsl">vocab study
-				list</link>s. You can move through your kanji study list using
+				lists</link>. You can move through your kanji study list using
 				the forward, backward, and random buttons at the bottom of the
 				dictionary tab. Further, if you search for a single kanji and
 				it is in your list, the dictionary will recognize this and
