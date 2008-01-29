@@ -18,7 +18,8 @@ Dictionaries::Dictionaries() {
 
 Dictionaries::~Dictionaries() {
 	if(wdict) delete wdict;
-	if(kdict) delete kdict;
+	/* kdict should NOT be destroyed here; KDict::Destroy() should be called
+	   instead.  I did this in jben.cpp's OnExit event. */
 	if(kradfile) delete kradfile;
 	if(radkfile) delete radkfile;
 }
@@ -31,9 +32,14 @@ bool Dictionaries::LoadWDict(const char* filename) {
 }
 
 bool Dictionaries::LoadKDict(const char* filename) {
+	/* I have a feeling this class will be tossed soon, as
+	   the 4 classes it loads will be consolidated down to 2
+	   singletons, making this loader class obsolete. */
+	/* Because of the above, I'm ignoring the filename arg
+	   for now. */
 	int result;
-	kdict = KDict::LoadKDict(filename, result);
-	if(result == KD_SUCCESS) return true;
+	kdict = GetKDict();
+	if(kdict!=NULL && kdict->GetHashTable()!=NULL) return true;
 	return false;
 }
 

@@ -30,10 +30,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <fstream>
 using namespace std;
 
-KDict *KDict::LoadKDict(const char *filename, int& returnCode) {
-	KDict *k=NULL;
+KDict* KDict::kdictSingleton = NULL;
+
+const KDict *KDict::GetKDict() {
+	if(kdictSingleton) return kdictSingleton;
+	kdictSingleton = new KDict;
+	kdictSingleton->LoadKanjidic();
+	kdictSingleton->LoadKradfile();
+	kdictSingleton->LoadRadkfile();
+	return kdictSingleton;
+}
+
+void KDict::Destroy() {
+	if(kdictSingleton) {
+		delete kdictSingleton;
+		kdictSingleton = NULL;
+	}
+}
+
+int KDict::LoadKanjidic(const char *filename) {
 	char *rawData = NULL;
 	unsigned int size;
+	int returnCode=0xDEADBEEF;
 
 	ifstream ifile(filename, ios::ate); /* "at end" to get our file size */
 	if(ifile) {
@@ -51,7 +69,7 @@ KDict *KDict::LoadKDict(const char *filename, int& returnCode) {
 #endif
 
 		/* Create the kanjidic object with our string data. */
-		k = new KDict(rawData);
+		this->KanjidicParser(rawData);
 
 		returnCode = KD_SUCCESS;
 	}
@@ -59,12 +77,22 @@ KDict *KDict::LoadKDict(const char *filename, int& returnCode) {
 		returnCode = KD_FAILURE;
 
 	if(rawData) delete[] rawData;
-	return k;
+	return returnCode;
+}
+
+int KDict::LoadKradfile(const char *filename) {
+	int returnCode = 0xDEADBEEF;
+	return returnCode;
+}
+
+int KDict::LoadRadkfile(const char *filename) {
+	int returnCode = 0xDEADBEEF;
+	return returnCode;
 }
 
 /* This could be sped up: copy the first UTF-8 character into a string, then
    run a conversion on that.  Trivial though. */
-KDict::KDict(char *kanjidicRawData) {
+void KDict::KanjidicParser(char *kanjidicRawData) {
 	char *token = strtok(kanjidicRawData, "\n");
 	wxString wxToken;
 	while(token) {
@@ -73,7 +101,7 @@ KDict::KDict(char *kanjidicRawData) {
 			/* Convert token to proper format */
 			wxToken = ConvertKanjidicEntry(wxToken);
 			/* Add to hash table */
-			if(!kanjiHash.assign(wxToken[0], token)) {
+			if(!kanjidicData.assign(wxToken[0], token)) {
 #ifdef DEBUG
 				fprintf(stderr,
 					"Error assigning (%lc, %ls) to hash table!\n",
@@ -95,8 +123,8 @@ KDict::~KDict() {
    storage.  This is followed by a slight reformatting of the string for
    better presentation. */
 wxString KDict::GetKanjidicStr(wxChar c) const {
-	BoostHM<wxChar,string>::iterator it = kanjiHash.find(c);
-	if(it==kanjiHash.end()) return _T("");
+	BoostHM<wxChar,string>::iterator it = kanjidicData.find(c);
+	if(it==kanjidicData.end()) return _T("");
 	wxString s;
 	UTF8ToWx(it->second, s);
 	return ConvertKanjidicEntry(s);
@@ -623,8 +651,8 @@ int KDict::GetIntField(wxChar kanji, const wxString& marker) const {
 	return (int)value;
 }
 
-const BoostHM<wxChar,string>* const KDict::GetHashTable() const {
-	return &kanjiHash;
+const BoostHM<wxChar,string>* KDict::GetHashTable() const {
+	return &kanjidicData;
 }
 
 enum {

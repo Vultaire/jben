@@ -114,23 +114,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 class KDict {
 public:
-	static KDict *LoadKDict(const char *filename, int& returnCode);
+	static const KDict *GetKDict();
+	static void Destroy();
 	~KDict();
 
+	/* Kanjidic-specific functions */
 	wxString GetKanjidicStr(wxChar c) const;
 	static wxString KanjidicToHtml(const wxString& kanjidicStr);
 	static wxString KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries);
 	int GetIntField(wxChar kanji, const wxString& marker) const;
-	const BoostHM<wxChar, string>* const GetHashTable() const;
 	wxString GetOnyomiStr(wxChar c) const;
 	wxString GetKunyomiStr(wxChar c) const;
 	wxString GetEnglishStr(wxChar c) const;
+	const BoostHM<wxChar, string>* GetHashTable() const;
+
+	/* Other functions (none yet) */
 private:
-	KDict(char *kanjidicRawData);
+	/* Dictionary file loaders */
+	int LoadKanjidic(const char *filename="kanjidic");
+	int LoadRadkfile(const char *filename="radkfile");
+	int LoadKradfile(const char *filename="kradfile");
+
+	/* Private kanjidic-specific stuff */
+	void KanjidicParser(char *kanjidicRawData);
 	static wxString ConvertKanjidicEntry(const wxString& s);
 	wxString GetKanjidicReading(wxChar c, int readingType) const;
 
-	BoostHM<wxChar, string> kanjiHash;
+	BoostHM<wxChar, string> kanjidicData;
+	BoostHM<wxChar, string> radkData, kradData;
+	static KDict* kdictSingleton;
 };
 
 #endif

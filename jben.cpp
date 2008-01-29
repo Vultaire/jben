@@ -72,6 +72,7 @@ int JBen::OnExit() {
 #ifdef DEBUG
 	printf("JBen::OnExit being processed...\n");
 #endif
+	KDict::Destroy();
 	if(prefs) delete prefs;
 	if(dicts) delete dicts;
 	if(kanjiList) delete kanjiList;

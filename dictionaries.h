@@ -21,7 +21,7 @@ public:
 	const RadKFile* GetRadKFile();
 private:
 	WDict* wdict;
-	KDict* kdict;
+	const KDict* kdict;
 	KRadFile* kradfile;
 	RadKFile* radkfile;
 };
