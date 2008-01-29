@@ -134,20 +134,20 @@ void PanelWordDict::UpdateHtmlOutput() {
 		html.append(_T("No search has been entered."));
 	} else {
 		/* Get search results string */
-		if(jben->dicts->GetEdict()->Search(currentSearchString, resultList)) {
+		if(jben->dicts->GetWDict()->Search(currentSearchString, resultList)) {
 			/* Create merged wx-compatible results string */
 			wxString resultString, temp;
 			for(list<int>::iterator li = resultList.begin();
 			  li!=resultList.end();
 			  li++) {
 				if(resultString.length()!=0) resultString.append(_T('\n'));
-				UTF8ToWx(jben->dicts->GetEdict()->GetEdictString(*li), temp);
+				UTF8ToWx(jben->dicts->GetWDict()->GetEdictString(*li), temp);
 				resultString.append(temp);
 			}
 			/* Convert search results to destination format
 			For now: HTML
 			Later: wxWidgets Rich Text */
-			resultString = jben->dicts->GetEdict()->ResultToHTML(resultString);
+			resultString = jben->dicts->GetWDict()->ResultToHTML(resultString);
 			html.append(resultString);
 		} else {
 			html.append(_T("No results were found."));

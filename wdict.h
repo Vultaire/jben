@@ -5,7 +5,7 @@ Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: edict.h
+File: wdict.h
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef edict_h
-#define edict_h
+#ifndef wdict_h
+#define wdict_h
 
 /* #define USING_INDICES */
 
@@ -48,10 +48,10 @@ using namespace std;
 #define EDS_END   0x4u
 #define EDS_ANY   0x8u
 
-class Edict {
+class WDict {
 public:
-	~Edict();
-	static Edict *LoadEdict(const char *filename, int& returnCode);
+	~WDict();
+	static WDict *LoadWDict(const char *filename, int& returnCode);
 	bool Search(const wxString& query,
 				list<int>& results,
 				unsigned int searchType =
@@ -60,7 +60,7 @@ public:
 	static wxString ResultToHTML(const wxString& rawResult);
 	string GetEdictString(int i) const;
 private:
-	Edict(char *edictRawData);
+	WDict(char *edictRawData);
 	static wxString StripParenFields(const wxString& src);
 	static void GetEnglish(const string& edictStr, vector<string>& dest);
 	static void GetJapanese(const string& edictStr, vector<string>& dest);

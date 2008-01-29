@@ -26,8 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <algorithm>
 using namespace std;
 
-KanjiList::KanjiList(const BoostHM<wxChar,string>* const kanjiDicHash) {
-	kanjiHash = kanjiDicHash;
+KanjiList::KanjiList(const BoostHM<wxChar,string>* const kDictHash) {
+	kanjiHash = kDictHash;
 }
 
 #if 0
@@ -89,7 +89,7 @@ int KanjiList::AddByGrade(int lowGrade, int highGrade) {
 	int grade;
 
 	for(BoostHM<wxChar,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
-		grade = jben->dicts->GetKanjidic()->GetIntField(ki->first, _T("G"));
+		grade = jben->dicts->GetKDict()->GetIntField(ki->first, _T("G"));
 		if(grade>=lowGrade &&
 		  (grade<=highGrade || highGrade==0))
 			kanjiStr.append(ki->first);
@@ -103,7 +103,7 @@ int KanjiList::AddByFrequency(int lowFreq, int highFreq) {
 	int freq;
 
 	for(BoostHM<wxChar,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
-		freq = jben->dicts->GetKanjidic()->GetIntField(ki->first, _T("F"));
+		freq = jben->dicts->GetKDict()->GetIntField(ki->first, _T("F"));
 		if(freq>=lowFreq && freq<=highFreq)
 			kanjiStr.append(ki->first);
 	}
@@ -161,7 +161,7 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 	/* Create index based on the sort type */
 	int value;
 	for(vi=kanjiList.begin();vi!=kanjiList.end();vi++) {
-		value = jben->dicts->GetKanjidic()->GetIntField(*vi, fieldMarker);
+		value = jben->dicts->GetKDict()->GetIntField(*vi, fieldMarker);
 		if(value==-1) value=INT_MAX;
 		myCharIndexer->assign(*vi, value);
 	}

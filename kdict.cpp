@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "kanjidic.h"
+#include "kdict.h"
 #include "file_utils.h"
 #include "jutils.h"
 #include "wx/tokenzr.h"
@@ -30,8 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <fstream>
 using namespace std;
 
-Kanjidic *Kanjidic::LoadKanjidic(const char *filename, int& returnCode) {
-	Kanjidic *k=NULL;
+KDict *KDict::LoadKDict(const char *filename, int& returnCode) {
+	KDict *k=NULL;
 	char *rawData = NULL;
 	unsigned int size;
 
@@ -51,7 +51,7 @@ Kanjidic *Kanjidic::LoadKanjidic(const char *filename, int& returnCode) {
 #endif
 
 		/* Create the kanjidic object with our string data. */
-		k = new Kanjidic(rawData);
+		k = new KDict(rawData);
 
 		returnCode = KD_SUCCESS;
 	}
@@ -64,7 +64,7 @@ Kanjidic *Kanjidic::LoadKanjidic(const char *filename, int& returnCode) {
 
 /* This could be sped up: copy the first UTF-8 character into a string, then
    run a conversion on that.  Trivial though. */
-Kanjidic::Kanjidic(char *kanjidicRawData) {
+KDict::KDict(char *kanjidicRawData) {
 	char *token = strtok(kanjidicRawData, "\n");
 	wxString wxToken;
 	while(token) {
@@ -85,7 +85,7 @@ Kanjidic::Kanjidic(char *kanjidicRawData) {
 	}
 }
 
-Kanjidic::~Kanjidic() {
+KDict::~KDict() {
 	/* Currently: nothing here. */
 }
 
@@ -94,7 +94,7 @@ Kanjidic::~Kanjidic() {
    in this call since strings are only used for more compressed internal
    storage.  This is followed by a slight reformatting of the string for
    better presentation. */
-wxString Kanjidic::GetKanjidicStr(wxChar c) const {
+wxString KDict::GetKanjidicStr(wxChar c) const {
 	BoostHM<wxChar,string>::iterator it = kanjiHash.find(c);
 	if(it==kanjiHash.end()) return _T("");
 	wxString s;
@@ -108,7 +108,7 @@ wxString Kanjidic::GetKanjidicStr(wxChar c) const {
  * - Changing あ.いう notation to あ(いう), a la JWPce/JFC.
  * - Changing -あい notation to 〜あい, also a la JWPce/JFC.
  */
-wxString Kanjidic::ConvertKanjidicEntry(const wxString& s) {
+wxString KDict::ConvertKanjidicEntry(const wxString& s) {
 	size_t index, lastIndex;
 	wxString temp = s;
 
@@ -144,13 +144,13 @@ wxString Kanjidic::ConvertKanjidicEntry(const wxString& s) {
 	return temp;
 }
 
-wxString Kanjidic::KanjidicToHtml(const wxString& kanjidicStr) {
+wxString KDict::KanjidicToHtml(const wxString& kanjidicStr) {
 	return KanjidicToHtml(kanjidicStr,
 						  jben->prefs->kanjidicOptions,
 						  jben->prefs->kanjidicDictionaries);
 }
 
-wxString Kanjidic::KanjidicToHtml(const wxString& kanjidicStr,
+wxString KDict::KanjidicToHtml(const wxString& kanjidicStr,
 										 long options, long dictionaries) {
 /*	return wxString(_T("<p>"))
 		.append(s[0])
@@ -600,7 +600,7 @@ wxString Kanjidic::KanjidicToHtml(const wxString& kanjidicStr,
 	return result;
 }
 
-int Kanjidic::GetIntField(wxChar kanji, const wxString& marker) const {
+int KDict::GetIntField(wxChar kanji, const wxString& marker) const {
 	wxString markerStr, kanjiEntry, temp;
 	size_t index=0;
 	long value=-1;
@@ -623,7 +623,7 @@ int Kanjidic::GetIntField(wxChar kanji, const wxString& marker) const {
 	return (int)value;
 }
 
-const BoostHM<wxChar,string>* const Kanjidic::GetHashTable() const {
+const BoostHM<wxChar,string>* const KDict::GetHashTable() const {
 	return &kanjiHash;
 }
 
@@ -633,19 +633,19 @@ enum {
 	KDR_English
 };
 
-wxString Kanjidic::GetOnyomiStr(wxChar c) const {
+wxString KDict::GetOnyomiStr(wxChar c) const {
 	return GetKanjidicReading(c, KDR_Onyomi);
 }
 
-wxString Kanjidic::GetKunyomiStr(wxChar c) const {
+wxString KDict::GetKunyomiStr(wxChar c) const {
 	return GetKanjidicReading(c, KDR_Kunyomi);
 }
 
-wxString Kanjidic::GetEnglishStr(wxChar c) const {
+wxString KDict::GetEnglishStr(wxChar c) const {
 	return GetKanjidicReading(c, KDR_English);
 }
 
-wxString Kanjidic::GetKanjidicReading(wxChar c, int readingType) const {
+wxString KDict::GetKanjidicReading(wxChar c, int readingType) const {
 	wxString result;
 	wxString kanjidicStr = GetKanjidicStr(c);
 

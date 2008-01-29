@@ -2,39 +2,37 @@
 #include "preferences.h"
 
 Dictionaries::Dictionaries() {
-	wxString edictFile, kanjidicFile, kradFile, radkFile;
-	
-	edict    = NULL;
-	kanjidic = NULL;
+	wdict = NULL;
+	kdict = NULL;
 	kradfile = NULL;
 	radkfile = NULL;
 
 	/* Load file names from preferences object - TO DO */
 	/* For now, just do a hard-coded load */
 
-	LoadEdict("edict2");
-	LoadKanjidic("kanjidic");
+	LoadWDict("edict2");
+	LoadKDict("kanjidic");
 	LoadKRadFile("kradfile");
 	LoadRadKFile("radkfile");
 }
 
 Dictionaries::~Dictionaries() {
-	if(edict)    delete edict;
-	if(kanjidic) delete kanjidic;
+	if(wdict) delete wdict;
+	if(kdict) delete kdict;
 	if(kradfile) delete kradfile;
 	if(radkfile) delete radkfile;
 }
 
-bool Dictionaries::LoadEdict(const char* filename) {
+bool Dictionaries::LoadWDict(const char* filename) {
 	int result;
-	edict = Edict::LoadEdict(filename, result);
+	wdict = WDict::LoadWDict(filename, result);
 	if(result == ED_SUCCESS) return true;
 	return false;
 }
 
-bool Dictionaries::LoadKanjidic(const char* filename) {
+bool Dictionaries::LoadKDict(const char* filename) {
 	int result;
-	kanjidic = Kanjidic::LoadKanjidic(filename, result);
+	kdict = KDict::LoadKDict(filename, result);
 	if(result == KD_SUCCESS) return true;
 	return false;
 }
@@ -53,7 +51,7 @@ bool Dictionaries::LoadRadKFile(const char* filename) {
 	return false;
 }
 
-const Edict*    Dictionaries::GetEdict()    {return edict;}
-const Kanjidic* Dictionaries::GetKanjidic() {return kanjidic;}
+const WDict* Dictionaries::GetWDict() {return wdict;}
+const KDict* Dictionaries::GetKDict() {return kdict;}
 const KRadFile* Dictionaries::GetKRadFile() {return kradfile;}
 const RadKFile* Dictionaries::GetRadKFile() {return radkfile;}

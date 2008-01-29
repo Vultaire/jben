@@ -33,7 +33,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 	#include "wx/wx.h"
 #endif
 
-/*#include "kanjidic.h"*/
 #include <vector>
 using namespace std;
 

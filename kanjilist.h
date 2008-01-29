@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef WX_PRECOMP
 	#include "wx/wx.h"
 #endif
-#include "kanjidic.h"
+#include "kdict.h"
 #include "boosthm.h"
 #include <vector>
 using namespace std;
@@ -42,7 +42,7 @@ using namespace std;
 
 class KanjiList {
 public:
-	KanjiList(const BoostHM<wxChar,string>* const kanjiDicHash);
+	KanjiList(const BoostHM<wxChar,string>* const kDictHash);
 	int AddFromString(const wxString& s);
 	int AddByGrade(int lowGrade, int highGrade);
 	int AddByFrequency(int lowFreq, int highFreq);

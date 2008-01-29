@@ -356,11 +356,11 @@ void PanelKanjiDrill::ShowNextKanji() {
 	txtKunyomi->Cover();
 	txtEnglish->Cover();
 	txtKanji->SetHiddenStr(wxString(currentKanji));
-	txtOnyomi->SetHiddenStr(jben->dicts->GetKanjidic()
+	txtOnyomi->SetHiddenStr(jben->dicts->GetKDict()
 							->GetOnyomiStr(currentKanji));
-	txtKunyomi->SetHiddenStr(jben->dicts->GetKanjidic()
+	txtKunyomi->SetHiddenStr(jben->dicts->GetKDict()
 							 ->GetKunyomiStr(currentKanji));
-	txtEnglish->SetHiddenStr(jben->dicts->GetKanjidic()
+	txtEnglish->SetHiddenStr(jben->dicts->GetKDict()
 							 ->GetEnglishStr(currentKanji));
 
 	/* Update the test status label */

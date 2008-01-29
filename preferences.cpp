@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "preferences.h"
 #include "file_utils.h"
 #include "wx/tokenzr.h"
-#include "kanjidic.h"
 #include "wx/ffile.h"
 #include "global.h"
 

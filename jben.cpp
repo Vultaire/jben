@@ -50,13 +50,13 @@ bool JBen::OnInit() {
 
 	dicts = new Dictionaries();
 
-	if(dicts->GetEdict()) {
+	if(dicts->GetWDict()) {
 		vocabList = new VocabList();
 		vocabList->AddList(prefs->vocabList);
 	}
 	else vocabList = NULL;
-	if(dicts->GetKanjidic()) {
-		kanjiList = new KanjiList(dicts->GetKanjidic()->GetHashTable());
+	if(dicts->GetKDict()) {
+		kanjiList = new KanjiList(dicts->GetKDict()->GetHashTable());
 		kanjiList->AddFromString(prefs->kanjiList);
 	}
 	else kanjiList = NULL;

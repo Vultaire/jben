@@ -5,7 +5,7 @@ Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: edict.cpp
+File: wdict.cpp
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "edict.h"
+#include "wdict.h"
 #include "file_utils.h"
 #include "wx/tokenzr.h"
 #include "jutils.h"
@@ -43,8 +43,8 @@ using namespace std;
    Thus, let's make our panic breakoff point at 2000 characters. */
 #define SEARCH_MAX 2000
 
-Edict *Edict::LoadEdict(const char *filename, int& returnCode) {
-	Edict *e=NULL;
+WDict *WDict::LoadWDict(const char *filename, int& returnCode) {
+	WDict *e=NULL;
 	char *rawData = NULL;
 	unsigned int size;
 
@@ -64,7 +64,7 @@ Edict *Edict::LoadEdict(const char *filename, int& returnCode) {
 #endif
 
 		/* Create the kanjidic object with our string data. */
-		e = new Edict(rawData);
+		e = new WDict(rawData);
 
 		returnCode = ED_SUCCESS;
 	}
@@ -75,13 +75,13 @@ Edict *Edict::LoadEdict(const char *filename, int& returnCode) {
 	return e;
 }
 
-/* Default constructor for Edict.  Takes a wxString containing the contents of
+/* Default constructor for WDict.  Takes a wxString containing the contents of
    an EDICT- or EDICT2-formatted dictionary, and adds its contents to an
    internal data struct.  This function also indexes the data, although ideally
    the indexing functionality should be externalized so it may be called later,
-   like if another dictionary is added into the same Edict object at a later
+   like if another dictionary is added into the same WDict object at a later
    point. */
-Edict::Edict(char *edictRawData) {
+WDict::WDict(char *edictRawData) {
 	char *token;
 	wxString wxToken;
 
@@ -104,14 +104,14 @@ Edict::Edict(char *edictRawData) {
 	} /* while has more tokens */
 }
 
-Edict::~Edict() {
+WDict::~WDict() {
 	/* Currently, nothing needs to be done here. */
 }
 
 /* This function walks through the string, watching the parentheses, and copying
    only the portions which are outside parentheses.  Nested parentheses are
    handled. */
-wxString Edict::StripParenFields(const wxString& src) {
+wxString WDict::StripParenFields(const wxString& src) {
 	wxString result;
 	int parenCount = 0;
 	size_t length, index, lastIndex, startValid;
@@ -152,7 +152,7 @@ wxString Edict::StripParenFields(const wxString& src) {
 	return result;
 }
 
-bool Edict::Search(const wxString& query, list<int>& results,
+bool WDict::Search(const wxString& query, list<int>& results,
 				   unsigned int searchType) const {
 	list<int> priorityResults[4];
 	bool englishSearch;
@@ -164,7 +164,7 @@ bool Edict::Search(const wxString& query, list<int>& results,
 
 	if(query.length()==0) {
 #ifdef DEBUG
-		printf("[%s:%d] Empty string passed into Edict::Search.  (Not a problem!)\n", __FILE__, __LINE__);
+		printf("[%s:%d] Empty string passed into WDict::Search.  (Not a problem!)\n", __FILE__, __LINE__);
 #endif
 		return false;
 	}
@@ -407,7 +407,7 @@ bool Edict::Search(const wxString& query, list<int>& results,
 	return false;
 }
 
-wxString Edict::ResultToHTML(const wxString& rawResult) {
+wxString WDict::ResultToHTML(const wxString& rawResult) {
 	wxString token, subToken, jStr, eStr, htmlStr;
 	wxStringTokenizer tk(rawResult, _T("\n"));
 	size_t indexSlash, indexNextSlash, indexBreak;
@@ -458,7 +458,7 @@ wxString Edict::ResultToHTML(const wxString& rawResult) {
 	return htmlStr;
 }
 
-void Edict::GetEnglish(const string& edictStr, vector<string>& dest) {
+void WDict::GetEnglish(const string& edictStr, vector<string>& dest) {
 	char *tokenizedString = new char[edictStr.length()+1];
 	char *token;
 
@@ -477,7 +477,7 @@ void Edict::GetEnglish(const string& edictStr, vector<string>& dest) {
 	delete[] tokenizedString;
 }
 
-void Edict::GetJapanese(const string& edictStr, vector<string>& dest) {
+void WDict::GetJapanese(const string& edictStr, vector<string>& dest) {
 	/* Grab the portion of the string relevant for Japanese readings */
 	size_t indexFinal = edictStr.find_first_of('/');
 	if(indexFinal==string::npos) indexFinal = edictStr.length();
@@ -537,4 +537,4 @@ void Edict::GetJapanese(const string& edictStr, vector<string>& dest) {
 	}
 }
 
-string Edict::GetEdictString(int i) const { return edictData[i]; }
+string WDict::GetEdictString(int i) const { return edictData[i]; }

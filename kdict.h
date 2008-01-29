@@ -5,7 +5,7 @@ Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: kanjidic.h
+File: kdict.h
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef kanjidic_h
-#define kanjidic_h
+#ifndef kdict_h
+#define kdict_h
 
 /* Stock wxWidgets includes */
 #include "wx/wxprec.h"
@@ -112,10 +112,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
    This is a lot of output, so it's probably for debug purposes only. */
 #define KDD_ALL    0xFFFFFFFF
 
-class Kanjidic {
+class KDict {
 public:
-	static Kanjidic *LoadKanjidic(const char *filename, int& returnCode);
-	~Kanjidic();
+	static KDict *LoadKDict(const char *filename, int& returnCode);
+	~KDict();
 
 	wxString GetKanjidicStr(wxChar c) const;
 	static wxString KanjidicToHtml(const wxString& kanjidicStr);
@@ -126,7 +126,7 @@ public:
 	wxString GetKunyomiStr(wxChar c) const;
 	wxString GetEnglishStr(wxChar c) const;
 private:
-	Kanjidic(char *kanjidicRawData);
+	KDict(char *kanjidicRawData);
 	static wxString ConvertKanjidicEntry(const wxString& s);
 	wxString GetKanjidicReading(wxChar c, int readingType) const;
 
