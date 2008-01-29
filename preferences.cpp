@@ -64,8 +64,7 @@ Preferences::Preferences(const wxChar *filename) {
 					} else if(subToken==_T("kanjilist")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
-						jben->kanjiList->AddFromString(subToken);
-
+						kanjiList = subToken;
 					} else if(subToken==_T("vocablist")) {
 						subToken = token.substr(index+1);
 						subToken = subToken.Trim(false).Trim(true);
@@ -73,7 +72,9 @@ Preferences::Preferences(const wxChar *filename) {
 						while(tSub.HasMoreTokens()) {
 							subToken = tSub.GetNextToken();
 							if(subToken.length()>0) {
-								jben->vocabList->Add(subToken);
+								if(vocabList.length()>0)
+									vocabList.append(_T('\n'));
+								vocabList.append(subToken);
 							}
 						}
 

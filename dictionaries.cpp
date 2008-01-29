@@ -40,13 +40,15 @@ bool Dictionaries::LoadKanjidic(const char* filename) {
 }
 
 bool Dictionaries::LoadKRadFile(const char* filename) {
-	kradfile = KRadFile::LoadKRadFile(filename, result);
+	int result = 0xDEADBEEF;
+	kradfile = KRadFile::LoadKRad(filename, result);
 	if(result == KRAD_SUCCESS) return true;
 	return false;
 }
 
 bool Dictionaries::LoadRadKFile(const char* filename) {
-	radkfile = RadKFile::LoadRadKFile(filename, result);
+	int result = 0xDEADBEEF;
+	radkfile = RadKFile::LoadRadK(filename, result);
 	if(result == RADK_SUCCESS) return true;
 	return false;
 }
