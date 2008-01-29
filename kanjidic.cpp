@@ -94,7 +94,7 @@ Kanjidic::~Kanjidic() {
    in this call since strings are only used for more compressed internal
    storage.  This is followed by a slight reformatting of the string for
    better presentation. */
-wxString Kanjidic::GetKanjidicStr(wxChar c) {
+wxString Kanjidic::GetKanjidicStr(wxChar c) const {
 	BoostHM<wxChar,string>::iterator it = kanjiHash.find(c);
 	if(it==kanjiHash.end()) return _T("");
 	wxString s;
@@ -144,11 +144,14 @@ wxString Kanjidic::ConvertKanjidicEntry(const wxString& s) {
 	return temp;
 }
 
-wxString Kanjidic::KanjidicToHtml(const wxString& kanjidicStr) const {
-	return KanjidicToHtml(kanjidicStr, jben->prefs->kanjidicOptions, jben->prefs->kanjidicDictionaries);
+wxString Kanjidic::KanjidicToHtml(const wxString& kanjidicStr) {
+	return KanjidicToHtml(kanjidicStr,
+						  jben->prefs->kanjidicOptions,
+						  jben->prefs->kanjidicDictionaries);
 }
 
-wxString Kanjidic::KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries) const {
+wxString Kanjidic::KanjidicToHtml(const wxString& kanjidicStr,
+										 long options, long dictionaries) {
 /*	return wxString(_T("<p>"))
 		.append(s[0])
 		.append(_T("</p>"));*/
@@ -642,7 +645,7 @@ wxString Kanjidic::GetEnglishStr(wxChar c) const {
 	return GetKanjidicReading(c, KDR_English);
 }
 
-wxString Kanjidic::GetKanjidicReading(wxChar c, int readingType) {
+wxString Kanjidic::GetKanjidicReading(wxChar c, int readingType) const {
 	wxString result;
 	wxString kanjidicStr = GetKanjidicStr(c);
 

@@ -153,14 +153,14 @@ wxString Edict::StripParenFields(const wxString& src) {
 }
 
 bool Edict::Search(const wxString& query, list<int>& results,
-				   unsigned int searchType) {
+				   unsigned int searchType) const {
 	list<int> priorityResults[4];
 	bool englishSearch;
 	bool isFurigana;  /* Not sure this is necessary - currently set but not
 						 used.  May be a performance accelerator at cost of
 						 code complexity. */
 	int priorityExact, priorityBeginsWith, priorityEndsWith, priorityOther;
-	vector<string>::iterator vIt;
+	vector<string>::const_iterator vIt;
 
 	if(query.length()==0) {
 #ifdef DEBUG
@@ -207,8 +207,13 @@ bool Edict::Search(const wxString& query, list<int>& results,
 	}
 
 	/* Main search code begins below */
+	/* NOTE: I think this can be cleaned up.  I don't think the vector for
+	   entryData below is needed; a simple string should suffice and a loop can
+	   be removed.  I'll look at this later since I'm busy with something else
+	   at the moment. */
 
-	vector<string> entryData;
+	vector<string> entryData; /* Stores the English/Japanese components of
+								 an EDICT string. */
 	string utfQuery, lwrQuery, lwrData;
 	vector<string>::iterator vSubIt;
 	size_t indexSubstr, indexDataStart, indexDataEnd;
@@ -532,4 +537,4 @@ void Edict::GetJapanese(const string& edictStr, vector<string>& dest) {
 	}
 }
 
-string Edict::GetEdictString(int i) { return edictData[i]; }
+string Edict::GetEdictString(int i) const { return edictData[i]; }

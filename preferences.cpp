@@ -79,22 +79,22 @@ Preferences::Preferences(const wxChar *filename) {
 
 					} else if(subToken==_T("edict")) {
 						subToken = token.substr(index+1);
-						stringOpts["edict"]
+						stringOpts[wxString(_T("edict"))]
 							= subToken.Trim(false).Trim(true);
 
 					} else if(subToken==_T("kanjidic")) {
 						subToken = token.substr(index+1);
-						stringOpts["kanjidic"]
+						stringOpts[wxString(_T("kanjidic"))]
 							= subToken.Trim(false).Trim(true);
 
 					} else if(subToken==_T("kradfile")) {
 						subToken = token.substr(index+1);
-						stringOpts["kradfile"]
+						stringOpts[wxString(_T("kradfile"))]
 							= subToken.Trim(false).Trim(true);
 
 					} else if(subToken==_T("radkfile")) {
 						subToken = token.substr(index+1);
-						stringOpts["radkfile"]
+						stringOpts[wxString(_T("radkfile"))]
 							= subToken.Trim(false).Trim(true);
 
 					} else {

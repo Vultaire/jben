@@ -52,16 +52,18 @@ class Edict {
 public:
 	~Edict();
 	static Edict *LoadEdict(const char *filename, int& returnCode);
-	bool Search(const wxString& query, list<int>& results, unsigned int searchType
-		= EDS_EXACT | (EDS_BEGIN << 8) | (EDS_END << 16) | (EDS_ANY << 24));
-	wxString ResultToHTML(const wxString& rawResult);
-	string GetEdictString(int i);
+	bool Search(const wxString& query,
+				list<int>& results,
+				unsigned int searchType =
+				EDS_EXACT | (EDS_BEGIN << 8) |
+				(EDS_END << 16) | (EDS_ANY << 24)) const;
+	static wxString ResultToHTML(const wxString& rawResult);
+	string GetEdictString(int i) const;
 private:
 	Edict(char *edictRawData);
 	static wxString StripParenFields(const wxString& src);
-	void GetEnglish(const string& edictStr, vector<string>& dest);
-	void GetJapanese(const string& edictStr, vector<string>& dest);
-	/*bool GetJapaneseReading(wxString& edictStr, vector<wxString>& dest);*/
+	static void GetEnglish(const string& edictStr, vector<string>& dest);
+	static void GetJapanese(const string& edictStr, vector<string>& dest);
 
 	vector<string> edictData;
 

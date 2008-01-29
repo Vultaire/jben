@@ -118,8 +118,8 @@ public:
 	~Kanjidic();
 
 	wxString GetKanjidicStr(wxChar c) const;
-	static wxString KanjidicToHtml(const wxString& kanjidicStr) const;
-	static wxString KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries) const;
+	static wxString KanjidicToHtml(const wxString& kanjidicStr);
+	static wxString KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries);
 	int GetIntField(wxChar kanji, const wxString& marker) const;
 	const BoostHM<wxChar, string>* const GetHashTable() const;
 	wxString GetOnyomiStr(wxChar c) const;
@@ -128,7 +128,7 @@ public:
 private:
 	Kanjidic(char *kanjidicRawData);
 	static wxString ConvertKanjidicEntry(const wxString& s);
-	wxString GetKanjidicReading(wxChar c, int readingType);
+	wxString GetKanjidicReading(wxChar c, int readingType) const;
 
 	BoostHM<wxChar, string> kanjiHash;
 };

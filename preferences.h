@@ -33,7 +33,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 	#include "wx/wx.h"
 #endif
 
-#include "boosthm.h"
+#include <map>
+using namespace std;
 
 class Preferences {
 public:
@@ -53,8 +54,8 @@ public:
 	wxString kanjiList;
 	wxString vocabList;
 
-	/* Use a hash table for storing all other options we may add. */
-	BoostHM<wxString, wxString> stringOpts;
+	/* Use a map for storing all other options we may add. */
+	map<wxString, wxString> stringOpts;
 };
 
 extern Preferences* g_prefs;
