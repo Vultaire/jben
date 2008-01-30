@@ -128,21 +128,26 @@ public:
 	wxString GetEnglishStr(wxChar c) const;
 	const BoostHM<wxChar, string>* GetHashTable() const;
 
-	/* Other functions (none yet) */
+	/* Other functions */
+	bool MainDataLoaded() const;
 private:
+	/* Hidden constructor */
+	KDict();
+	
 	/* Dictionary file loaders */
 	int LoadKanjidic(const char *filename="kanjidic");
 	int LoadRadkfile(const char *filename="radkfile");
 	int LoadKradfile(const char *filename="kradfile");
 
-	/* Private kanjidic-specific stuff */
+	/* Kanjidic-specific stuff */
 	void KanjidicParser(char *kanjidicRawData);
 	static wxString ConvertKanjidicEntry(const wxString& s);
 	wxString GetKanjidicReading(wxChar c, int readingType) const;
 
+	/* Data */
+	static KDict *kdictSingleton;
 	BoostHM<wxChar, string> kanjidicData;
 	BoostHM<wxChar, string> radkData, kradData;
-	static KDict* kdictSingleton;
 };
 
 #endif

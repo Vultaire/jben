@@ -336,17 +336,9 @@ void MainGUI::OnHelpLicense(wxCommandEvent& event) {
 		"EDICT2 and KANJIDIC distributed under a separate license specified at\n"
 		"http://www.csse.monash.edu.au/~jwb/edrdg/license.htm\n\n"
 
-#ifdef USE_SKIP
-		"Regarding SKIP index data from KANJIDIC:\n"
-		"SKIP (System of Kanji Indexing by Patterns) numbers are derived from "
-		"the New Japanese-English Character Dictionary (Kenkyusha 1990, NTC 1993) "
-		"and The Kodansha Kanji Learner's Dictionary (Kodansha International, 1999).  "
-		"SKIP is protected by copyright, copyleft and patent laws.  The commercial "
-		"or non-commercial utilization of SKIP in any form is strictly forbidden "
-		"without the written permission of Jack Halpern, the copyright holder.  Such "
-		"permission is normally granted.  Please contact jack@kanji.org and/or see"
-		"http://www.kanji.org.\n\n"
-#endif
+		"The SKIP (System of Kanji Indexing by Patterns) system for ordering kanji "
+		"was developed by Jack Halpern (Kanji Dictionary Publishing Society at "
+		"http://www.kanji.org/), and is used with his permission.\n\n"
 
 		"Copies of the GNU General Public License, Monash University's license for "
 		"the dictionary files and documentation for the dictionary files are "

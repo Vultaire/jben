@@ -33,12 +33,15 @@ using namespace std;
 KDict* KDict::kdictSingleton = NULL;
 
 const KDict *KDict::GetKDict() {
-	if(kdictSingleton) return kdictSingleton;
-	kdictSingleton = new KDict;
-	kdictSingleton->LoadKanjidic();
-	kdictSingleton->LoadKradfile();
-	kdictSingleton->LoadRadkfile();
+	if(!kdictSingleton)
+		kdictSingleton = new KDict;
 	return kdictSingleton;
+}
+
+KDict::KDict() {
+	LoadKanjidic();
+	LoadKradfile();
+	LoadRadkfile();
 }
 
 void KDict::Destroy() {
@@ -381,14 +384,12 @@ wxString KDict::KanjidicToHtml(const wxString& kanjidicStr,
 				break;
 			case _T('P'):
 				/* SKIP codes. */
-				/* This is a thorny issue.  If we want to include a stock KANJIDIC, then we */
-				/* need to add encryption to the file and prevent copy/pasting of that data. */
-				/* I'll comply later on, but for now I'll use a stripped KANJIDIC. */
-#ifdef USE_SKIP
+				/* Thanks to changes in permissible SKIP code usage (change to
+				   Creative Commons licensing in January 2008), we can now use
+				   this without problems. */
 				if((dictionaries & KDD_SKIP)!=0)
 					dictionaryInfo.append(_T("<li>SKIP code: "))
 						.append(sTemp.substr(1)).append(_T("</li>"));
-#endif
 				break;
 			case _T('I'):  /* Spahn/Hadamitzky dictionaries */
 				if(sTemp[1]==_T('N')) {
@@ -723,4 +724,9 @@ wxString KDict::GetKanjidicReading(wxChar c, int readingType) const {
 	}
 
 	return result;
+}
+
+bool KDict::MainDataLoaded() const {
+	if(kanjidicData.size()>0) return true;
+	return false;
 }

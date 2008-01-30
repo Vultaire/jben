@@ -28,12 +28,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 extern JBen *jben;
 
-/* SKIP support should not be compiled in at this point until we can ensure that
-   SKIP data can not be copied to the clipboard.
-   I think this may already be the case, but I'd prefer to be careful in respect
-   of the copyright holder's wishes. */
-#if 0
-#define USE_SKIP
-#endif
-
 #endif

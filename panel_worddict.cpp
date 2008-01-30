@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "panel_worddict.h"
 #include "global.h"
 #include "jutils.h"
+#include "wdict.h"
 
 enum {
 	ID_textSearch=1,
@@ -128,26 +129,27 @@ void PanelWordDict::Redraw() {
 
 void PanelWordDict::UpdateHtmlOutput() {
 	list<int> resultList;
+	const WDict *wd = WDict::GetWDict();
 
 	wxString html = _T("<html><body><font face=\"Serif\">");
 	if(currentSearchString.length()==0) {
 		html.append(_T("No search has been entered."));
 	} else {
 		/* Get search results string */
-		if(jben->dicts->GetWDict()->Search(currentSearchString, resultList)) {
+		if(wd->Search(currentSearchString, resultList)) {
 			/* Create merged wx-compatible results string */
 			wxString resultString, temp;
 			for(list<int>::iterator li = resultList.begin();
 			  li!=resultList.end();
 			  li++) {
 				if(resultString.length()!=0) resultString.append(_T('\n'));
-				UTF8ToWx(jben->dicts->GetWDict()->GetEdictString(*li), temp);
+				UTF8ToWx(wd->GetEdictString(*li), temp);
 				resultString.append(temp);
 			}
 			/* Convert search results to destination format
 			For now: HTML
 			Later: wxWidgets Rich Text */
-			resultString = jben->dicts->GetWDict()->ResultToHTML(resultString);
+			resultString = wd->ResultToHTML(resultString);
 			html.append(resultString);
 		} else {
 			html.append(_T("No results were found."));

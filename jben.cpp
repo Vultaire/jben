@@ -23,8 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "global.h"
 #include "jben.h"
+#include "wdict.h"
+#include "kdict.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 JBen *jben;
 
@@ -48,15 +50,16 @@ bool JBen::OnInit() {
 	/* Dictionary loading, etc., depends on our config file. */
 	g_prefs = prefs = new Preferences(_T("jben.cfg"));
 
-	dicts = new Dictionaries();
+	const KDict* kd = KDict::GetKDict();
+	const WDict* wd = WDict::GetWDict();
 
-	if(dicts->GetWDict()) {
+	if(wd->MainDataLoaded()) {
 		vocabList = new VocabList();
 		vocabList->AddList(prefs->vocabList);
 	}
 	else vocabList = NULL;
-	if(dicts->GetKDict()) {
-		kanjiList = new KanjiList(dicts->GetKDict()->GetHashTable());
+	if(kd->MainDataLoaded()) {
+		kanjiList = new KanjiList(kd->GetHashTable());
 		kanjiList->AddFromString(prefs->kanjiList);
 	}
 	else kanjiList = NULL;
@@ -73,8 +76,8 @@ int JBen::OnExit() {
 	printf("JBen::OnExit being processed...\n");
 #endif
 	KDict::Destroy();
+	WDict::Destroy();
 	if(prefs) delete prefs;
-	if(dicts) delete dicts;
 	if(kanjiList) delete kanjiList;
 	if(vocabList) delete vocabList;
 #ifdef DEBUG

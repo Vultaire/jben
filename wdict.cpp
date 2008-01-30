@@ -43,10 +43,30 @@ using namespace std;
    Thus, let's make our panic breakoff point at 2000 characters. */
 #define SEARCH_MAX 2000
 
-WDict *WDict::LoadWDict(const char *filename, int& returnCode) {
+WDict* WDict::wdictSingleton = NULL;
+
+const WDict *WDict::GetWDict() {
+	if(!wdictSingleton)
+		wdictSingleton = new WDict;
+	return wdictSingleton;
+}
+
+WDict::WDict() {
+	LoadEdict2();
+}
+
+void WDict::Destroy() {
+	if(wdictSingleton) {
+		delete wdictSingleton;
+		wdictSingleton = NULL;
+	}
+}
+
+int WDict::LoadEdict2(const char *filename) {
 	WDict *e=NULL;
 	char *rawData = NULL;
 	unsigned int size;
+	int returnCode = 0xDEADBEEF;
 
 	ifstream ifile(filename, ios::ate); /* "at end" to get our file size */
 	if(ifile) {
@@ -64,7 +84,7 @@ WDict *WDict::LoadWDict(const char *filename, int& returnCode) {
 #endif
 
 		/* Create the kanjidic object with our string data. */
-		e = new WDict(rawData);
+		this->Edict2Parser(rawData);
 
 		returnCode = ED_SUCCESS;
 	}
@@ -72,16 +92,16 @@ WDict *WDict::LoadWDict(const char *filename, int& returnCode) {
 		returnCode = ED_FAILURE;
 
 	if(rawData) delete[] rawData;
-	return e;
+	return returnCode;
 }
 
-/* Default constructor for WDict.  Takes a wxString containing the contents of
+/* EDICT2 parser for WDict.  Takes a wxString containing the contents of
    an EDICT- or EDICT2-formatted dictionary, and adds its contents to an
    internal data struct.  This function also indexes the data, although ideally
    the indexing functionality should be externalized so it may be called later,
    like if another dictionary is added into the same WDict object at a later
    point. */
-WDict::WDict(char *edictRawData) {
+void WDict::Edict2Parser(char *edictRawData) {
 	char *token;
 	wxString wxToken;
 
@@ -106,50 +126,6 @@ WDict::WDict(char *edictRawData) {
 
 WDict::~WDict() {
 	/* Currently, nothing needs to be done here. */
-}
-
-/* This function walks through the string, watching the parentheses, and copying
-   only the portions which are outside parentheses.  Nested parentheses are
-   handled. */
-wxString WDict::StripParenFields(const wxString& src) {
-	wxString result;
-	int parenCount = 0;
-	size_t length, index, lastIndex, startValid;
-
-	startValid = 0;
-	length = src.length();
-	index = src.find_first_of(_T("()"));
-	while(index != wxString::npos) {
-		if(src[index]==_T('(')) {
-			parenCount++;
-			if(parenCount==1) {
-				/* Append the valid string up until parens were entered. */
-				result.append(src.substr(startValid, index - startValid));
-			}
-		} else {
-			parenCount--;
-			if(parenCount==0) {
-				/* Parens have been exited.  Reset our valid index. */
-				startValid = index+1;
-			}
-			if(parenCount<0) parenCount=0; /* We'll skip extra )'s */
-		}
-		lastIndex = index;
-		index = src.find_first_of(_T("()"), lastIndex+1);
-	}
-	if(parenCount>0) {
-#ifdef DEBUG
-		fprintf(stderr, "WARNING: %s:%d, StripParenFields: Unclosed '(' detected.\n\tString: %ls\n",
-			__FILE__, __LINE__, src.c_str());
-#endif
-	} else {
-		/* Append any remainder of the original string */
-		if(startValid!=wxString::npos && startValid < length) {
-			result.append(src.substr(startValid));
-		}
-	}
-
-	return result;
 }
 
 bool WDict::Search(const wxString& query, list<int>& results,
@@ -538,3 +514,8 @@ void WDict::GetJapanese(const string& edictStr, vector<string>& dest) {
 }
 
 string WDict::GetEdictString(int i) const { return edictData[i]; }
+
+bool WDict::MainDataLoaded() const {
+	if(edictData.size()>0) return true;
+	return false;
+}

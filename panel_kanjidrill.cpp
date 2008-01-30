@@ -24,7 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "panel_kanjidrill.h"
 #include "global.h"
 #include "maingui.h"
-#include <stdlib.h>
+#include "kdict.h"
+#include <cstdlib>
 #include <algorithm>
 using namespace std;
 
@@ -324,6 +325,7 @@ void PanelKanjiDrill::OnRdoStartIndex(wxCommandEvent& ev) {
 }
 
 void PanelKanjiDrill::ShowNextKanji() {
+	const KDict* kd = KDict::GetKDict();
 	/* Remove the current kanji, and get the new one */
 	if(!extraPractice) {
 		if(currentKanjiIndex!=-1)
@@ -356,12 +358,9 @@ void PanelKanjiDrill::ShowNextKanji() {
 	txtKunyomi->Cover();
 	txtEnglish->Cover();
 	txtKanji->SetHiddenStr(wxString(currentKanji));
-	txtOnyomi->SetHiddenStr(jben->dicts->GetKDict()
-							->GetOnyomiStr(currentKanji));
-	txtKunyomi->SetHiddenStr(jben->dicts->GetKDict()
-							 ->GetKunyomiStr(currentKanji));
-	txtEnglish->SetHiddenStr(jben->dicts->GetKDict()
-							 ->GetEnglishStr(currentKanji));
+	txtOnyomi->SetHiddenStr(kd->GetOnyomiStr(currentKanji));
+	txtKunyomi->SetHiddenStr(kd->GetKunyomiStr(currentKanji));
+	txtEnglish->SetHiddenStr(kd->GetEnglishStr(currentKanji));
 
 	/* Update the test status label */
 	double score=0.0;

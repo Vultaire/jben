@@ -50,23 +50,42 @@ using namespace std;
 
 class WDict {
 public:
+	static const WDict *GetWDict();
+	static void Destroy();
 	~WDict();
-	static WDict *LoadWDict(const char *filename, int& returnCode);
+
+	/* General public EDICT functions
+	   NOTE: Investigate why this was set as public.  Public functions should
+	   not be tied to a specific dictionary file type. */
+	string GetEdictString(int i) const;
+
+	/* Dictionary search functions */
 	bool Search(const wxString& query,
 				list<int>& results,
 				unsigned int searchType =
 				EDS_EXACT | (EDS_BEGIN << 8) |
 				(EDS_END << 16) | (EDS_ANY << 24)) const;
 	static wxString ResultToHTML(const wxString& rawResult);
-	string GetEdictString(int i) const;
+
+	/* Other functions */
+	bool MainDataLoaded() const;
 private:
-	WDict(char *edictRawData);
-	static wxString StripParenFields(const wxString& src);
+	/* Hidden constructor */
+	WDict();
+
+	/* Dictionary file loaders */
+	int LoadEdict2(const char *filename="edict2");
+
+	/* EDICT2-specific stuff */
+	void Edict2Parser(char *edict2RawData);
+
+	/* General EDICT-compatible functions */
 	static void GetEnglish(const string& edictStr, vector<string>& dest);
 	static void GetJapanese(const string& edictStr, vector<string>& dest);
 
+	/* Data */
+	static WDict *wdictSingleton;
 	vector<string> edictData;
-
 };
 
 #endif

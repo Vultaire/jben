@@ -35,7 +35,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "maingui.h"
 #include "preferences.h"
-#include "dictionaries.h"
 #include "kanjilist.h"
 #include "vocablist.h"
 
@@ -44,7 +43,6 @@ public:
 	/* Public objects */
 	MainGUI *gui;
 	Preferences *prefs;
-	Dictionaries *dicts;
 	KanjiList *kanjiList;
 	VocabList *vocabList;
 private:

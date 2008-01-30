@@ -23,7 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "panel_kanjidict.h"
 #include "global.h"
-#include <stdlib.h>
+#include "kdict.h"
+#include <cstdlib>
 
 enum {
 	ID_textSearch=1,
@@ -132,6 +133,7 @@ void PanelKanjiDict::Redraw() {
 }
 
 void PanelKanjiDict::UpdateHtmlOutput() {
+	const KDict* kd = KDict::GetKDict();
 	wxString html = _T("<html><body><font face=\"Serif\">");
 	wxString htmlContent, kanjiEntry;
 
@@ -139,7 +141,7 @@ void PanelKanjiDict::UpdateHtmlOutput() {
 	int len = currentSearchString.length();
 	for(int i=0;i<len;i++) {
 		c = currentSearchString[i];
-		kanjiEntry = jben->dicts->GetKDict()->GetKanjidicStr(c);
+		kanjiEntry = kd->GetKanjidicStr(c);
 		if(kanjiEntry.length()>0) {
 			htmlContent.append(KDict::KanjidicToHtml(kanjiEntry));
 		}
