@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "kanjilist.h"
-#include "global.h"
 #include "kdict.h"
 #include <algorithm>
 using namespace std;

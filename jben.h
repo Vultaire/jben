@@ -50,4 +50,6 @@ private:
 	virtual int OnExit();
 };
 
+extern JBen *jben;
+
 #endif

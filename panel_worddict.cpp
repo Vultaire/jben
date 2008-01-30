@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "panel_worddict.h"
-#include "global.h"
+#include "jben.h"
 #include "jutils.h"
 #include "wdict.h"
 

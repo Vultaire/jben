@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "panel_config.h"
+#include "jben.h"
 #include "kdict.h"
-#include "global.h"
 
 enum {
 	ID_chkReadings=1,

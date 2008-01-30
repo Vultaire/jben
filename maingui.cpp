@@ -21,9 +21,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "global.h"
-#include "version.h"
 #include "maingui.h"
+#include "jben.h"
+#include "version.h"
 #include "wx/msgdlg.h"
 #include "file_utils.h"
 #include "wx/ffile.h"

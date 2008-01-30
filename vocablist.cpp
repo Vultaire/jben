@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "vocablist.h"
-#include "global.h"
+#include "jben.h"
 #include "wx/tokenzr.h"
 
 VocabList::VocabList() {
