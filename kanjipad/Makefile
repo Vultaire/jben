@@ -23,7 +23,7 @@ BINDIR = bin/$(PLATFORM)/$(BUILD)
 # Build object configuration
 ifeq ($(PLATFORM),windows)
 	kpengine = $(BINDIR)/kpengine.exe
-	mkdircmd = mkdir
+	mkdircmd  = C:/progra~1/gnuwin32/bin/mkdir -p
 	rmdircmd = rmdir /s
 else
 	kpengine = $(BINDIR)/kpengine

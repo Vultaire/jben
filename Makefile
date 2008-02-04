@@ -5,20 +5,26 @@
 PLATFORM = gtk20
 # BUILD: either release, debug, or profile
 BUILD = release
+# MAKE: change the make command, if needed
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
 # CHANGE THESE 4 VARIABLES
-	mingwbase = D:/MinGW
-	boostbase = D:/boost_1_34_1
-	wxbase = D:/wxMSW-2.8.7
+	MAKE = mingw32-make
+	mingwbase = C:/dev/MinGW
+	boostbase = C:/dev/boost_1_34_1
+	wxbase = C:/dev/wxMSW-2.8.7
 	wxbuildflags = -DWXUSINGDLL -DwxUSE_UNICODE
+	stlportbase = C:/dev/STLport-5.1.5
+	iconvbase = C:/dev/libiconv
+	mkdircmd  = C:/progra~1/gnuwin32/bin/mkdir -p
 # NOTE: wxWidgets is assumed to be built with wxUSINGDLL and wxUSE_UNICODE.
 # Also, I'm currently using a release build of wxWidgets regardless of
 # whether a debug or release build is chosen.  I may change this later.
 
 # The following variables probably should NOT be changed.
 	wxplatformflags = -D__GNUWIN32__ -D__WXMSW__
+	# STLPort specifies -pthreads - does -mthreads work fine for this???
 	wincxxflags = -pipe -mthreads
 	winlinkflags = -mwindows
 
@@ -28,10 +34,11 @@ ifeq ($(PLATFORM),windows)
 
 	wxliblink = $(wxbase)/lib/gcc_dll
 	SharedCXXFLAGS = $(wincxxflags)
-	SharedCPPFLAGS = $(wxbuildflags) $(wxplatformflags) \
-		-I$(wxinclude) -I$(wxcontribinc) -I$(wxlibinc) -I$(boostbase) -I$(mingwbase)/include
-	libs = -L$(wxliblink) -L$(mingwbase)/lib -lwxmsw28u_html -lwxmsw28u_core \
-		-lwxbase28u $(winlinkflags)
+	SharedCPPFLAGS = -I$(stlportbase)/stlport $(wxbuildflags) \
+		$(wxplatformflags) -I$(wxinclude) -I$(wxcontribinc) -I$(wxlibinc) \
+		-I$(boostbase) -I$(mingwbase)/include -I$(iconvbase)/include
+	libs = -L$(stlportbase)/lib -L$(wxliblink) -L$(mingwbase)/lib -L$(iconvbase)/lib \
+		-lwxmsw28u_html -lwxmsw28u_core -lwxbase28u $(winlinkflags) -liconv -lstlport.5.1.dll
 endif
 
 ##################################
@@ -46,9 +53,11 @@ DEPDIR = dep/$(PLATFORM)/$(BUILD)
 
 # Get flags/libs for GTK builds
 ifeq ($(PLATFORM),gtk20)
+	MAKE = make
 	SharedCXXFLAGS = `wx-config --cxxflags` `pkg-config --cflags gtk+-2.0`
 	SharedCPPFLAGS = `wx-config --cppflags`
 	libs = `wx-config --libs` `pkg-config --libs gtk+-2.0`
+	mkdircmd = mkdir -p
 endif
 
 # C++ options
@@ -91,13 +100,6 @@ endif
 
 endif
 
-# Define commands based on build environment
-ifeq ($(buildenv),windows)
-	mkdircmd = mkdir
-else
-	mkdircmd = mkdir -p
-endif
-
 ### Targets ###
 
 all: $(target) kpengine
@@ -114,7 +116,7 @@ $(OBJDIR)/jben.res:
 	windres.exe -i jben.rc -J rc -o $(OBJDIR)/jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
 
 kpengine:
-	cd kanjipad && make && cd ..
+	cd kanjipad && $(MAKE) && cd ..
 
 clean:
 	cd kanjipad && make clean && cd ..

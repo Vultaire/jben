@@ -21,7 +21,7 @@ basic_string<tdest> ConvertString
 		(inputBytesLeft) * (sizeof(wchar_t) / sizeof(tsrc));
 	char *buffer = new char[outputBytesLeft + sizeof(wchar_t)];
 	memset((void*)buffer, 0, outputBytesLeft + sizeof(wchar_t));
-	char *srcData = (char *)sourceData.c_str();
+	const char *srcData = (char *)sourceData.c_str();
 	char *destData = buffer;
 
 	/* libiconv stuff */

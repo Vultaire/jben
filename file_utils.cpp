@@ -62,8 +62,8 @@ string GetCWD() {
 	   this function is maybe overkill. */
 #ifdef __WXMSW__
 	wchar_t *buffer = new wchar_t[0x10000];
-	GetCurrentDirectory(0x10000, buffer);
-	s = ConvertString<char>((char *)buffer, wcType.c_str(), "UTF-8");
+	GetCurrentDirectoryW(0x10000, buffer);
+	s = ConvertString<wchar_t, char>(buffer, wcType.c_str(), "UTF-8");
 #else
 	char *buffer = new char[0x10000];
 	if(getcwd(buffer, 0x10000))
