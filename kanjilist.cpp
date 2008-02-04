@@ -26,24 +26,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <algorithm>
 using namespace std;
 
-KanjiList::KanjiList(const BoostHM<wxChar,string>* const kDictHash) {
+KanjiList::KanjiList(const BoostHM<wchar_t,string>* const kDictHash) {
 	kanjiHash = kDictHash;
 }
 
-#if 0
-vector<wxChar>::iterator KanjiList::Find(wxChar c) {
-	vector<wxChar>::iterator it;
-	for(it=kanjiList.begin();it!=kanjiList.end();it++) {
-		if(*it==c) break;
-	}
-	return it;
-}
-#endif
-
-int KanjiList::AddFromString(const wxString& s) {
+int KanjiList::AddFromString(const wstring& s) {
 	int kanjiAdded = 0, len = s.length();
-	wxChar c;
-	BoostHM<wxChar,string>::const_iterator it;
+	wchar_t c;
+	BoostHM<wchar_t,string>::const_iterator it;
 
 	for(int i=0;i<len;i++) {
 		c = s[i];
@@ -59,20 +49,18 @@ int KanjiList::AddFromString(const wxString& s) {
 	return kanjiAdded;
 }
 
-wxString KanjiList::ToString() {
-	return ToString(0);
-}
-
-wxString KanjiList::ToString(int lineWidth) {
-		wxString result;
+/* Convert the kanjilist into a wide char string,
+   with lineWidth kanji per line (0 == no line breaks). */
+wstring KanjiList::ToString(int lineWidth) {
+		wstring result;
 		int lineWidthCounter=0;
 		int len = kanjiList.size();
 		for(int i=0;i<len;i++) {
-			result.append(kanjiList[i]);
+			result.append(1, kanjiList[i]);
 			if(lineWidth>0) {
 				lineWidthCounter++;
 				if(lineWidthCounter>=lineWidth) {
-					result.append(_T('\n'));
+					result.append(1, L'\n');
 					lineWidthCounter=0;
 				}
 			}
@@ -85,29 +73,29 @@ void KanjiList::Clear() {
 }
 
 int KanjiList::AddByGrade(int lowGrade, int highGrade) {
-	wxString kanjiStr;
+	wstring kanjiStr;
 	int grade;
 	const KDict* kd = KDict::GetKDict();
 
-	for(BoostHM<wxChar,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
-		grade = kd->GetIntField(ki->first, _T("G"));
+	for(BoostHM<wchar_t,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
+		grade = kd->GetIntField(ki->first, L"G");
 		if(grade>=lowGrade &&
 		  (grade<=highGrade || highGrade==0))
-			kanjiStr.append(ki->first);
+			kanjiStr.append(1, ki->first);
 	}
 
 	return AddFromString(kanjiStr);
 }
 
 int KanjiList::AddByFrequency(int lowFreq, int highFreq) {
-	wxString kanjiStr;
+	wstring kanjiStr;
 	int freq;
 	const KDict* kd = KDict::GetKDict();
 
-	for(BoostHM<wxChar,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
-		freq = kd->GetIntField(ki->first, _T("F"));
+	for(BoostHM<wchar_t,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
+		freq = kd->GetIntField(ki->first, L"F");
 		if(freq>=lowFreq && freq<=highFreq)
-			kanjiStr.append(ki->first);
+			kanjiStr.append(1, ki->first);
 	}
 
 	return AddFromString(kanjiStr);
@@ -115,11 +103,11 @@ int KanjiList::AddByFrequency(int lowFreq, int highFreq) {
 
 int KanjiList::Size() {return kanjiList.size();}
 
-void KanjiList::InplaceMerge(vector<wxChar>& v, BoostHM<wxChar,int>& indexer, int start, int middle, int end) {
+void KanjiList::InplaceMerge(vector<wchar_t>& v, BoostHM<wchar_t,int>& indexer, int start, int middle, int end) {
 	/* Merge is implemented as a bubble sort started at halfway
 	   (since we know the first whole half is already sorted) */
 	int i, highIndex;
-	wxChar temp;
+	wchar_t temp;
 	i = highIndex = middle;
 	while(i<end) {
 		if(i>0 && (indexer[v[i]] < indexer[v[i-1]])) {
@@ -144,20 +132,20 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 	int totalSize = kanjiList.size();
 	if(totalSize<=1) return;  /* Size 0 or 1 list is already sorted */
 
-	myCharIndexer = new BoostHM<wxChar,int>;
+	myCharIndexer = new BoostHM<wchar_t,int>;
 	myCharIndexer->clear();
-	vector<wxChar>::iterator vi;
+	vector<wchar_t>::iterator vi;
 
-	wxString fieldMarker;
+	wstring fieldMarker;
 	switch(sortType) {
 	case ST_GRADE:
-		fieldMarker=_T("G");
+		fieldMarker=L"G";
 		break;
 	case ST_FREQUENCY:
-		fieldMarker=_T("F");
+		fieldMarker=L"F";
 		break;
 	default:
-		fieldMarker=_T("INVALID");
+		fieldMarker=L"INVALID";
 	}
 
 	/* Create index based on the sort type */
@@ -174,9 +162,7 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 	   http://en.wikipedia.org/wiki/Merge_sort#C.2B.2B_implementation
 	   These pages were referred to:
 	   http://www.cppreference.com/cppalgorithm/merge.html
-	   http://www.cppreference.com/cppalgorithm/inplace_merge.html
-
-	   The below is an original implementation designed to work with a wxHashMap and vector<wxChar>. */
+	   http://www.cppreference.com/cppalgorithm/inplace_merge.html */
 	int rangeSize, rangeStart;
 	for(rangeSize=1; rangeSize<totalSize; rangeSize *= 2) {
 		for(rangeStart=0; rangeStart<totalSize-rangeSize; rangeStart += rangeSize*2) {
@@ -190,40 +176,19 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 		}
 	}
 
-#if 0
-	/* DEBUG ONLY: Check that the sort works as intended! */
-	if(totalSize>0) {
-		int lastVal = (*myCharIndexer)[kanjiList[0]];
-		for(int i=1;i<totalSize;i++) {
-			value = (*myCharIndexer)[kanjiList[i]];
-			if(value<lastVal)
-				fprintf(stderr, "Error! Index %d has value of %d, while %d has value of %d!\n", i, value, i-1, lastVal);
-			else
-				printf("%d=%d\t", i, value);
-			lastVal = value;
-		}
-	}
-#endif
-
 	delete myCharIndexer;
 }
 
-#if 0
-wxChar KanjiList::GetCharByIndex(unsigned int index) {
-	return operator[](index);
-}
-#endif
-
-wxChar KanjiList::operator[](unsigned int index) {
+wchar_t KanjiList::operator[](unsigned int index) {
 	if(index<kanjiList.size()) return kanjiList[index];
-	return _T('\0');
+	return L'\0';
 }
 
-int KanjiList::GetIndexByChar(wxChar c) {
+int KanjiList::GetIndexByChar(wchar_t c) {
 	int i, len = kanjiList.size();
 	for(i=0;i<len;i++)
 		if(kanjiList[i]==c) return i;
 	return -1;
 }
 
-vector<wxChar>& KanjiList::GetVector() {return kanjiList;}
+vector<wchar_t>& KanjiList::GetVector() {return kanjiList;}

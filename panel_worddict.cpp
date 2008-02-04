@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "jben.h"
 #include "jutils.h"
 #include "wdict.h"
+#include "encoding_convert.h"
 
 enum {
 	ID_textSearch=1,
@@ -102,7 +103,7 @@ void PanelWordDict::OnSearch(wxCommandEvent& event) {
 
 void PanelWordDict::SetSearchString(const wxString& searchString) {
 	currentSearchString = searchString;
-	currentIndex = jben->vocabList->GetIndexByWord(searchString);
+	currentIndex = jben->vocabList->GetIndexByWord(searchString.c_str());
 }
 
 void PanelWordDict::Redraw() {
@@ -136,20 +137,22 @@ void PanelWordDict::UpdateHtmlOutput() {
 		html.append(_T("No search has been entered."));
 	} else {
 		/* Get search results string */
-		if(wd->Search(currentSearchString, resultList)) {
+		if(wd->Search(currentSearchString.c_str(), resultList)) {
 			/* Create merged wx-compatible results string */
 			wxString resultString, temp;
 			for(list<int>::iterator li = resultList.begin();
 			  li!=resultList.end();
 			  li++) {
 				if(resultString.length()!=0) resultString.append(_T('\n'));
-				UTF8ToWx(wd->GetEdictString(*li), temp);
+				/*UTF8ToWx(wd->GetEdictString(*li), temp);*/
+				temp = ConvertString<char, wchar_t>
+					(wd->GetEdictString(*li), "UTF-8", wcType.c_str());
 				resultString.append(temp);
 			}
 			/* Convert search results to destination format
 			For now: HTML
 			Later: wxWidgets Rich Text */
-			resultString = wd->ResultToHTML(resultString);
+			resultString = wd->ResultToHTML(resultString.c_str());
 			html.append(resultString);
 		} else {
 			html.append(_T("No results were found."));

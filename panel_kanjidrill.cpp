@@ -68,10 +68,6 @@ BEGIN_EVENT_TABLE(PanelKanjiDrill, wxPanel)
 	EVT_BUTTON(ID_btnStop, PanelKanjiDrill::OnStop)
 END_EVENT_TABLE()
 
-#if 0
-wxMenuBar *storedBar;
-#endif
-
 PanelKanjiDrill::PanelKanjiDrill(wxWindow *owner) : RedrawablePanel(owner) {
 	/* Create test config controls */
 	pnlConfig = new wxPanel(this, ID_pnlConfig);

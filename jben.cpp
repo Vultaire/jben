@@ -24,8 +24,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "jben.h"
 #include "wdict.h"
 #include "kdict.h"
+#include "encoding_convert.h"
 
 #include <cstdlib>
+#ifndef __WXMSW__
+#include <locale.h>
+#endif
 
 JBen *jben;
 
@@ -38,6 +42,17 @@ bool JBen::OnInit() {
 	vocabList = (VocabList *)NULL;
 	gui = (MainGUI *)NULL;
 
+	/* Set our wide character type */
+	if(sizeof(wchar_t)==2)
+		wcType = "UCS-2LE";
+	else
+		wcType = "UCS-4LE";
+#if 0
+#ifndef __WXMSW__
+	setlocale(LC_ALL, "");
+#endif
+#endif
+	
 	/* Start our random number generator */
 	srand(time(NULL));
 	for(int i=0;i<50;i++) rand(); /* On some platforms I've seen rand() behave
@@ -47,7 +62,13 @@ bool JBen::OnInit() {
 									 it. */
 
 	/* Dictionary loading, etc., depends on our config file. */
-	g_prefs = prefs = new Preferences(_T("jben.cfg"));
+	Preferences *prefs = Preferences::GetPrefs();
+	if(!prefs) {
+		/* Add more graceful handling later.  No prefs file found should just
+		   cause a prefs file to be written, rather than aborting. */
+		fprintf(stderr, "Could not create preferences object.  FATAL ERROR!\n\n");
+		return false;
+	}
 
 	const KDict* kd = KDict::GetKDict();
 	const WDict* wd = WDict::GetWDict();
@@ -76,7 +97,7 @@ int JBen::OnExit() {
 #endif
 	KDict::Destroy();
 	WDict::Destroy();
-	if(prefs) delete prefs;
+	Preferences::Destroy();
 	if(kanjiList) delete kanjiList;
 	if(vocabList) delete vocabList;
 #ifdef DEBUG

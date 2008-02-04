@@ -143,7 +143,7 @@ void PanelKanjiDict::UpdateHtmlOutput() {
 		c = currentSearchString[i];
 		kanjiEntry = kd->GetKanjidicStr(c);
 		if(kanjiEntry.length()>0) {
-			htmlContent.append(KDict::KanjidicToHtml(kanjiEntry));
+			htmlContent.append(KDict::KanjidicToHtml(kanjiEntry.c_str()));
 		}
 	}
 

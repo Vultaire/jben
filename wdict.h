@@ -60,12 +60,12 @@ public:
 	string GetEdictString(int i) const;
 
 	/* Dictionary search functions */
-	bool Search(const wxString& query,
+	bool Search(const wstring& query,
 				list<int>& results,
 				unsigned int searchType =
 				EDS_EXACT | (EDS_BEGIN << 8) |
 				(EDS_END << 16) | (EDS_ANY << 24)) const;
-	static wxString ResultToHTML(const wxString& rawResult);
+	static wstring ResultToHTML(const wstring& rawResult);
 
 	/* Other functions */
 	bool MainDataLoaded() const;

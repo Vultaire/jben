@@ -146,15 +146,8 @@ void FrameKanjiPad::OnKanjiSelected(wxListEvent& ev) {
 	GtkClipboard *gClip = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
 	gtk_clipboard_set_text(gClip, buffer, strlen(buffer));
 	delete[] buffer;
-	/* The clipboard data -seems- to be persistant after termination of the
-	   program, but in the case it is not, try fiddling with the below two
-	   calls.  I couldn't get the first one to work right. */
-#if 0
-	gtk_clipboard_set_can_store(gClip, NULL, 1);
-	gtk_clipboard_store(gClip);
-#endif
-#else /* Copy to clipboard - wxWidgets Style */
-	/* Copy to clipboard */
+#else
+	/* Copy to clipboard - wxWidgets Style */
 	if(wxTheClipboard->Open()) {
 		wxTheClipboard->Clear();
 		wxTheClipboard->SetData(

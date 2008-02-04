@@ -63,7 +63,7 @@ void PanelVocabListEditor::Commit() {
 	   mem usage with top. */
 	changeDetected = false;
 	jben->vocabList->Clear();
-	int result = jben->vocabList->AddList(textVocabList->GetValue());
+	int result = jben->vocabList->AddList(textVocabList->GetValue().c_str());
 
 	jben->gui->Redraw();
 

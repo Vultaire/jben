@@ -24,15 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef vocablist_h
 #define vocablist_h
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
-
+#include <string>
 #include <vector>
 using namespace std;
 
@@ -42,17 +34,17 @@ using namespace std;
 class VocabList {
 public:
 	VocabList();
-	bool Add(const wxString& s);
-	int AddList(const wxString& s);
-	wxString ToString(wxChar separator=_T('\n'));
+	bool Add(const wstring& s);
+	int AddList(const wstring& s);
+	wstring ToString(wchar_t separator=L'\n');
 	int Size();
 	void Clear();
-	const wxString& operator[](unsigned int index);
-	int GetIndexByWord(const wxString& s);
-	vector<wxString>& GetVocabList();
+	const wstring& operator[](unsigned int index);
+	int GetIndexByWord(const wstring& s);
+	vector<wstring>& GetVocabList();
 private:
-	vector<wxString> vocabList;
-	int BinarySearch(const wxString& query, bool* matchFound);
+	vector<wstring> vocabList;
+	int BinarySearch(const wstring& query, bool* matchFound);
 };
 
 #endif

@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "file_utils.h"
 #include "wx/ffile.h"
 #include "frame_kanjipad.h"
+#include "encoding_convert.h"
 
 #ifndef __WXMSW__
 	#include "jben.xpm"
@@ -212,10 +213,13 @@ void MainGUI::OnKanjiAddFromFile(wxCommandEvent& event) {
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
 	if(fd->ShowModal()==wxID_OK) {
 		wxArrayString filenames;
-		wxString file, allFiles;
+		wstring file, allFiles;
 		fd->GetPaths(filenames);
 		for(unsigned int i=0;i<filenames.Count();i++) {
-			if(ReadFile(filenames[i], file)==REF_SUCCESS)
+			if(ReadEncodedFile(
+				   ConvertString<wchar_t,char>(filenames[i].c_str(),
+											   wcType.c_str(), "UTF-8").c_str(),
+				   file)==REF_SUCCESS)
 				allFiles.append(file);
 		}
 		int result = jben->kanjiList->AddFromString(allFiles);

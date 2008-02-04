@@ -18,90 +18,58 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* Include platform-specific files here */
+#ifdef __WXMSW__
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
+/* Normal includes go here */
 #include "file_utils.h"
-#include "wx/file.h"
-#include "wx/ffile.h"
-#include "wx/strconv.h"
+#include "encoding_convert.h"
+#include <fstream>
+#include <sstream>
+using namespace std;
 
 /* Tries to open the specified file.  If successful, it'll read in its entire
-   contents into a wxString, and apply the specified conversion. */
-int ReadEncodedFile(const wxChar *filename, const wxChar *src_encoding, wxString& dest) {
-	/* Read in the file.  NOTE: a "b" flag MIGHT be necessary for
-	   Windows! */
-	if(wxFile::Exists(filename)) {
-		wxFFile *in = new wxFFile(filename, _T("r"));
-		if(!in->IsOpened()) {  /* Bail if we couldn't read it */
-			delete in;
-			return REF_FILE_OPEN_ERROR;
-		}
+   contents into a wstring, and apply the specified conversion. */
+int ReadEncodedFile(const char *filename, wstring& dest,
+					const char *src_encoding) {
+	ifstream ifile(filename, ios::in | ios::binary);
+	stringbuf data;
+	if(ifile.is_open()) {
+		while(!ifile.eof() && !ifile.fail())
+			ifile >> &data;
+		ifile.close();
+		if(ifile.fail()) return REF_FILE_OPEN_ERROR;
 
-		/* Read in all the data - our files are "small", so we'll be lazy
-	   	and "read all". */
-		/* NOTE: Workaround for SLOW GTK performance
-	         	provided by "doublemax" on wxforum.shadonet.com.
-	   	What happens:
-	   	1. Standard C functions are used to get the raw file size
-	   	2. The file is read in using the wxFFile::Read() command instead of
-	      	ReadAll().  Read does not perform local encoding to Unicode
-	      	conversion.
-	   	3. Use the wxString::GetWriteBuf function to get us a buffer to receive
-	      	the wide character conversion.  File length * 2 is used, which isn't
-	      	very memory efficient, but is CPU-efficient - far more important.
-	   	4. wxCSConv::MB2WC is called to perform the conversion after the file
-	      	is loaded.  This happens FAST. */
-
-		size_t length = (size_t)in->Length();
-		wxCharBuffer buf(length+1);
-		length = in->Read(buf.data(), length);
-		buf.data()[length]=_T('\0');
-		in->Close();
-		delete in;
-
-		wxCSConv transcoder(src_encoding);
-
-		length++;  /* Incremented so we will include the null character as part of
-		              the copied string. */
-		transcoder.MB2WC(dest.GetWriteBuf(length*2), buf.data(), length);
-		dest.UngetWriteBuf();
-
+		dest = ConvertString<char, wchar_t>
+			(data.str().c_str(), src_encoding, wcType.c_str());
 		return REF_SUCCESS;
+
 	} else return REF_FILE_NOT_FOUND;
 }
 
-/* Tries to open the specified file.  If successful, it'll read in its entire
-   contents into a wxString, and apply the local-to-Unicode conversion.
-   (Yes, this is -another- ugly workaround for just doing a wxFFile::ReadAll.)
-   */
-int ReadFile(const wxChar *filename, wxString& dest) {
-	/* Read in the file.  NOTE: a "b" flag MIGHT be necessary for
-	   Windows! */
-	if(wxFile::Exists(filename)) {
-		wxFFile *in = new wxFFile(filename, _T("r"));
-		if(!in->IsOpened()) {  /* Bail if we couldn't read it */
-			delete in;
-			return REF_FILE_OPEN_ERROR;
-		}
+/* Platform-independent getcwd function. */
+string GetCWD() {
+	string s;
 
-		size_t length = (size_t)in->Length();
-		wxCharBuffer buf(length+1);
-		length = in->Read(buf.data(), length);
-		buf.data()[length]=_T('\0');
-		in->Close();
-		delete in;
-
-		length++;  /* Incremented so we will include the null character as part of
-	              	the copied string. */
-		wxConvCurrent->MB2WC(dest.GetWriteBuf(length*2), buf.data(), length);
-		dest.UngetWriteBuf();
-
-		return REF_SUCCESS;
-	} else {
-#ifdef DEBUG
-		printf("Could not find file \"%ls\".\n", filename);
+	/* Yes, the size for the buffer used in
+	   this function is maybe overkill. */
+#ifdef __WXMSW__
+	wchar_t *buffer = new wchar_t[0x10000];
+	GetCurrentDirectory(0x10000, buffer);
+	s = ConvertString<char>((char *)buffer, wcType.c_str(), "UTF-8");
+#else
+	char *buffer = new char[0x10000];
+	if(getcwd(buffer, 0x10000))
+		s = buffer;
 #endif
-		return REF_FILE_NOT_FOUND;
-	}
+
+	delete[] buffer;
+	return s;
 }

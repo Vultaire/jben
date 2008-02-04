@@ -22,9 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "string_utils.h"
+#include <cctype>
+#include <cwctype>
+using namespace std;
 
-string StrToLower(const string& original) {
-	string result = original;
+string StrToLower(const string& src) {
+	string result = src;
 	for(string::iterator it=result.begin(); it!=result.end(); it++) {
 		*it = tolower(*it);
 	}
@@ -87,4 +90,64 @@ bool GetIndexBeforeParens(const string& s, size_t indexParen, size_t& indexNext,
 
 	indexNext = index-1;
 	return true;
+}
+
+string ToUpper(string src) {
+	for(string::iterator i = src.begin(); i != src.end(); i++) {
+		*i = toupper(*i);
+	}
+	return src;
+}
+
+wstring ToUpper(wstring src) {
+	for(wstring::iterator i = src.begin(); i != src.end(); i++) {
+		*i = towupper(*i);
+	}
+	return src;
+}
+
+string ToLower(string src) {
+	for(string::iterator i = src.begin(); i != src.end(); i++) {
+		*i = tolower(*i);
+	}
+	return src;
+}
+
+wstring ToLower(wstring src) {
+	for(wstring::iterator i = src.begin(); i != src.end(); i++) {
+		*i = towlower(*i);
+	}
+	return src;
+}
+
+string Trim(string src) {
+	int len = src.length();
+	int begin, end;
+
+	for(begin=0; begin<len; begin++) {
+		if(!isspace(src[begin])) break;
+	}
+	if(begin==len) return "";
+
+	for(end=len-1; end>=0; end--) {
+		if(!isspace(src[end])) break;
+	}
+
+	return src.substr(begin, end+1 - begin);
+}
+
+wstring Trim(wstring src) {
+	int len = src.length();
+	int begin, end;
+
+	for(begin=0; begin<len; begin++) {
+		if(!iswspace(src[begin])) break;
+	}
+	if(begin==len) return L"";
+
+	for(end=len-1; end>=0; end--) {
+		if(!iswspace(src[end])) break;
+	}
+
+	return src.substr(begin, end+1 - begin);
 }

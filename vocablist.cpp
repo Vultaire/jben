@@ -23,7 +23,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "vocablist.h"
 #include "jben.h"
-#include "wx/tokenzr.h"
+#include "string_utils.h"
+#include <list>
+#include <sstream>
+#include <iostream>
+using namespace std;
 
 VocabList::VocabList() {
 /*	vocabList.reserve(1000); */ /* We might want to do this later...? */
@@ -33,7 +37,7 @@ VocabList::VocabList() {
    If the string is not found, it returns the index at which the query
    should be inserted.  matchFound indicates whether the return value is
    a match or merely an insertion point. */
-int VocabList::BinarySearch(const wxString& query, bool* matchFound) {
+int VocabList::BinarySearch(const wstring& query, bool* matchFound) {
 	int listLength = vocabList.size();
 	int lowBound = 0, highBound = listLength-1;
 	int compareVal=0, index=0;
@@ -72,7 +76,7 @@ int VocabList::BinarySearch(const wxString& query, bool* matchFound) {
    string, and to check if the string is already in the list.
    No duplicate strings are allowed in the list, and such duplicates are quietly
    discarded. */
-bool VocabList::Add(const wxString& s) {
+bool VocabList::Add(const wstring& s) {
 	bool matchFound;
 	int insertPoint;
 
@@ -84,36 +88,35 @@ bool VocabList::Add(const wxString& s) {
 	return false;
 }
 
-int VocabList::AddList(const wxString& s) {
-	wxStringTokenizer t(s, _T("\n;"));
-	wxString token;
+int VocabList::AddList(const wstring& s) {
+	list<wstring> t = StrTokenize<wchar_t>(s, L"\n");
+	wstring token;
 	int count = 0;
 	int duplicates = 0;
-	while(t.HasMoreTokens()) {
-		token = t.GetNextToken();
+	while(t.size()>0) {
+		token = t.front();
 		if(token.length()>0) {
 			if(Add(token)) count++;
 			else duplicates++;
 		}
+		t.pop_front();
 	}
 	if(duplicates>0)
-		wxMessageBox(
-		wxString::Format(
-			_T("%d duplicate entries were detected, and were therefore ommitted."),
-			duplicates),
-		_T("Notice"), wxOK | wxICON_INFORMATION, jben->gui);
+		/* This was being put out to a wxMessageBox.  Probably we want it to
+		   be passed to some error log manager or something... later. */
+		cerr << "Notice: " << duplicates << " duplicate entries were detected, and were therefore ommitted.";
 	return count;
 }
 
-wxString VocabList::ToString(wxChar separator) {
-		wxString result;
+wstring VocabList::ToString(wchar_t separator) {
+		wstring result;
 
-		vector<wxString>::iterator it = vocabList.begin();
+		vector<wstring>::iterator it = vocabList.begin();
 		if(it!=vocabList.end()) {
 			result.append(*it);
 			it++;
 			for(; it!=vocabList.end(); it++) {
-				result.append(separator);
+				result.append(1, separator);
 				result.append(*it);
 			}
 		}
@@ -127,21 +130,11 @@ void VocabList::Clear() {
 
 int VocabList::Size() {return vocabList.size();}
 
-const wxString& VocabList::operator[](unsigned int index) {
-	/* new, simpler code, with index being 0-based */
+const wstring& VocabList::operator[](unsigned int index) {
 	return vocabList[index];
-	/* old code follows */
-#if 0
-	/* "index" is 1-based. */
-	vector<wxString>::iterator it = vocabList.begin();
-	for(unsigned int i=1;i<=index;i++) {
-		if(it!=vocabList.end()) it++;
-	}
-	return *it;
-#endif
 }
 
-int VocabList::GetIndexByWord(const wxString& s) {
+int VocabList::GetIndexByWord(const wstring& s) {
 	/* Index returned should be 0-based. -1 indicates not found. */
 	bool found;
 	int index = BinarySearch(s, &found);
@@ -152,4 +145,4 @@ int VocabList::GetIndexByWord(const wxString& s) {
 	return index;
 }
 
-vector<wxString>& VocabList::GetVocabList() {return vocabList;}
+vector<wstring>& VocabList::GetVocabList() {return vocabList;}

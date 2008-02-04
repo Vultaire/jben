@@ -24,14 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef kdict_h
 #define kdict_h
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
 #include "boosthm.h"
 
 #define KD_SUCCESS 0x0
@@ -119,14 +111,14 @@ public:
 	~KDict();
 
 	/* Kanjidic-specific functions */
-	wxString GetKanjidicStr(wxChar c) const;
-	static wxString KanjidicToHtml(const wxString& kanjidicStr);
-	static wxString KanjidicToHtml(const wxString& kanjidicStr, long options, long dictionaries);
-	int GetIntField(wxChar kanji, const wxString& marker) const;
-	wxString GetOnyomiStr(wxChar c) const;
-	wxString GetKunyomiStr(wxChar c) const;
-	wxString GetEnglishStr(wxChar c) const;
-	const BoostHM<wxChar, string>* GetHashTable() const;
+	wstring GetKanjidicStr(wchar_t c) const;
+	static wstring KanjidicToHtml(const wstring& kanjidicStr);
+	static wstring KanjidicToHtml(const wstring& kanjidicStr, long options, long dictionaries);
+	int GetIntField(wchar_t kanji, const wstring& marker) const;
+	wstring GetOnyomiStr(wchar_t c) const;
+	wstring GetKunyomiStr(wchar_t c) const;
+	wstring GetEnglishStr(wchar_t c) const;
+	const BoostHM<wchar_t, string>* GetHashTable() const;
 
 	/* Other functions */
 	bool MainDataLoaded() const;
@@ -141,13 +133,13 @@ private:
 
 	/* Kanjidic-specific stuff */
 	void KanjidicParser(char *kanjidicRawData);
-	static wxString ConvertKanjidicEntry(const wxString& s);
-	wxString GetKanjidicReading(wxChar c, int readingType) const;
+	static wstring ConvertKanjidicEntry(const wstring& s);
+	wstring GetKanjidicReading(wchar_t c, int readingType) const;
 
 	/* Data */
 	static KDict *kdictSingleton;
-	BoostHM<wxChar, string> kanjidicData;
-	BoostHM<wxChar, string> radkData, kradData;
+	BoostHM<wchar_t, string> kanjidicData;
+	BoostHM<wchar_t, string> radkData, kradData;
 };
 
 #endif

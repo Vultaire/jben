@@ -24,40 +24,41 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef preferences_h
 #define preferences_h
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
+#define PREFS_SUCCESS      0x0
+#define PREFS_FILENOTFOUND 0x01u
+#define PREFS_UNHANDLED    0x80000000u
 
 #include <map>
+#include <string>
 using namespace std;
 
 class Preferences {
 public:
-	Preferences(const wxChar *filename);
+	static Preferences *GetPrefs();
+	static void Destroy();
 	~Preferences();
-	wxString GetPreferences();
+	void SetDefaultPrefs();
 
-	/* Filename for config file */
-	wxString cfgFile;
-
-	/* Options contained within config file */
+	/* Options contained within config file - these may eventually go away. */
 	unsigned long kanjidicOptions;
 	unsigned long kanjidicDictionaries;
-	/* KanjiList and VocabList are auto-generated while saving.
-	   However, if the lists are not loaded, we want to save back the original
-	   back - that's why we store them. */
-	wxString kanjiList;
-	wxString vocabList;
 
+	/* Store the kanji and vocab list in separate strings, as loaded from the
+	   prefs file.  Will disappear once the study list singleton is finished. */
+	wstring kanjiList;
+	wstring vocabList;
+private:
+	int LoadFile(const char *filename);
+	string GetPrefsStr();
+
+	/* Filename for config file */
+	string cfgFile;
 	/* Use a map for storing all other options we may add. */
-	map<wxString, wxString> stringOpts;
-};
+	map<wstring, wstring> stringOpts;
 
-extern Preferences* g_prefs;
+	/* Singleton-related stuff */
+	Preferences();
+	static Preferences *prefsSingleton;	
+};
 
 #endif

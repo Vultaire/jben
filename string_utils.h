@@ -25,12 +25,44 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define string_utils_h
 
 #include <string>
+#include <list>
 using namespace std;
 
-string StrToLower(const string& original);
+string StrToLower(const string& src);
 bool GetIndexAfterParens(const string& s, size_t indexParen, size_t& indexNext,
 						 char cOpenParen='(', char cCloseParen=')');
 bool GetIndexBeforeParens(const string& s, size_t indexParen, size_t& indexNext,
 						  char cOpenParen='(', char cCloseParen=')');
+string ToUpper(string src);
+wstring ToUpper(wstring src);
+string ToLower(string src);
+wstring ToLower(wstring src);
+string Trim(string);
+wstring Trim(wstring);
+
+/* Template functions */
+template <class t>
+list< basic_string<t> > StrTokenize
+(const basic_string<t>& src,
+ const t *delimiters,
+ bool emptyTokens = false) {
+	list< basic_string<t> > l;
+	size_t start = 0;
+	size_t end = src.find(delimiters, start);
+
+	while(end!=basic_string<t>::npos) {
+		if(emptyTokens || (start!=end)) {
+			l.push_back(
+				src.substr(start, end-start));
+		}
+		start = end + 1;
+		end = src.find(delimiters, start);
+	}
+	if(start!=basic_string<t>::npos) {
+		basic_string<t> lastStr = src.substr(start);
+		if(lastStr.length()>0) l.push_back(lastStr);
+	}
+	return l;
+}
 
 #endif

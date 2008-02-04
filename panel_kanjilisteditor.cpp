@@ -61,7 +61,8 @@ PanelKanjiListEditor::PanelKanjiListEditor(wxWindow *owner) : RedrawablePanel(ow
 void PanelKanjiListEditor::Commit() {
 	changeDetected = false;
 	jben->kanjiList->Clear();
-	int result = jben->kanjiList->AddFromString(textKanjiList->GetValue());
+	int result = jben->kanjiList->AddFromString(
+		textKanjiList->GetValue().c_str());
 
 	jben->gui->Redraw();
 

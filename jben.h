@@ -42,7 +42,6 @@ class JBen: public wxApp {
 public:
 	/* Public objects */
 	MainGUI *gui;
-	Preferences *prefs;
 	KanjiList *kanjiList;
 	VocabList *vocabList;
 private:

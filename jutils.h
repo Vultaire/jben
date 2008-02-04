@@ -24,26 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef jutils_h
 #define jutils_h
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
-
-#include <string>
-using namespace std;
-
-extern wxCSConv transcoder;
-
-bool IsFurigana(wxChar c);
-bool IsHiragana(wxChar c);
-bool IsKatakana(wxChar c);
-bool UTF8ToWx(const string& utfStr, wxString& wxStr);
-bool WxToUTF8(const wxString& wxStr, string& utfStr);
-
-/* int AddKanjiFromFile(wxWindow *owner); */
+bool IsFurigana(wchar_t c);
+bool IsHiragana(wchar_t c);
+bool IsKatakana(wchar_t c);
 
 #endif

@@ -23,9 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "wdict.h"
 #include "file_utils.h"
-#include "wx/tokenzr.h"
 #include "jutils.h"
 #include "string_utils.h"
+#include "encoding_convert.h"
 #include <set>
 #include <list>
 #include <algorithm>
@@ -63,7 +63,6 @@ void WDict::Destroy() {
 }
 
 int WDict::LoadEdict2(const char *filename) {
-	WDict *e=NULL;
 	char *rawData = NULL;
 	unsigned int size;
 	int returnCode = 0xDEADBEEF;
@@ -95,7 +94,7 @@ int WDict::LoadEdict2(const char *filename) {
 	return returnCode;
 }
 
-/* EDICT2 parser for WDict.  Takes a wxString containing the contents of
+/* EDICT2 parser for WDict.  Takes a wstring containing the contents of
    an EDICT- or EDICT2-formatted dictionary, and adds its contents to an
    internal data struct.  This function also indexes the data, although ideally
    the indexing functionality should be externalized so it may be called later,
@@ -103,18 +102,20 @@ int WDict::LoadEdict2(const char *filename) {
    point. */
 void WDict::Edict2Parser(char *edictRawData) {
 	char *token;
-	wxString wxToken;
+	wstring wToken;
 
 	int vIndex = -1; /* edict vector index */
-	wxString sTemp;
+	wstring sTemp;
 
 	/* Store raw EDICT data, plus store references by kanji/reading into ordered
 	   set */
 	token = strtok(edictRawData, "\n");
 	while(token) {
 		if(strlen(token)>0) {
-			/* 0. Make wxString copy of the token */
-			UTF8ToWx(token, wxToken);
+			/* 0. Make wstring copy of the token */
+			/*UTF8ToWx(token, wToken);*/
+			wToken = ConvertString<char, wchar_t>
+				(token, "UTF-8", wcType.c_str());
 			/* 1. Store full string in vector */
 			edictData.push_back(token);
 			vIndex++;
@@ -128,7 +129,7 @@ WDict::~WDict() {
 	/* Currently, nothing needs to be done here. */
 }
 
-bool WDict::Search(const wxString& query, list<int>& results,
+bool WDict::Search(const wstring& query, list<int>& results,
 				   unsigned int searchType) const {
 	list<int> priorityResults[4];
 	bool englishSearch;
@@ -170,12 +171,12 @@ bool WDict::Search(const wxString& query, list<int>& results,
 
 	/* Store first char.  This determines whether we're doing an E-J or J-E
 	   search. */
-	wxChar firstChar = query[0];
+	wchar_t firstChar = query[0];
 	/* Using a very, very simple check: is it just a 7-bit char? */
 	englishSearch = ( ((unsigned)firstChar) <= 0x7F );
 	if(!englishSearch) {
 		isFurigana=true;
-		for(wxString::const_iterator stringIt = query.begin();
+		for(wstring::const_iterator stringIt = query.begin();
 		  stringIt!=query.end(); stringIt++) {
 			isFurigana = (IsFurigana(*stringIt));
 			if(!isFurigana) break;
@@ -196,7 +197,9 @@ bool WDict::Search(const wxString& query, list<int>& results,
 	int priorityLevel;
 	char c;
 
-	WxToUTF8(query, utfQuery);
+	/*WxToUTF8(query, utfQuery);*/
+	utfQuery = ConvertString<wchar_t, char>
+		(query, wcType.c_str(), "UTF-8");
 	lwrQuery = StrToLower(utfQuery); /* For English searching, store a
 										lowercase query */
 	i = 0;
@@ -383,16 +386,17 @@ bool WDict::Search(const wxString& query, list<int>& results,
 	return false;
 }
 
-wxString WDict::ResultToHTML(const wxString& rawResult) {
-	wxString token, subToken, jStr, eStr, htmlStr;
-	wxStringTokenizer tk(rawResult, _T("\n"));
+wstring WDict::ResultToHTML(const wstring& rawResult) {
+	wstring token, subToken, jStr, eStr, htmlStr;
+	list<wstring> tk = StrTokenize(rawResult, L"\n");
 	size_t indexSlash, indexNextSlash, indexBreak;
-	while(tk.HasMoreTokens()) {
-		token = tk.GetNextToken();
+	while(tk.size()>0) {
+		token = tk.front();
+		tk.pop_front();
 		htmlStr.append(_T("<p>"));
 
 		indexSlash = token.find_first_of(_T('/'));
-		if(indexSlash==wxString::npos) {
+		if(indexSlash==wstring::npos) {
 			/* Fail-safe: just display the raw string */
 			htmlStr.append(token);
 		} else {
@@ -401,7 +405,7 @@ wxString WDict::ResultToHTML(const wxString& rawResult) {
 			jStr = token.substr(0,indexSlash);
 
 			indexBreak = jStr.find_first_of(_T(';'));
-			while(indexBreak!=wxString::npos) {
+			while(indexBreak!=wstring::npos) {
 				/*jStr[indexBreak]=_T(", ");*/
 				jStr.replace(indexBreak,1,_T(", "),0,2);
 				indexBreak = jStr.find_first_of(_T(';'));
@@ -412,9 +416,9 @@ wxString WDict::ResultToHTML(const wxString& rawResult) {
 
 			htmlStr.append(_T("<b>English:</b> "));
 			eStr.clear();
-			while(indexSlash!=wxString::npos) {
+			while(indexSlash!=wstring::npos) {
 				indexNextSlash = token.find_first_of(_T('/'), indexSlash+1);
-				if(indexNextSlash==wxString::npos)
+				if(indexNextSlash==wstring::npos)
 					subToken = token.substr(indexSlash+1);
 				else
 					subToken = token.substr(indexSlash+1,

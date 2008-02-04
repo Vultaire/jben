@@ -87,21 +87,6 @@ int DialogAddKanjiByGrade::GetHighGrade() {
 	return ComboBoxToKanjidicGrade(comboHighGrade);
 }
 
-#if 0
-void DialogAddKanjiByGrade::OnClose(wxCloseEvent& ev) {
-	printf("OnClose event entered...\n");
-	if(ev.CanVeto()) {
-		printf("Event CAN be vetoed...\n");
-		int l = GetLowGrade();
-		int h = GetHighGrade();
-		if(h<l && h!=0) { /* 0 is a special code for non-graded kanji and is treated as the highest grade level here. */
-			wxMessageBox(_T("Your high grade level cannot be less than your low grade level."), _T("Bad grade range"), wxOK | wxICON_WARNING, this);
-			ev.Veto(true);
-		}
-	}
-}
-#endif
-
 void DialogAddKanjiByGrade::OKProc() {
 	int l = GetLowGrade();
 	int h = GetHighGrade();

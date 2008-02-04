@@ -24,21 +24,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef file_utils_h
 #define file_utils_h
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
-
 #define REF_SUCCESS            0x0
 #define REF_FAILURE            0x80000000
 #define REF_FILE_NOT_FOUND     REF_FAILURE | 0x1
 #define REF_FILE_OPEN_ERROR    REF_FAILURE | 0x2
 
-int ReadEncodedFile(const wxChar *filename, const wxChar *src_encoding, wxString& dest);
-int ReadFile(const wxChar *filename, wxString& dest);
+#ifdef __WXMSW__
+#define DIRSEP  '\\'
+#define WDIRSEP L'\\'
+#else
+#define DIRSEP  '/'
+#define WDIRSEP L'/'
+#endif
+
+#include <string>
+using namespace std;
+
+int ReadEncodedFile(const char *filename,
+					wstring& dest,
+					const char *src_encoding="UTF-8");
+string GetCWD();
 
 #endif

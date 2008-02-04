@@ -129,7 +129,8 @@ PanelConfig::PanelConfig(wxWindow *owner) : RedrawablePanel(owner) {
 
 	changeDetected = false;
 	processingRedraw = false;
-	dictionariesEnabled = jben->prefs->kanjidicOptions & KDO_DICTIONARIES;
+	dictionariesEnabled =
+		Preferences::GetPrefs()->kanjidicOptions & KDO_DICTIONARIES;
 	UpdateDictionaryControls(dictionariesEnabled);
 	this->SetSizerAndFit(panelSizer);
 }
@@ -175,8 +176,9 @@ void PanelConfig::Commit() {
 	for(int i=0; i<dictCount; i++) {
 		if(chkarrayDictionaries[i]->GetValue()) dictionaries |= (1ul << i);
 	}
-	jben->prefs->kanjidicOptions = options;
-	jben->prefs->kanjidicDictionaries = dictionaries;
+	Preferences *prefs = Preferences::GetPrefs();
+	prefs->kanjidicOptions = options;
+	prefs->kanjidicDictionaries = dictionaries;
 }
 
 void PanelConfig::Revert() {
@@ -187,8 +189,9 @@ void PanelConfig::Revert() {
 
 void PanelConfig::Redraw() {
 	processingRedraw = true;
-	int options = jben->prefs->kanjidicOptions;
-	int dictionaries = jben->prefs->kanjidicDictionaries;
+	Preferences *prefs = Preferences::GetPrefs();
+	int options = prefs->kanjidicOptions;
+	int dictionaries = prefs->kanjidicDictionaries;
 
 	/* Set appropriate checkboxes */
 	chkReadings->SetValue(options & KDO_READINGS);

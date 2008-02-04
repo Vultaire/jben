@@ -24,16 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef kanjilist_h
 #define kanjilist_h
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
 #include "kdict.h"
 #include "boosthm.h"
+#include <string>
 #include <vector>
 using namespace std;
 
@@ -42,31 +35,24 @@ using namespace std;
 
 class KanjiList {
 public:
-	KanjiList(const BoostHM<wxChar,string>* const kDictHash);
-	int AddFromString(const wxString& s);
+	KanjiList(const BoostHM<wchar_t, string>* const kDictHash);
+	int AddFromString(const wstring& s);
 	int AddByGrade(int lowGrade, int highGrade);
 	int AddByFrequency(int lowFreq, int highFreq);
-	wxString ToString();
-	wxString ToString(int lineWidth);
+	wstring ToString(int lineWidth = 0);
 	int Size();
-#if 0
-	vector<wxChar>::iterator Find(wxChar c);
-#endif
 	void Clear();
 	void Sort(int sortType, bool reverseOrder=false);
-	wxChar operator[](unsigned int index);
-#if 0
-	wxChar GetCharByIndex(unsigned int index);
-#endif
-	int GetIndexByChar(wxChar c);
-	vector<wxChar>& GetVector();
+	wchar_t operator[](unsigned int index);
+	int GetIndexByChar(wchar_t c);
+	vector<wchar_t>& GetVector();
 
 private:
-	void InplaceMerge(vector<wxChar>& v, BoostHM<wxChar,int>& indexer, int start, int middle, int end);
+	void InplaceMerge(vector<wchar_t>& v, BoostHM<wchar_t, int>& indexer, int start, int middle, int end);
 
-	const BoostHM<wxChar,string> *kanjiHash;
-	vector<wxChar> kanjiList;
-	BoostHM<wxChar, int> *myCharIndexer;
+	const BoostHM<wchar_t, string> *kanjiHash;
+	vector<wchar_t> kanjiList;
+	BoostHM<wchar_t, int> *myCharIndexer;
 	/*  NOTE:
 		The wxWidgets documentation does say to avoid using templates, but at
 		the same time, wx has been around for a -long- time, and since gcc is
