@@ -63,6 +63,11 @@ void Preferences::SetDefaultPrefs() {
 	kanjidicOptions =
 		KDO_READINGS | KDO_MEANINGS | KDO_HIGHIMPORTANCE | KDO_VOCABCROSSREF;
 	kanjidicDictionaries = 0;
+#ifdef __WXMSW__
+	cfgFile = "jben.cfg";
+#else
+	cfgFile = ".jben";
+#endif
 }
 
 int Preferences::LoadFile(const char *filename) {
