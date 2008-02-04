@@ -1,6 +1,7 @@
 *.d
 *.o
 jben
+.jben
 jben.cfg
 jben.res
 *.exe
