@@ -43,9 +43,10 @@ const KDict *KDict::Get() {
 }
 
 KDict::KDict() {
-	LoadKanjidic();
-	LoadKradfile();
-	LoadRadkfile();
+	Preferences *p = Preferences::Get();
+	LoadKanjidic(p->GetSetting("kdict_kanjidic").c_str());
+	LoadKradfile(p->GetSetting("kdict_kradfile").c_str());
+	LoadRadkfile(p->GetSetting("kdict_radkfile").c_str());
 }
 
 void KDict::Destroy() {
@@ -58,7 +59,7 @@ void KDict::Destroy() {
 int KDict::LoadKanjidic(const char *filename) {
 	char *rawData = NULL;
 	unsigned int size;
-	int returnCode=0xDEADBEEF;
+	int returnCode=KD_FAILURE;
 
 	ifstream ifile(filename, ios::ate); /* "at end" to get our file size */
 	if(ifile) {
@@ -89,12 +90,111 @@ int KDict::LoadKanjidic(const char *filename) {
 }
 
 int KDict::LoadKradfile(const char *filename) {
-	int returnCode = 0xDEADBEEF;
+	int returnCode = KD_FAILURE;
+	stringbuf sb;
+	ifstream f(filename, ios::in|ios::binary);
+	if(f.is_open()) {
+		f >> &sb;
+		f.close();
+
+		list<wstring> data =
+			StrTokenize<wchar_t>(utfconv_mw(sb.str()), L"\n");
+		while(data.size()>0) {
+			wstring token = data.front();
+			data.pop_front();
+			if(token.length()>0 && token[0]!=L'#') {
+				/* KRADFILE-specific stuff here */
+				/* Get rid of the spaces in the string */
+				token = TextReplace<wchar_t>(token, L" ", L"");
+				/* Now we can easily pull in the data */
+				if(!kradData.assign(token[0], token.substr(2))) {
+					ostringstream os;
+					os << "KRADFILE: Error assigning ("
+					   << utfconv_wm(token.substr(0,1))
+					   << ", "
+					   << utfconv_wm(token.substr(2))
+					   << ") to hash table!\n";
+					el.Push(EL_Error, os.str());
+				}
+			}
+		}
+
+		returnCode = KD_SUCCESS;
+	}
 	return returnCode;
 }
 
 int KDict::LoadRadkfile(const char *filename) {
-	int returnCode = 0xDEADBEEF;
+	int returnCode = KD_FAILURE;
+	stringbuf sb;
+	ifstream f(filename, ios::in|ios::binary);
+	if(f.is_open()) {
+		f >> &sb;
+		f.close();
+
+		/* RADKFILE entries all start with $.
+		   Split on $, and discard the first entry since it is the explanation
+		   preceding the first entry. */
+		list<wstring> data =
+			StrTokenize<wchar_t>(utfconv_mw(sb.str()), L"$");
+		data.pop_front();
+
+		while(data.size()>0) {
+			wstring entry = data.front();
+			data.pop_front();
+			if(entry.length()>0 && entry[0]!=L'#') {
+				/* RADKFILE-specific stuff here */
+				list<wstring> entryData =
+					StrTokenize<wchar_t>(entry, L"\n", false, 2);
+				if(entryData.size()!=2) {
+					cerr << "Error: entryData.size() == "
+						 << entryData.size() << "!!" << endl;
+				} else {
+					wchar_t key;
+					int strokeCount;
+					wstring value;
+					/* entryData.front() contains our key.
+					   It's a space delimited string,
+					   first token is our kanji, second is the stroke count.
+					   A third token may be present, but is irrelevant. */
+					list<wstring> keyData =
+						StrTokenize<wchar_t>(entryData.front(), L" ");
+					wistringstream wiss;
+					wiss.str(keyData.front());
+					wiss >> key;
+					keyData.pop_front();
+					wiss.str(keyData.front());
+					wiss >> strokeCount;
+
+					/* entryData.back() contains the characters our key
+					   maps to. */
+					/* Get rid of the spaces in the string */
+					value = entryData.back();
+					value = TextReplace<wchar_t>(value, L"\n", L"");
+					value = TextReplace<wchar_t>(value, L" ", L"");				
+
+					if(!radkData.assign(key, value)) {
+						ostringstream os;
+						os << "RADKFILE: Error assigning ("
+						   << utfconv_wm(wstring().append(1,key))
+						   << ", "
+						   << utfconv_wm(value)
+						   << ") to hash table!\n";
+						el.Push(EL_Error, os.str());
+					}
+					if(!radkDataStrokes.assign(key, strokeCount)) {
+						ostringstream os;
+						os << "RADKFILE: Error assigning ("
+						   << utfconv_wm(wstring().append(1,key))
+						   << ", " << strokeCount << ") to hash table!\n";
+						el.Push(EL_Error, os.str());
+					}
+				}
+			}
+		}
+
+		returnCode = KD_SUCCESS;
+	}
 	return returnCode;
 }
 
@@ -112,7 +212,7 @@ void KDict::KanjidicParser(char *kanjidicRawData) {
 			if(!kanjidicData.assign(wToken[0], token)) {
 				ostringstream os;
 				string temp = utfconv_wm(wToken);
-				os << "Error assigning (" << temp.substr(0,1)
+				os << "Error assigning (" << temp[0]
 				   << ", " << temp << ") to hash table!\n";
 				el.Push(EL_Error, os.str());
 			}
@@ -127,9 +227,9 @@ KDict::~KDict() {
 
 /* This function returns a wstring containing the desired line of the
    kanjidic hash table.  A conversion from string to wstring is included
-   in this call since strings are only used for more compressed internal
-   storage.  This is followed by a slight reformatting of the string for
-   better presentation. */
+   in this call since standardstrings are only used for more compressed
+   internal storage.  This is followed by a slight reformatting of the
+   string for better presentation. */
 wstring KDict::GetKanjidicStr(wchar_t c) const {
 	BoostHM<wchar_t,string>::iterator it = kanjidicData.find(c);
 	if(it==kanjidicData.end()) return L"";

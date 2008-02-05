@@ -38,12 +38,13 @@ Preferences* Preferences::prefsSingleton = NULL;
 Preferences *Preferences::Get() {
 	if(!prefsSingleton) {
 		prefsSingleton = new Preferences;
-/*		if(!prefsSingleton->LoadFile(".jben") &&
-		   !prefsSingleton->LoadFile("jben.cfg"))
-		   Destroy();*/
-		if(prefsSingleton->LoadFile(".jben")    != REF_SUCCESS &&
-		   prefsSingleton->LoadFile("jben.cfg") != REF_SUCCESS)
-			prefsSingleton->SetDefaultPrefs();
+		/* Load with default preferences, and overwrite with any stored
+		   preferences. */
+		prefsSingleton->SetDefaultPrefs();
+		/* Try to load .jben, followed by jben.cfg if the first fails. */
+		prefsSingleton->LoadFile(".jben") == REF_SUCCESS ||
+			prefsSingleton->LoadFile("jben.cfg") == REF_SUCCESS;
+
 	}
 	return prefsSingleton;
 }
@@ -63,11 +64,22 @@ void Preferences::SetDefaultPrefs() {
 	kanjidicOptions =
 		KDO_READINGS | KDO_MEANINGS | KDO_HIGHIMPORTANCE | KDO_VOCABCROSSREF;
 	kanjidicDictionaries = 0;
+	stringOpts["config_version"] = "1";
 #ifdef __WXMSW__
 	cfgFile = "jben.cfg";
+	stringOpts["kdict_kanjidic"] = "dicts\\kanjidic";
+	stringOpts["kdict_kradfile"] = "dicts\\kradfile";
+	stringOpts["kdict_radkfile"] = "dicts\\radkfile";
+	stringOpts["wdict_edict2"] = "dicts\\edict2";
 #else
 	cfgFile = ".jben";
+	stringOpts["kdict_kanjidic"] = "dicts/kanjidic";
+	stringOpts["kdict_kradfile"] = "dicts/kradfile";
+	stringOpts["kdict_radkfile"] = "dicts/radkfile";
+	stringOpts["wdict_edict2"] = "dicts/edict2";
 #endif
+
+
 }
 
 int Preferences::LoadFile(const char *filename) {
@@ -112,7 +124,7 @@ int Preferences::LoadFile(const char *filename) {
 					} else if(subToken==L"kanjilist") {
 						subToken = token.substr(index+1);
 						subToken = Trim(subToken);
-						kanjiList = subToken;
+						stringOpts["kanjilist"] = utfconv_wm(subToken);
 					} else if(subToken==L"vocablist") {
 						subToken = token.substr(index+1);
 						subToken = Trim(subToken);
@@ -122,31 +134,32 @@ int Preferences::LoadFile(const char *filename) {
 							subToken = tSub.front();
 							tSub.pop_front();
 							if(subToken.length()>0) {
-								if(vocabList.length()>0)
-									vocabList.append(1, L'\n');
-								vocabList.append(subToken);
+								string *temp = &stringOpts["vocablist"];
+								if(temp->length()>0)
+									temp->append(1, '\n');
+								temp->append(utfconv_wm(subToken));
 							}
 						}
 
 					} else if(subToken==L"edict") {
 						subToken = token.substr(index+1);
-						stringOpts[L"edict"]
-							= Trim(subToken);
+						stringOpts["edict"]
+							= utfconv_wm(Trim(subToken));
 
 					} else if(subToken==L"kanjidic") {
 						subToken = token.substr(index+1);
-						stringOpts[L"kanjidic"]
-							= Trim(subToken);
+						stringOpts["kanjidic"]
+							= utfconv_wm(Trim(subToken));
 
 					} else if(subToken==L"kradfile") {
 						subToken = token.substr(index+1);
-						stringOpts[L"kradfile"]
-							= Trim(subToken);
+						stringOpts["kradfile"]
+							= utfconv_wm(Trim(subToken));
 
 					} else if(subToken==L"radkfile") {
 						subToken = token.substr(index+1);
-						stringOpts[L"radkfile"]
-							= Trim(subToken);
+						stringOpts["radkfile"]
+							= utfconv_wm(Trim(subToken));
 
 					} else {
 						/* Unhandled - do nothing */
@@ -190,4 +203,8 @@ string Preferences::GetPrefsStr() {
 		  << utfconv_wm(jben->vocabList->ToString(';')) << '\n';
 
 	return prefs.str();
+}
+
+string& Preferences::GetSetting(string key) {
+	return stringOpts[key];
 }

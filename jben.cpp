@@ -75,12 +75,14 @@ bool JBen::OnInit() {
 
 	if(wd->MainDataLoaded()) {
 		vocabList = new VocabList();
-		vocabList->AddList(prefs->vocabList);
+		vocabList->AddList(
+			utfconv_mw(prefs->GetSetting("vocablist")));
 	}
 	else vocabList = NULL;
 	if(kd->MainDataLoaded()) {
 		kanjiList = new KanjiList(kd->GetHashTable());
-		kanjiList->AddFromString(prefs->kanjiList);
+		kanjiList->AddFromString(
+			utfconv_mw(prefs->GetSetting("kanjilist")));
 	}
 	else kanjiList = NULL;
 

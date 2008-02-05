@@ -38,15 +38,11 @@ public:
 	static void Destroy();
 	~Preferences();
 	void SetDefaultPrefs();
+	string& GetSetting(string key);
 
 	/* Options contained within config file - these may eventually go away. */
 	unsigned long kanjidicOptions;
 	unsigned long kanjidicDictionaries;
-
-	/* Store the kanji and vocab list in separate strings, as loaded from the
-	   prefs file.  Will disappear once the study list singleton is finished. */
-	wstring kanjiList;
-	wstring vocabList;
 private:
 	int LoadFile(const char *filename);
 	string GetPrefsStr();
@@ -54,7 +50,7 @@ private:
 	/* Filename for config file */
 	string cfgFile;
 	/* Use a map for storing all other options we may add. */
-	map<wstring, wstring> stringOpts;
+	map<string, string> stringOpts;
 
 	/* Singleton-related stuff */
 	Preferences();

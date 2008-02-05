@@ -44,5 +44,6 @@ int ReadEncodedFile(const char *filename,
 					wstring& dest,
 					const char *src_encoding="UTF-8");
 string GetCWD();
+bool FileExists(const char *filename);
 
 #endif

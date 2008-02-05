@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "string_utils.h"
 #include "encoding_convert.h"
 #include "errorlog.h"
+#include "preferences.h"
 #include <set>
 #include <list>
 #include <algorithm>
@@ -54,7 +55,8 @@ const WDict *WDict::Get() {
 }
 
 WDict::WDict() {
-	LoadEdict2();
+	Preferences *p = Preferences::Get();
+	LoadEdict2(p->GetSetting("wdict_edict2").c_str());
 }
 
 void WDict::Destroy() {

@@ -73,3 +73,13 @@ string GetCWD() {
 	delete[] buffer;
 	return s;
 }
+
+bool FileExists(const char *filename) {
+	bool result=false;
+	ifstream f(filename);
+	if(f.is_open()) {
+		result=true;
+		f.close();
+	}
+	return result;
+}

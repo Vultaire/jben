@@ -45,12 +45,14 @@ template <class t>
 list< basic_string<t> > StrTokenize
 (const basic_string<t>& src,
  const t *delimiters,
- bool emptyTokens = false) {
+ bool emptyTokens = false,
+ size_t maxTokens=0) {
 	list< basic_string<t> > l;
 	size_t start = 0;
-	size_t end = src.find(delimiters, start);
+	size_t end = src.find_first_of(delimiters, start);
 
-	while(end!=basic_string<t>::npos) {
+	while(end!=basic_string<t>::npos
+		  && (maxTokens==0 || l.size()<maxTokens-1)) {
 		if(emptyTokens || (start!=end)) {
 			l.push_back(
 				src.substr(start, end-start));
@@ -58,11 +60,45 @@ list< basic_string<t> > StrTokenize
 		start = end + 1;
 		end = src.find(delimiters, start);
 	}
+
 	if(start!=basic_string<t>::npos) {
 		basic_string<t> lastStr = src.substr(start);
 		if(lastStr.length()>0) l.push_back(lastStr);
 	}
 	return l;
+}
+
+/* Substring replace function.
+   "from" string MUST have length > 0. */
+template <class t>
+basic_string<t> TextReplace(const basic_string<t>& src,
+							const basic_string<t>& from,
+							const basic_string<t>& to) {
+	basic_string<t> result;
+	size_t start=0;
+	size_t end;
+	if(from.size()<1) return src;
+
+	end = src.find(from, start);
+	while(end!=basic_string<t>::npos) {
+		/* Append string particle, if present */
+		if(start!=end) {
+			result.append(src.substr(start, end-start));
+		}
+		/* Append "to" string */
+		result.append(to);
+		/* Skip over the "from" string */
+		start = end + from.length();
+
+		end = src.find(from, start);
+	}
+
+	if(start!=basic_string<t>::npos) {
+		basic_string<t> lastStr = src.substr(start);
+		if(lastStr.length()>0) result.append(lastStr);
+	}
+
+	return result;
 }
 
 #endif

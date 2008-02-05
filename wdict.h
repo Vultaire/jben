@@ -66,7 +66,7 @@ private:
 	WDict();
 
 	/* Dictionary file loaders */
-	int LoadEdict2(const char *filename="edict2");
+	int LoadEdict2(const char *filename);
 
 	/* EDICT2-specific stuff */
 	void Edict2Parser(char *edict2RawData);

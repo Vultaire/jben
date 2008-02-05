@@ -127,9 +127,9 @@ private:
 	KDict();
 	
 	/* Dictionary file loaders */
-	int LoadKanjidic(const char *filename="kanjidic");
-	int LoadRadkfile(const char *filename="radkfile");
-	int LoadKradfile(const char *filename="kradfile");
+	int LoadKanjidic(const char *filename);
+	int LoadRadkfile(const char *filename);
+	int LoadKradfile(const char *filename);
 
 	/* Kanjidic-specific stuff */
 	void KanjidicParser(char *kanjidicRawData);
@@ -139,7 +139,8 @@ private:
 	/* Data */
 	static KDict *kdictSingleton;
 	BoostHM<wchar_t, string> kanjidicData;
-	BoostHM<wchar_t, string> radkData, kradData;
+	BoostHM<wchar_t, wstring> radkData, kradData;
+	BoostHM<wchar_t, int> radkDataStrokes;
 };
 
 #endif
