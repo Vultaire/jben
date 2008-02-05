@@ -34,7 +34,7 @@ using namespace std;
 
 class Preferences {
 public:
-	static Preferences *GetPrefs();
+	static Preferences *Get();
 	static void Destroy();
 	~Preferences();
 	void SetDefaultPrefs();

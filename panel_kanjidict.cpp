@@ -133,7 +133,7 @@ void PanelKanjiDict::Redraw() {
 }
 
 void PanelKanjiDict::UpdateHtmlOutput() {
-	const KDict* kd = KDict::GetKDict();
+	const KDict* kd = KDict::Get();
 	wxString html = _T("<html><body><font face=\"Serif\">");
 	wxString htmlContent, kanjiEntry;
 

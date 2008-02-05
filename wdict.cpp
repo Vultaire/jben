@@ -26,12 +26,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "jutils.h"
 #include "string_utils.h"
 #include "encoding_convert.h"
+#include "errorlog.h"
 #include <set>
 #include <list>
 #include <algorithm>
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <sstream>
 using namespace std;
 
 /* SEARCH_MAX is our hard-coded cutoff point for searches.  It should be high
@@ -45,7 +47,7 @@ using namespace std;
 
 WDict* WDict::wdictSingleton = NULL;
 
-const WDict *WDict::GetWDict() {
+const WDict *WDict::Get() {
 	if(!wdictSingleton)
 		wdictSingleton = new WDict;
 	return wdictSingleton;
@@ -75,11 +77,11 @@ int WDict::LoadEdict2(const char *filename) {
 		rawData[size] = '\0';
 		ifile.read(rawData, size);
 #ifdef DEBUG
-		if(strlen(rawData)!=size)
-			fprintf(stderr,
-			  "WARNING: edict file size: %d, read-in string: %d\n",
-			  strlen(rawData),
-			  size);
+		if(strlen(rawData)!=size) {
+			ostringstream os;
+			os << "edict file size: " << strlen(rawData) << ", read-in string: " << size << '\n';
+			el.Push(EL_Warning, os.str());
+		}
 #endif
 
 		/* Create the kanjidic object with our string data. */
@@ -113,7 +115,6 @@ void WDict::Edict2Parser(char *edictRawData) {
 	while(token) {
 		if(strlen(token)>0) {
 			/* 0. Make wstring copy of the token */
-			/*UTF8ToWx(token, wToken);*/
 			wToken = ConvertString<char, wchar_t>
 				(token, "UTF-8", wcType.c_str());
 			/* 1. Store full string in vector */
@@ -197,7 +198,6 @@ bool WDict::Search(const wstring& query, list<int>& results,
 	int priorityLevel;
 	char c;
 
-	/*WxToUTF8(query, utfQuery);*/
 	utfQuery = ConvertString<wchar_t, char>
 		(query, wcType.c_str(), "UTF-8");
 	lwrQuery = StrToLower(utfQuery); /* For English searching, store a
@@ -356,12 +356,10 @@ bool WDict::Search(const wstring& query, list<int>& results,
 			  +priorityResults[3].size()< SEARCH_MAX) {
 				priorityResults[priorityLevel].push_back(i);
 			} else {
-#ifdef DEBUG
-				printf("PANIC: SEARCH_MAX results reached!\n");
-#endif
-				wxMessageBox(wxString::Format(_T("Over %d results were found.  The search has been stopped."), SEARCH_MAX),
-							 _T("Excessive search results"),
-							 wxOK | wxICON_INFORMATION, NULL);
+				ostringstream os;
+				os << "Over " << SEARCH_MAX
+				   << " results were found.  The search has been stopped.";
+				el.Push(EL_Info, os.str());
 				break;
 			}
 		}
@@ -393,31 +391,31 @@ wstring WDict::ResultToHTML(const wstring& rawResult) {
 	while(tk.size()>0) {
 		token = tk.front();
 		tk.pop_front();
-		htmlStr.append(_T("<p>"));
+		htmlStr.append(L"<p>");
 
-		indexSlash = token.find_first_of(_T('/'));
+		indexSlash = token.find_first_of(L'/');
 		if(indexSlash==wstring::npos) {
 			/* Fail-safe: just display the raw string */
 			htmlStr.append(token);
 		} else {
-			htmlStr.append(_T("<b>Japanese:</b> <font size=\"6\">"));
+			htmlStr.append(L"<b>Japanese:</b> <font size=\"6\">");
 			/*htmlStr.append(token.substr(0,indexSlash));*/
 			jStr = token.substr(0,indexSlash);
 
-			indexBreak = jStr.find_first_of(_T(';'));
+			indexBreak = jStr.find_first_of(L';');
 			while(indexBreak!=wstring::npos) {
-				/*jStr[indexBreak]=_T(", ");*/
-				jStr.replace(indexBreak,1,_T(", "),0,2);
-				indexBreak = jStr.find_first_of(_T(';'));
+				/*jStr[indexBreak]=L", ";*/
+				jStr.replace(indexBreak,1,L", ",0,2);
+				indexBreak = jStr.find_first_of(L';');
 			}
 
 			htmlStr.append(jStr);
-			htmlStr.append(_T("</font><br>"));
+			htmlStr.append(L"</font><br>");
 
-			htmlStr.append(_T("<b>English:</b> "));
+			htmlStr.append(L"<b>English:</b> ");
 			eStr.clear();
 			while(indexSlash!=wstring::npos) {
-				indexNextSlash = token.find_first_of(_T('/'), indexSlash+1);
+				indexNextSlash = token.find_first_of(L'/', indexSlash+1);
 				if(indexNextSlash==wstring::npos)
 					subToken = token.substr(indexSlash+1);
 				else
@@ -425,14 +423,14 @@ wstring WDict::ResultToHTML(const wstring& rawResult) {
 											indexNextSlash-1 - indexSlash);
 				if(subToken.length()>0) {
 					if(eStr.length()>0)
-						eStr.append(_T("; "));
+						eStr.append(L"; ");
 					eStr.append(subToken);
 				}
 				indexSlash = indexNextSlash;
 			}
 			htmlStr.append(eStr);
 		}
-		htmlStr.append(_T("</p>"));
+		htmlStr.append(L"</p>");
 	}
 
 	return htmlStr;

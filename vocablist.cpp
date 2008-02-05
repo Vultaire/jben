@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "vocablist.h"
 #include "jben.h"
 #include "string_utils.h"
+#include "errorlog.h"
 #include <list>
 #include <sstream>
 #include <iostream>
@@ -101,10 +102,11 @@ int VocabList::AddList(const wstring& s) {
 		}
 		t.pop_front();
 	}
-	if(duplicates>0)
-		/* This was being put out to a wxMessageBox.  Probably we want it to
-		   be passed to some error log manager or something... later. */
-		cerr << "Notice: " << duplicates << " duplicate entries were detected, and were therefore ommitted.";
+	if(duplicates>0) {
+		ostringstream os;
+		os << duplicates << " duplicate entries were detected, and were therefore ommitted.";
+		el.Push(EL_Info, os.str());
+	}
 	return count;
 }
 

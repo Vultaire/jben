@@ -116,7 +116,7 @@ $(OBJDIR)/jben.res:
 	windres.exe -i jben.rc -J rc -o $(OBJDIR)/jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
 
 kpengine:
-	cd kanjipad && $(MAKE) && cd ..
+	cd kanjipad && $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) && cd ..
 
 clean:
 	cd kanjipad && make clean && cd ..

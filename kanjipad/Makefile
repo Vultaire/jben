@@ -47,5 +47,4 @@ $(OBJDIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ -DFOR_PILOT_COMPAT $<
 
 clean:
-	$(rmdircmd) bin
-	$(rmdircmd) obj
+	$(rmdircmd) bin obj

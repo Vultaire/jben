@@ -35,7 +35,7 @@ using namespace std;
 
 Preferences* Preferences::prefsSingleton = NULL;
 
-Preferences *Preferences::GetPrefs() {
+Preferences *Preferences::Get() {
 	if(!prefsSingleton) {
 		prefsSingleton = new Preferences;
 /*		if(!prefsSingleton->LoadFile(".jben") &&

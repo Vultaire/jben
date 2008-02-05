@@ -26,14 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 /* #define USING_INDICES */
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
 #include "boosthm.h"
 #include <list>
 #include <vector>
@@ -50,7 +42,7 @@ using namespace std;
 
 class WDict {
 public:
-	static const WDict *GetWDict();
+	static const WDict *Get();
 	static void Destroy();
 	~WDict();
 

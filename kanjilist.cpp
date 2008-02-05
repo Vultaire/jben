@@ -75,7 +75,7 @@ void KanjiList::Clear() {
 int KanjiList::AddByGrade(int lowGrade, int highGrade) {
 	wstring kanjiStr;
 	int grade;
-	const KDict* kd = KDict::GetKDict();
+	const KDict* kd = KDict::Get();
 
 	for(BoostHM<wchar_t,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
 		grade = kd->GetIntField(ki->first, L"G");
@@ -90,7 +90,7 @@ int KanjiList::AddByGrade(int lowGrade, int highGrade) {
 int KanjiList::AddByFrequency(int lowFreq, int highFreq) {
 	wstring kanjiStr;
 	int freq;
-	const KDict* kd = KDict::GetKDict();
+	const KDict* kd = KDict::Get();
 
 	for(BoostHM<wchar_t,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
 		freq = kd->GetIntField(ki->first, L"F");
@@ -150,7 +150,7 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 
 	/* Create index based on the sort type */
 	int value;
-	const KDict* kd = KDict::GetKDict();
+	const KDict* kd = KDict::Get();
 	for(vi=kanjiList.begin();vi!=kanjiList.end();vi++) {
 		value = kd->GetIntField(*vi, fieldMarker);
 		if(value==-1) value=INT_MAX;

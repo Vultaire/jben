@@ -130,7 +130,7 @@ void PanelWordDict::Redraw() {
 
 void PanelWordDict::UpdateHtmlOutput() {
 	list<int> resultList;
-	const WDict *wd = WDict::GetWDict();
+	const WDict *wd = WDict::Get();
 
 	wxString html = _T("<html><body><font face=\"Serif\">");
 	if(currentSearchString.length()==0) {

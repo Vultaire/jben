@@ -5,7 +5,7 @@ Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: encoding_convert.cpp
+File: errorlog.cpp
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,6 +21,53 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "encoding_convert.h"
+#include "errorlog.h"
 
-string wcType;
+ErrorLog el;
+
+list<string>* ErrorLog::GetList(ELType t) {
+	switch(t) {
+	case EL_Error:
+		return &errors;
+	case EL_Warning:
+		return &warnings;
+	case EL_Info:
+		return &info;
+	}
+	return NULL;
+}
+
+int ErrorLog::Size() {
+	return errors.size() + warnings.size() + info.size();
+}
+
+int ErrorLog::Count(ELType t) {
+	list<string> *l = GetList(t);
+	if(!l) return -1;
+	return l->size();
+}
+
+string ErrorLog::PopFront(ELType t) {
+	string s;
+	list<string> *l = GetList(t);
+	if(l) {
+		s = l->front();
+		l->pop_front();
+	}
+	return s;
+}
+
+string ErrorLog::PopBack(ELType t) {
+	string s;
+	list<string> *l = GetList(t);
+	if(l) {
+		s = l->back();
+		l->pop_back();
+	}
+	return s;
+}
+
+void ErrorLog::Push(ELType t, string message) {
+	list<string> *l = GetList(t);
+	l->push_back(message);
+}

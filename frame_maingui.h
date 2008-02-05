@@ -5,7 +5,7 @@ Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: maingui.h
+File: frame_maingui.h
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef gui_h
-#define gui_h
+#ifndef frame_maingui_h
+#define frame_maingui_h
 
 /* Stock wxWidgets includes */
 #include "wx/wxprec.h"
@@ -51,9 +51,9 @@ enum {
 	GUI_menuHelp
 };
 
-class MainGUI: public wxFrame {
+class FrameMainGUI: public wxFrame {
 public:
-	MainGUI();
+	FrameMainGUI();
 
 	void OnClose(wxCloseEvent& event);
 

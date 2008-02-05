@@ -5,7 +5,7 @@ Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: encoding_convert.cpp
+File: errorlog.h
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,6 +21,37 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "encoding_convert.h"
+#ifndef errorlog_h
+#define errorlog_h
 
-string wcType;
+#include <list>
+#include <string>
+using namespace std;
+
+enum ELType {
+	EL_Error=1,
+	EL_Warning,
+	EL_Info
+};
+
+class ErrorLog {
+public:
+	int Size();
+	int Count(ELType t);
+	string PopFront(ELType t);
+	string PopBack(ELType t);
+	void Push(ELType t, string message);
+private:
+	list<string>* GetList(ELType t);
+
+	list<string> errors;
+	list<string> warnings;
+	list<string> info;
+};
+
+/* ErrorLog is not technically a singleton and an app could have separate error
+   logs for different objects.  However, for our app I think we'll just do one,
+   for which the global is below. */
+extern ErrorLog el; 
+
+#endif

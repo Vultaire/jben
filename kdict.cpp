@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "jutils.h"
 #include "encoding_convert.h"
 #include "string_utils.h"
+#include "errorlog.h"
 #include <sstream>
 #include <iomanip>
 #include <fstream>
@@ -35,7 +36,7 @@ using namespace std;
 
 KDict* KDict::kdictSingleton = NULL;
 
-const KDict *KDict::GetKDict() {
+const KDict *KDict::Get() {
 	if(!kdictSingleton)
 		kdictSingleton = new KDict;
 	return kdictSingleton;
@@ -66,13 +67,14 @@ int KDict::LoadKanjidic(const char *filename) {
 		rawData = new char[size+1];
 		rawData[size] = '\0';
 		ifile.read(rawData, size);
-#ifdef DEBUG
-		if(strlen(rawData)!=size)
-			fprintf(stderr,
-			  "WARNING: kanjidic file size: %d, read-in string: %d\n",
-			  strlen(rawData),
-			  size);
-#endif
+		if(strlen(rawData)!=size) {
+			ostringstream os;
+			os << "kanjidic file size: "
+			   << strlen(rawData)
+			   << ", read-in string: "
+			   << size << "\n";
+			el.Push(EL_Warning, os.str());
+		}
 
 		/* Create the kanjidic object with our string data. */
 		this->KanjidicParser(rawData);
@@ -109,11 +111,11 @@ void KDict::KanjidicParser(char *kanjidicRawData) {
 			wToken = ConvertKanjidicEntry(wToken);
 			/* Add to hash table */
 			if(!kanjidicData.assign(wToken[0], token)) {
-#ifdef DEBUG
-				fprintf(stderr,
-					"Error assigning (%lc, %ls) to hash table!\n",
-					wToken[0], wToken.c_str());
-#endif
+				ostringstream os;
+				string temp = utfconv_wm(wToken);
+				os << "Error assigning (" << temp.substr(0,1)
+				   << ", " << temp << ") to hash table!\n";
+				el.Push(EL_Error, os.str());
 			}
 		}
 		token = strtok(NULL, "\n");
@@ -180,7 +182,7 @@ wstring KDict::ConvertKanjidicEntry(const wstring& s) {
 }
 
 wstring KDict::KanjidicToHtml(const wstring& kanjidicStr) {
-	Preferences *prefs = Preferences::GetPrefs();
+	Preferences *prefs = Preferences::Get();
 	return KanjidicToHtml(kanjidicStr,
 						  prefs->kanjidicOptions,
 						  prefs->kanjidicDictionaries);
@@ -238,11 +240,6 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 			fn << "sods" << DIRSEP
 			   << "sod-utf8-hex" << DIRSEP
 			   << ss.str() << ".png";
-			/*wxFileName fn;
-			fn.AppendDir(L"sods");
-			fn.AppendDir(L"sod-utf8-hex");
-			fn.SetName(ss.str());
-			fn.SetExt(L"png");*/
 #ifdef DEBUG
 			printf("DEBUG: Checking for existance of file \"%s\"...\n", fn.str().c_str());
 #endif
@@ -255,9 +252,6 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 						fn.str(),"UTF-8",wcType.c_str())
 					<< L"\" />";
 			}
-			/*if(wxFile::Exists(fn.GetFullPath())) {
-				sod << L"<img src=\"" << fn.GetFullPath() << L"\" />";
-				}*/
 		}
 		/* Load animated SOD, if present */
 		if((options & KDO_SOD_ANIM) != 0) {
@@ -265,11 +259,6 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 			fn << "sods" << DIRSEP
 			   << "soda-utf8-hex" << DIRSEP
 			   << ss.str() << ".gif";
-			/*wxFileName fn;
-			fn.AppendDir(L"sods");
-			fn.AppendDir(L"soda-utf8-hex");
-			fn.SetName(sTemp);
-			fn.SetExt(L"gif");*/
 #ifdef DEBUG
 			printf("DEBUG: Checking for existance of file \"%s\"...\n", fn.str().c_str());
 #endif
@@ -282,10 +271,6 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 						fn.str(),"UTF-8",wcType.c_str())
 					<< L"\" />";
 			}
-			/*if(wxFile::Exists(fn.GetFullPath())) {
-				if(sod.str().length()>0) sod << L"<br />";
-				sod << L"<img src=\"" << fn.GetFullPath() << L"\" />";
-				}*/
 		}
 		/* Append the chart(s) in a paragraph object. */
 		if(sod.str().length()>0) {

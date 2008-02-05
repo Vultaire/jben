@@ -40,7 +40,7 @@ bool JBen::OnInit() {
 	jben = this;
 	kanjiList = (KanjiList *)NULL;
 	vocabList = (VocabList *)NULL;
-	gui = (MainGUI *)NULL;
+	gui = (FrameMainGUI *)NULL;
 
 	/* Set our wide character type */
 	if(sizeof(wchar_t)==2)
@@ -62,7 +62,7 @@ bool JBen::OnInit() {
 									 it. */
 
 	/* Dictionary loading, etc., depends on our config file. */
-	Preferences *prefs = Preferences::GetPrefs();
+	Preferences *prefs = Preferences::Get();
 	if(!prefs) {
 		/* Add more graceful handling later.  No prefs file found should just
 		   cause a prefs file to be written, rather than aborting. */
@@ -70,8 +70,8 @@ bool JBen::OnInit() {
 		return false;
 	}
 
-	const KDict* kd = KDict::GetKDict();
-	const WDict* wd = WDict::GetWDict();
+	const KDict* kd = KDict::Get();
+	const WDict* wd = WDict::Get();
 
 	if(wd->MainDataLoaded()) {
 		vocabList = new VocabList();
@@ -84,7 +84,7 @@ bool JBen::OnInit() {
 	}
 	else kanjiList = NULL;
 
-	gui = new MainGUI();
+	gui = new FrameMainGUI();
 	gui->Show(true);
 	SetTopWindow(gui);
 

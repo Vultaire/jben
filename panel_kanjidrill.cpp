@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "panel_kanjidrill.h"
 #include "jben.h"
-#include "maingui.h"
+#include "frame_maingui.h"
 #include "kdict.h"
 #include <cstdlib>
 #include <algorithm>
@@ -321,7 +321,7 @@ void PanelKanjiDrill::OnRdoStartIndex(wxCommandEvent& ev) {
 }
 
 void PanelKanjiDrill::ShowNextKanji() {
-	const KDict* kd = KDict::GetKDict();
+	const KDict* kd = KDict::Get();
 	/* Remove the current kanji, and get the new one */
 	if(!extraPractice) {
 		if(currentKanjiIndex!=-1)

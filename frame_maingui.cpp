@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "maingui.h"
+#include "frame_maingui.h"
 #include "jben.h"
 #include "version.h"
 #include "wx/msgdlg.h"
@@ -56,41 +56,41 @@ enum {
 	ID_tabsConfig
 };
 
-BEGIN_EVENT_TABLE(MainGUI, wxFrame)
-	EVT_CLOSE(MainGUI::OnClose)
+BEGIN_EVENT_TABLE(FrameMainGUI, wxFrame)
+	EVT_CLOSE(FrameMainGUI::OnClose)
 
-	EVT_MENU(ID_menuFileQuit, MainGUI::OnFileQuit)
+	EVT_MENU(ID_menuFileQuit, FrameMainGUI::OnFileQuit)
 
-	EVT_MENU(ID_menuKanjiAddFromFile, MainGUI::OnKanjiAddFromFile)
-	EVT_MENU(ID_menuKanjiAddByGrade, MainGUI::OnKanjiAddByGrade)
-	EVT_MENU(ID_menuKanjiAddByFreq, MainGUI::OnKanjiAddByFreq)
-	EVT_MENU(ID_menuKanjiSaveToFile, MainGUI::OnKanjiSaveToFile)
-	EVT_MENU(ID_menuKanjiClearList, MainGUI::OnKanjiClearList)
+	EVT_MENU(ID_menuKanjiAddFromFile, FrameMainGUI::OnKanjiAddFromFile)
+	EVT_MENU(ID_menuKanjiAddByGrade, FrameMainGUI::OnKanjiAddByGrade)
+	EVT_MENU(ID_menuKanjiAddByFreq, FrameMainGUI::OnKanjiAddByFreq)
+	EVT_MENU(ID_menuKanjiSaveToFile, FrameMainGUI::OnKanjiSaveToFile)
+	EVT_MENU(ID_menuKanjiClearList, FrameMainGUI::OnKanjiClearList)
 #ifdef DEBUG
-	EVT_MENU(ID_menuKanjiDumpList, MainGUI::OnKanjiDumpList)
+	EVT_MENU(ID_menuKanjiDumpList, FrameMainGUI::OnKanjiDumpList)
 #endif
-	EVT_MENU(ID_menuKanjiSortByGrade, MainGUI::OnKanjiSortByGrade)
-	EVT_MENU(ID_menuKanjiSortByFreq, MainGUI::OnKanjiSortByFreq)
-	EVT_MENU(ID_menuKanjiSearchKanjiPad, MainGUI::OnKanjiSearchKanjiPad)
+	EVT_MENU(ID_menuKanjiSortByGrade, FrameMainGUI::OnKanjiSortByGrade)
+	EVT_MENU(ID_menuKanjiSortByFreq, FrameMainGUI::OnKanjiSortByFreq)
+	EVT_MENU(ID_menuKanjiSearchKanjiPad, FrameMainGUI::OnKanjiSearchKanjiPad)
 
-	EVT_MENU(ID_menuHelpAbout, MainGUI::OnHelpAbout)
-	EVT_MENU(ID_menuHelpLicense, MainGUI::OnHelpLicense)
+	EVT_MENU(ID_menuHelpAbout, FrameMainGUI::OnHelpAbout)
+	EVT_MENU(ID_menuHelpLicense, FrameMainGUI::OnHelpLicense)
 
-	EVT_NOTEBOOK_PAGE_CHANGING(ID_tabsMain,   MainGUI::OnTabChanging)
-	EVT_NOTEBOOK_PAGE_CHANGED (ID_tabsMain,   MainGUI::OnMajorTabChanged)
-	EVT_NOTEBOOK_PAGE_CHANGING(ID_tabsKanji,  MainGUI::OnTabChanging)
-	EVT_NOTEBOOK_PAGE_CHANGED (ID_tabsKanji,  MainGUI::OnMinorTabChanged)
-	EVT_NOTEBOOK_PAGE_CHANGING(ID_tabsWords,  MainGUI::OnTabChanging)
-	EVT_NOTEBOOK_PAGE_CHANGED (ID_tabsWords,  MainGUI::OnMinorTabChanged)
-	EVT_NOTEBOOK_PAGE_CHANGING(ID_tabsConfig, MainGUI::OnTabChanging)
-	EVT_NOTEBOOK_PAGE_CHANGED (ID_tabsConfig, MainGUI::OnMinorTabChanged)
+	EVT_NOTEBOOK_PAGE_CHANGING(ID_tabsMain,   FrameMainGUI::OnTabChanging)
+	EVT_NOTEBOOK_PAGE_CHANGED (ID_tabsMain,   FrameMainGUI::OnMajorTabChanged)
+	EVT_NOTEBOOK_PAGE_CHANGING(ID_tabsKanji,  FrameMainGUI::OnTabChanging)
+	EVT_NOTEBOOK_PAGE_CHANGED (ID_tabsKanji,  FrameMainGUI::OnMinorTabChanged)
+	EVT_NOTEBOOK_PAGE_CHANGING(ID_tabsWords,  FrameMainGUI::OnTabChanging)
+	EVT_NOTEBOOK_PAGE_CHANGED (ID_tabsWords,  FrameMainGUI::OnMinorTabChanged)
+	EVT_NOTEBOOK_PAGE_CHANGING(ID_tabsConfig, FrameMainGUI::OnTabChanging)
+	EVT_NOTEBOOK_PAGE_CHANGED (ID_tabsConfig, FrameMainGUI::OnMinorTabChanged)
 
 END_EVENT_TABLE()
 
-MainGUI::MainGUI() : wxFrame((wxFrame *)NULL, -1,
-                     _T(PROGRAM_NAME " v" VERSION_STR " by " AUTHOR_NAME),
-                     wxDefaultPosition, wxSize(600,400)) {
-/*                     wxDefaultPosition, wxDefaultSize) { */
+FrameMainGUI::FrameMainGUI() : wxFrame
+((wxFrame *)NULL, -1,
+ _T(PROGRAM_NAME " v" VERSION_STR " by " AUTHOR_NAME),
+ wxDefaultPosition, wxSize(600,400)) {
 	this->SetIcon(wxICON(iconJben));
 	wxInitAllImageHandlers();	/* This is needed for PNG support - GIFs seem to
 								   load fine without it. */
@@ -201,11 +201,11 @@ MainGUI::MainGUI() : wxFrame((wxFrame *)NULL, -1,
 	tabsConfig->AddPage(panelConfig,_T("Main Options"),true);
 }
 
-void MainGUI::OnFileQuit(wxCommandEvent& event) {
+void FrameMainGUI::OnFileQuit(wxCommandEvent& event) {
 	Close();
 }
 
-void MainGUI::OnKanjiAddFromFile(wxCommandEvent& event) {
+void FrameMainGUI::OnKanjiAddFromFile(wxCommandEvent& event) {
 	/* NOTE: We may add the flag wxFD_CHANGE_DIR later, if we add in code
 	   to save the full path for the jben.cfg file. */
 	wxFileDialog *fd = new wxFileDialog(
@@ -231,7 +231,7 @@ void MainGUI::OnKanjiAddFromFile(wxCommandEvent& event) {
 	fd->Destroy();
 }
 
-void MainGUI::OnKanjiAddByGrade(wxCommandEvent& event) {
+void FrameMainGUI::OnKanjiAddByGrade(wxCommandEvent& event) {
 	if(!dialogAddKanjiByGrade)
 		dialogAddKanjiByGrade = new DialogAddKanjiByGrade(this);
 	int result = dialogAddKanjiByGrade->ShowModal();
@@ -255,7 +255,7 @@ void MainGUI::OnKanjiAddByGrade(wxCommandEvent& event) {
 #endif
 }
 
-void MainGUI::OnKanjiAddByFreq(wxCommandEvent& event) {
+void FrameMainGUI::OnKanjiAddByFreq(wxCommandEvent& event) {
 	if(!dialogAddKanjiByFreq)
 		dialogAddKanjiByFreq = new DialogAddKanjiByFreq(this);
 	int result = dialogAddKanjiByFreq->ShowModal();
@@ -279,7 +279,7 @@ void MainGUI::OnKanjiAddByFreq(wxCommandEvent& event) {
 #endif
 }
 
-void MainGUI::OnKanjiSaveToFile(wxCommandEvent& event) {
+void FrameMainGUI::OnKanjiSaveToFile(wxCommandEvent& event) {
 	/* NOTE: We may add the flag wxFD_CHANGE_DIR later, if we add in code
 	   to save the full path for the jben.cfg file. */
 	wxFileDialog *fd = new wxFileDialog(
@@ -298,18 +298,18 @@ void MainGUI::OnKanjiSaveToFile(wxCommandEvent& event) {
 	fd->Destroy();
 }
 
-void MainGUI::OnKanjiClearList(wxCommandEvent& event) {
+void FrameMainGUI::OnKanjiClearList(wxCommandEvent& event) {
 	jben->kanjiList->Clear();
 	this->Redraw();
 }
 
 #ifdef DEBUG
-void MainGUI::OnKanjiDumpList(wxCommandEvent& event) {
+void FrameMainGUI::OnKanjiDumpList(wxCommandEvent& event) {
 	printf("Current kanji list: %ls\n", jben->kanjiList->ToString().c_str());
 }
 #endif
 
-void MainGUI::OnHelpAbout(wxCommandEvent& event) {
+void FrameMainGUI::OnHelpAbout(wxCommandEvent& event) {
 	wxMessageBox(_T(
 		PROGRAM_NAME " v" VERSION_STR
 		"\nBy " AUTHOR_NAME
@@ -333,7 +333,7 @@ void MainGUI::OnHelpAbout(wxCommandEvent& event) {
 		_T("About " PROGRAM_NAME), wxOK | wxICON_INFORMATION, this);
 }
 
-void MainGUI::OnHelpLicense(wxCommandEvent& event) {
+void FrameMainGUI::OnHelpLicense(wxCommandEvent& event) {
 	wxMessageBox(_T(
 		"Program distributed under the GNU General Public License (GPL) version 2:\n"
 		"http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt\n\n"
@@ -350,7 +350,7 @@ void MainGUI::OnHelpLicense(wxCommandEvent& event) {
 		_T("License Information"), wxOK | wxICON_INFORMATION, this);
 }
 
-void MainGUI::OnMajorTabChanged(wxNotebookEvent& event) {
+void FrameMainGUI::OnMajorTabChanged(wxNotebookEvent& event) {
 #ifdef DEBUG
 	printf("DEBUG: OnMAJORTabChanged called.\n");
 #endif
@@ -362,7 +362,7 @@ void MainGUI::OnMajorTabChanged(wxNotebookEvent& event) {
 	this->Redraw();
 }
 
-void MainGUI::OnMinorTabChanged(wxNotebookEvent& event) {
+void FrameMainGUI::OnMinorTabChanged(wxNotebookEvent& event) {
 #ifdef DEBUG
 	printf("DEBUG: OnMinorTabChanged called.\n");
 #endif
@@ -380,7 +380,7 @@ void MainGUI::OnMinorTabChanged(wxNotebookEvent& event) {
    It's called by both OnTabChanging functions.
    Returns true if the tab change should take place, and false if it
    should be vetoed. */
-bool MainGUI::TabChangeHandler(wxNotebookPage *page) {
+bool FrameMainGUI::TabChangeHandler(wxNotebookPage *page) {
 	int result;
 	if(page == panelConfig) {
 		if(panelConfig->ChangeDetected()) {
@@ -447,31 +447,31 @@ bool MainGUI::TabChangeHandler(wxNotebookPage *page) {
 	return true;
 }
 
-void MainGUI::OnTabChanging(wxNotebookEvent& event) {
+void FrameMainGUI::OnTabChanging(wxNotebookEvent& event) {
 	int index = event.GetOldSelection();
 	if(index==-1) return;
 
 	if(!TabChangeHandler(tabMinor)) event.Veto();
 }
 
-void MainGUI::OnKanjiSortByGrade(wxCommandEvent& ev) {
+void FrameMainGUI::OnKanjiSortByGrade(wxCommandEvent& ev) {
 	jben->kanjiList->Sort(ST_GRADE);
 	this->Redraw();
 }
 
-void MainGUI::OnKanjiSortByFreq(wxCommandEvent& ev) {
+void FrameMainGUI::OnKanjiSortByFreq(wxCommandEvent& ev) {
 	jben->kanjiList->Sort(ST_FREQUENCY);
 	this->Redraw();
 }
 
-void MainGUI::OnKanjiSearchKanjiPad(wxCommandEvent& ev) {
+void FrameMainGUI::OnKanjiSearchKanjiPad(wxCommandEvent& ev) {
 	/* Multiple instances are allowed - just spin off an instance. */
 	FrameKanjiPad *kanjiPad =
 		new FrameKanjiPad(this, -1, _T("J-Ben: KanjiPad"));
 	kanjiPad->Show();
 }
 
-void MainGUI::Redraw() {
+void FrameMainGUI::Redraw() {
 	bool state = (jben->kanjiList->Size()>0);
 	kanjiMenu->Enable(ID_menuKanjiSaveToFile, state);
 	kanjiMenu->Enable(ID_menuKanjiClearList, state);
@@ -481,7 +481,7 @@ void MainGUI::Redraw() {
 	}
 }
 
-void MainGUI::OnClose(wxCloseEvent& event) {
+void FrameMainGUI::OnClose(wxCloseEvent& event) {
 	if(!event.CanVeto()) {
 #ifdef DEBUG
 		fprintf(stderr, "event.CanVeto() returned false!\n");

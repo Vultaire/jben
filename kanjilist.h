@@ -53,16 +53,6 @@ private:
 	const BoostHM<wchar_t, string> *kanjiHash;
 	vector<wchar_t> kanjiList;
 	BoostHM<wchar_t, int> *myCharIndexer;
-	/*  NOTE:
-		The wxWidgets documentation does say to avoid using templates, but at
-		the same time, wx has been around for a -long- time, and since gcc is
-		pretty well universally supported and supports templates, I think for
-		the purposes of my program the convenience of templates outweighs the
-		compatibility loss with certain seldom-used obscure compilers.
-
-		If desired, we can do the hunky-dory wxWidgets ARRAY mechanism,
-		or we can just create a custom vector class by hand.  But until the STL
-		class fails us, I see no reason not to use it. */
 };
 
 #endif

@@ -24,8 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef kdict_h
 #define kdict_h
 
-#include "boosthm.h"
-
 #define KD_SUCCESS 0x0
 #define KD_FAILURE 0x80000000
 
@@ -104,9 +102,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
    This is a lot of output, so it's probably for debug purposes only. */
 #define KDD_ALL    0xFFFFFFFF
 
+#include "boosthm.h"
+
 class KDict {
 public:
-	static const KDict *GetKDict();
+	static const KDict *Get();
 	static void Destroy();
 	~KDict();
 
