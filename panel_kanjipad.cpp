@@ -23,6 +23,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "panel_kanjipad.h"
+#ifndef KPENGINE_DATADIR
+	#define KPENGINE_DATADIR "kanjipad"
+#endif
 
 BEGIN_EVENT_TABLE(PanelKanjiPad, wxPanel)
 	EVT_LEFT_DOWN(PanelKanjiPad::OnMouseDown)
@@ -163,9 +166,9 @@ bool PanelKanjiPad::Search() {
 		kpengine = new wxProcess(this);
 		kpengine->Redirect();
 #ifdef __MSWINDOWS__
-		wxString command = _T(".\\kpengine");
+		wxString command = _T(".\\jben_kpengine.exe -d " KPENGINE_DATADIR);
 #else
-		wxString command = _T("./kpengine");
+		wxString command = _T("./jben_kpengine -d " KPENGINE_DATADIR);
 #endif
 		kpPid = wxExecute(command, wxEXEC_ASYNC, kpengine);
 
