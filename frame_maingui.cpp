@@ -217,8 +217,7 @@ void FrameMainGUI::OnKanjiAddFromFile(wxCommandEvent& event) {
 		fd->GetPaths(filenames);
 		for(unsigned int i=0;i<filenames.Count();i++) {
 			if(ReadEncodedFile(
-				   ConvertString<wchar_t,char>(filenames[i].c_str(),
-											   wcType.c_str(), "UTF-8").c_str(),
+				   utfconv_wm(filenames[i].c_str()).c_str(),
 				   file)==REF_SUCCESS)
 				allFiles.append(file);
 		}

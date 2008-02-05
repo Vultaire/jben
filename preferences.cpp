@@ -175,16 +175,8 @@ string Preferences::GetPrefsStr() {
 	string kanjiList, vocabList;
 
 	/* Get kanji and vocab lists in UTF-8 encoded strings */
-	/* In our encoding switcher, we should set a global widechar string
-	   containing "UCS-2" or "UCS-4", keeping us from continually rewriting
-	   this code below. */
-	/* I've rewritten the code, but now we need the variable it depends upon. */
-	kanjiList = ConvertString<wchar_t, char>(
-		jben->kanjiList->ToString(),
-		wcType.c_str(), "UTF-8");
-	vocabList = ConvertString<wchar_t, char>(
-		jben->vocabList->ToString(';'),
-		wcType.c_str(), "UTF-8");
+	kanjiList = utfconv_wm(jben->kanjiList->ToString());
+	vocabList = utfconv_wm(jben->vocabList->ToString(';'));
 
 	prefs << "KanjidicOptionMask 0x"
 		  << uppercase << hex << setw(8) << setfill('0')
@@ -193,13 +185,9 @@ string Preferences::GetPrefsStr() {
 		  << uppercase << hex << setw(8) << setfill('0')
 		  << kanjidicDictionaries << '\n';
 	prefs << "KanjiList "
-		  << ConvertString<wchar_t,char>
-		(jben->kanjiList->ToString(),wcType.c_str(),"UTF-8")
-		  << '\n';
+		  << utfconv_wm(jben->kanjiList->ToString()) << '\n';
 	prefs << "VocabList "
-		  << ConvertString<wchar_t,char>
-		(jben->vocabList->ToString(';'),wcType.c_str(),"UTF-8")
-		  << '\n';
+		  << utfconv_wm(jben->vocabList->ToString(';')) << '\n';
 
 	return prefs.str();
 }

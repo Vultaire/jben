@@ -105,8 +105,7 @@ void KDict::KanjidicParser(char *kanjidicRawData) {
 	wstring wToken;
 	while(token) {
 		if( (strlen(token)>0) && (token[0]!='#') ) {
-			wToken = ConvertString<char, wchar_t>
-				(token, "UTF-8", wcType.c_str());
+			wToken = utfconv_mw(token);
 			/* Convert token to proper format */
 			wToken = ConvertKanjidicEntry(wToken);
 			/* Add to hash table */
@@ -135,7 +134,7 @@ wstring KDict::GetKanjidicStr(wchar_t c) const {
 	BoostHM<wchar_t,string>::iterator it = kanjidicData.find(c);
 	if(it==kanjidicData.end()) return L"";
 	wstring s;
-	s = ConvertString<char, wchar_t>(it->second, "UTF-8", wcType.c_str());
+	s = utfconv_mw(it->second);
 	return ConvertKanjidicEntry(s);
 }
 
@@ -223,8 +222,7 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 	if(options & (KDO_SOD_STATIC | KDO_SOD_ANIM) != 0) {
 		string utfStr;
 		/* Get a UTF8-encoded string for the kanji. */
-		utfStr = ConvertString<wchar_t, char>
-			(kanjidicStr.substr(0,1), wcType.c_str(), "UTF-8");
+		utfStr = utfconv_wm(kanjidicStr.substr(0,1));
 
 		/* Convert to a low-to-high-byte hex string. */
 		ostringstream ss;
@@ -247,10 +245,7 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 			if(f.is_open()) {
 				f.close();
 				if(sod.str().length()>0) sod << L"<br />";
-				sod << L"<img src=\""
-					<< ConvertString<char,wchar_t>(
-						fn.str(),"UTF-8",wcType.c_str())
-					<< L"\" />";
+				sod << L"<img src=\"" << utfconv_mw(fn.str()) << L"\" />";
 			}
 		}
 		/* Load animated SOD, if present */
@@ -266,10 +261,7 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 			if(f.is_open()) {
 				f.close();
 				if(sod.str().length()>0) sod << L"<br />";
-				sod << L"<img src=\""
-					<< ConvertString<char,wchar_t>(
-						fn.str(),"UTF-8",wcType.c_str())
-					<< L"\" />";
+				sod << L"<img src=\"" << utfconv_mw(fn.str()) << L"\" />";
 			}
 		}
 		/* Append the chart(s) in a paragraph object. */

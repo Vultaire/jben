@@ -115,8 +115,7 @@ void WDict::Edict2Parser(char *edictRawData) {
 	while(token) {
 		if(strlen(token)>0) {
 			/* 0. Make wstring copy of the token */
-			wToken = ConvertString<char, wchar_t>
-				(token, "UTF-8", wcType.c_str());
+			wToken = utfconv_mw(token);
 			/* 1. Store full string in vector */
 			edictData.push_back(token);
 			vIndex++;
@@ -198,8 +197,7 @@ bool WDict::Search(const wstring& query, list<int>& results,
 	int priorityLevel;
 	char c;
 
-	utfQuery = ConvertString<wchar_t, char>
-		(query, wcType.c_str(), "UTF-8");
+	utfQuery = utfconv_wm(query);
 	lwrQuery = StrToLower(utfQuery); /* For English searching, store a
 										lowercase query */
 	i = 0;

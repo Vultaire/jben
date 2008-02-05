@@ -144,9 +144,7 @@ void PanelWordDict::UpdateHtmlOutput() {
 			  li!=resultList.end();
 			  li++) {
 				if(resultString.length()!=0) resultString.append(_T('\n'));
-				/*UTF8ToWx(wd->GetEdictString(*li), temp);*/
-				temp = ConvertString<char, wchar_t>
-					(wd->GetEdictString(*li), "UTF-8", wcType.c_str());
+				temp = utfconv_mw(wd->GetEdictString(*li));
 				resultString.append(temp);
 			}
 			/* Convert search results to destination format

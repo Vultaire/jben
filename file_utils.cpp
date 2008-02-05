@@ -63,7 +63,7 @@ string GetCWD() {
 #ifdef __WXMSW__
 	wchar_t *buffer = new wchar_t[0x10000];
 	GetCurrentDirectoryW(0x10000, buffer);
-	s = ConvertString<wchar_t, char>(buffer, wcType.c_str(), "UTF-8");
+	s = utfconv_wm(buffer);
 #else
 	char *buffer = new char[0x10000];
 	if(getcwd(buffer, 0x10000))
