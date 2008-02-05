@@ -5,7 +5,7 @@ jben
 jben.cfg
 jben.res
 *.exe
-kpengine
+jben_kpengine
 sods/sod*
 *~
 archives
