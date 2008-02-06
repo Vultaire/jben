@@ -21,6 +21,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+#ifndef DATADIR
+	#define DATADIR "."
+#endif
+
 #include "preferences.h"
 #include "jben.h"
 #include "file_utils.h"
@@ -67,16 +71,18 @@ void Preferences::SetDefaultPrefs() {
 	stringOpts["config_version"] = "1";
 #ifdef __WXMSW__
 	cfgFile = "jben.cfg";
-	stringOpts["kdict_kanjidic"] = "dicts\\kanjidic";
-	stringOpts["kdict_kradfile"] = "dicts\\kradfile";
-	stringOpts["kdict_radkfile"] = "dicts\\radkfile";
-	stringOpts["wdict_edict2"] = "dicts\\edict2";
+	stringOpts["kdict_kanjidic"] = DATADIR "\\dicts\\kanjidic";
+	stringOpts["kdict_kradfile"] = DATADIR "\\dicts\\kradfile";
+	stringOpts["kdict_radkfile"] = DATADIR "\\dicts\\radkfile";
+	stringOpts["wdict_edict2"]   = DATADIR "\\dicts\\edict2";
+	stringOpts["sod_dir"]        = DATADIR "\\sods";
 #else
 	cfgFile = ".jben";
-	stringOpts["kdict_kanjidic"] = "dicts/kanjidic";
-	stringOpts["kdict_kradfile"] = "dicts/kradfile";
-	stringOpts["kdict_radkfile"] = "dicts/radkfile";
-	stringOpts["wdict_edict2"] = "dicts/edict2";
+	stringOpts["kdict_kanjidic"] = DATADIR "/dicts/kanjidic";
+	stringOpts["kdict_kradfile"] = DATADIR "/dicts/kradfile";
+	stringOpts["kdict_radkfile"] = DATADIR "/dicts/radkfile";
+	stringOpts["wdict_edict2"]   = DATADIR "/dicts/edict2";
+	stringOpts["sod_dir"]        = DATADIR "/sods";
 #endif
 
 
