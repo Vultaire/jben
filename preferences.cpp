@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "file_utils.h"
 #include "encoding_convert.h"
 #include "string_utils.h"
+#include "errorlog.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -46,9 +47,21 @@ Preferences *Preferences::Get() {
 		   preferences. */
 		prefsSingleton->SetDefaultPrefs();
 		/* Try to load .jben, followed by jben.cfg if the first fails. */
-		prefsSingleton->LoadFile(".jben") == REF_SUCCESS ||
-			prefsSingleton->LoadFile("jben.cfg") == REF_SUCCESS;
-
+#ifdef __WXMSW__
+		string homedir = getenv("AppData");
+		homedir.append(1, '\\');
+#else
+		string homedir = getenv("HOME");
+		homedir.append(1, '/');
+#endif
+#ifdef DEBUG
+		cout << "Preferences DEBUG: Home dir is " << homedir << "." << endl;
+#endif
+		if(prefsSingleton->LoadFile(
+			   string(homedir).append(".jben").c_str()
+			   ) != REF_SUCCESS)
+			prefsSingleton->LoadFile(
+				string(homedir).append("jben.cfg").c_str());
 	}
 	return prefsSingleton;
 }
@@ -70,14 +83,24 @@ void Preferences::SetDefaultPrefs() {
 	kanjidicDictionaries = 0;
 	stringOpts["config_version"] = "1";
 #ifdef __WXMSW__
-	cfgFile = "jben.cfg";
+	cfgFile = getenv("AppData");
+	if(cfgFile.length()==0) {
+		el.Push(EL_Error, "Could not retrieve home directory.");
+		cfgFile = GetCWD();
+	}
+	cfgFile.append("\\jben.cfg");
 	stringOpts["kdict_kanjidic"] = DATADIR "\\dicts\\kanjidic";
 	stringOpts["kdict_kradfile"] = DATADIR "\\dicts\\kradfile";
 	stringOpts["kdict_radkfile"] = DATADIR "\\dicts\\radkfile";
 	stringOpts["wdict_edict2"]   = DATADIR "\\dicts\\edict2";
 	stringOpts["sod_dir"]        = DATADIR "\\sods";
 #else
-	cfgFile = ".jben";
+	cfgFile = getenv("HOME");
+	if(cfgFile.length()==0) {
+		el.Push(EL_Error, "Could not retrieve home directory.");
+		cfgFile = GetCWD();
+	}
+	cfgFile.append("/.jben");
 	stringOpts["kdict_kanjidic"] = DATADIR "/dicts/kanjidic";
 	stringOpts["kdict_kradfile"] = DATADIR "/dicts/kradfile";
 	stringOpts["kdict_radkfile"] = DATADIR "/dicts/radkfile";
@@ -89,13 +112,17 @@ void Preferences::SetDefaultPrefs() {
 }
 
 int Preferences::LoadFile(const char *filename) {
-	cfgFile = GetCWD().append(1, DIRSEP).append(filename);
 	wstring s;
 	kanjidicOptions = KDO_ALL | KDO_UNHANDLED;
 	kanjidicDictionaries = 0;  /* KDD_ALL */
 
 	int e = ReadEncodedFile(filename, s);
 	if(e==REF_SUCCESS) {
+		cfgFile = filename;
+#ifdef DEBUG
+		cout << "Preferences file \"" << filename
+			 << "\" loaded successfully." << endl;
+#endif
 		/* Split into strings for each line */
 		list<wstring> tokenList = StrTokenize<wchar_t>(s, L"\n");
 		wstring token, subToken;
@@ -177,6 +204,12 @@ int Preferences::LoadFile(const char *filename) {
 			} /* if(tokenlen>0, token[0]!=# */
 		} /* while(hasmoretokens) */
 	} /* if(file opened) */
+#ifdef DEBUG
+	else {
+		cout << "Preferences file \"" << filename
+			 << "\" could NOT be loaded." << endl;
+	}
+#endif
 	return e;
 }
 
@@ -184,8 +217,18 @@ Preferences::~Preferences() {
 	string prefs = GetPrefsStr();
 	ofstream ofile(cfgFile.c_str(), ios::out | ios::binary);
 	if(ofile.is_open()) {
+#ifdef DEBUG
+		cout << "Preferences saved to file \"" << cfgFile
+			 << "\"." << endl;
+#endif
 		ofile << prefs;
 	}
+#ifdef DEBUG
+	else {
+		cerr << "Error: Unable to save preferences to file \"" << cfgFile
+			 << "\"!" << endl;
+	}
+#endif
 	ofile.close();
 }
 

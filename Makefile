@@ -34,7 +34,14 @@ ifeq ($(PLATFORM),windows)
 
 	wxliblink = $(wxbase)/lib/gcc_dll
 	SharedCXXFLAGS = $(wincxxflags)
-	SharedCPPFLAGS = -I$(stlportbase)/stlport $(wxbuildflags) \
+
+ifeq ($(BUILD),release)
+	winextraflags = -s
+else
+	winextraflags =
+endif
+
+	SharedCPPFLAGS = $(winextraflags) -I$(stlportbase)/stlport $(wxbuildflags) \
 		$(wxplatformflags) -I$(wxinclude) -I$(wxcontribinc) -I$(wxlibinc) \
 		-I$(boostbase) -I$(mingwbase)/include -I$(iconvbase)/include
 	libs = -L$(stlportbase)/lib -L$(wxliblink) -L$(mingwbase)/lib \
@@ -81,7 +88,7 @@ endif
 # C++ options
 CXX = g++
 ifeq ($(BUILD),release)
-	CXXFLAGS = -Wall -s -O2 $(SharedCXXFLAGS)
+	CXXFLAGS = -Wall -O2 $(SharedCXXFLAGS)
 	CPPFLAGS = $(SharedCPPFLAGS)
 endif
 ifeq ($(BUILD),debug)
@@ -121,6 +128,12 @@ endif
 ### Targets ###
 
 all: $(build_bindir)/$(target) kpengine
+	@echo
+	@echo "J-Ben was built successfully."
+ifeq ($(PLATFORM),gtk20)
+	@echo "To install, use \"make install\" with the same options used to compile the"
+	@echo "program."
+endif
 
 .PHONY : kpengine clean cleandep cleanall install uninstall
 
@@ -163,6 +176,9 @@ endif
 	@rm $@.mktmp
 
 install:
+ifeq ($(platform),windows)
+	@echo "\"make install\" is not supported on Windows."
+else
 	$(INSTALL) -d $(bindir) $(datadir)/jben/dicts $(datadir)/jben/sods \
 		$(docdir)/license
 	$(INSTALL_PROGRAM) $(build_bindir)/$(target) $(bindir)
@@ -175,8 +191,12 @@ install:
 		&& cd ..
 	@echo
 	@echo "J-Ben was installed successfully."
+endif
 
 uninstall:
+ifeq ($(platform),windows)
+	@echo "\"make uninstall\" is not supported on Windows."
+else
 	cd kanjipad \
 		&& $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) uninstall \
 		&& cd ..
@@ -190,3 +210,4 @@ uninstall:
 	rmdir -p $(docdir)/license || true
 	@echo
 	@echo "J-Ben was uninstalled successfully."
+endif

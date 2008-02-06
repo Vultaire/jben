@@ -101,6 +101,7 @@ FrameMainGUI::FrameMainGUI() : wxFrame
 	
 	wxMenuBar *menuBar;
 	wxMenu *menu, *subMenu;
+	tabMajor = NULL;
 	tabMinor = NULL;
 
 	menuBar = new wxMenuBar;
@@ -174,10 +175,6 @@ FrameMainGUI::FrameMainGUI() : wxFrame
 		ID_tabsConfig,wxDefaultPosition,
 		wxDefaultSize,wxCLIP_CHILDREN | wxNB_LEFT);
 #endif
-	tabsMain->AddPage(tabsKanji,_T("Kanji"),true);
-	tabsMain->AddPage(tabsWords,_T("Words"),false);
-	tabsMain->AddPage(tabsConfig,_T("Configuration"),false);
-	tabMajor = (wxNotebookPage *) tabsKanji;
 
 	panelKanjiDict = new PanelKanjiDict(tabsKanji);
 	panelKanjiDrill = new PanelKanjiDrill(tabsKanji);
@@ -185,7 +182,6 @@ FrameMainGUI::FrameMainGUI() : wxFrame
 	tabsKanji->AddPage(panelKanjiDict,_T("Dictionary"),true);
 	tabsKanji->AddPage(panelKanjiDrill,_T("Practice"),false);
 	tabsKanji->AddPage(panelKanjiListEditor,_T("Study List"),false);
-	tabMinor = (wxNotebookPage *) panelKanjiDict;
 
 	panelWordDict = new PanelWordDict(tabsWords);
 	/* ADVANCED IDEA: Use radical database to create a multi-choice test option
@@ -199,6 +195,13 @@ FrameMainGUI::FrameMainGUI() : wxFrame
 
 	panelConfig = new PanelConfig(tabsConfig);
 	tabsConfig->AddPage(panelConfig,_T("Main Options"),true);
+
+	tabsMain->AddPage(tabsWords,_T("Words"),true);
+	tabsMain->AddPage(tabsKanji,_T("Kanji"),false);
+	tabsMain->AddPage(tabsConfig,_T("Configuration"),false);
+
+	tabMajor = (wxNotebookPage *) tabsWords;
+	tabMinor = (wxNotebookPage *) panelWordDict;
 }
 
 void FrameMainGUI::OnFileQuit(wxCommandEvent& event) {
