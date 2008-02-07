@@ -22,8 +22,9 @@ print "Packaging " + baseName + " version " + version + "..."
 # Define the files to save
 linuxfiles = " jben/Makefile jben/jben.xpm jben/linux_scripts"
 winfiles = " jben/jben.ico jben/jben.rc"
-otherfiles = " jben/kanjidic jben/edict2 jben/license jben/jben_icon.xcf jben/skip.regex jben/old_files jben/sods/README.txt"
-sourcefiles = "jben/*.cpp jben/*.h " + otherfiles + linuxfiles + winfiles
+otherfiles = " jben/dicts jben/license jben/jben_icon.xcf jben/old_files jben/sods/README.txt"
+kpenginefiles = " jben/kanjipad/*.unistrok jben/kanjipad/*.c jben/kanjipad/*.h jben/kanjipad/Makefile"
+sourcefiles = "jben/*.cpp jben/*.h " + otherfiles + kpenginefiles + linuxfiles + winfiles
 
 # Make the .tar.bz2 archive
 p = P("tar -cjf " + sourcePackageName + ".tar.bz2 " + sourcefiles, \
