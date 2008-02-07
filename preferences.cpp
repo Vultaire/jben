@@ -211,6 +211,9 @@ string Preferences::GetPrefsStr() {
 	ostringstream prefs;
 	string kanjiList, vocabList;
 
+	/* Output config version first */
+	prefs << "config_version\t" << stringOpts["config_version"] << '\n';
+
 	/* Get kanji and vocab lists in UTF-8 encoded strings */
 	kanjiList = utfconv_wm(jben->kanjiList->ToString());
 	vocabList = utfconv_wm(jben->vocabList->ToString(';'));
@@ -229,7 +232,9 @@ string Preferences::GetPrefsStr() {
 	/* Append any other variables stored */
 	for(map<string, string>::iterator mi = stringOpts.begin();
 		mi != stringOpts.end(); mi++) {
-		if(mi->first!="kanjilist" && mi->first!="vocablist") {
+		if(mi->first!="kanjilist" &&
+		   mi->first!="vocablist" &&
+		   mi->first!="config_version") {
 			prefs << mi->first << '\t' << mi->second << '\n';
 		}
 	}
