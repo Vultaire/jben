@@ -66,8 +66,7 @@ clean:
 install:
 	$(INSTALL) -d $(bindir) $(datadir)/jben/kpengine_data
 	$(INSTALL_PROGRAM) $(build_bindir)/$(kpengine) $(bindir)
-	$(INSTALL_DATA) *.unistrok *.txt strokedata.h \
-		$(datadir)/jben/kpengine_data
+	$(INSTALL_DATA) *.unistrok $(datadir)/jben/kpengine_data
 
 uninstall:
 	rm -fv $(bindir)/$(kpengine)
