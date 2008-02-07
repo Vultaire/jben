@@ -227,6 +227,7 @@ bool WDict::Search(const wstring& query, list<int>& results,
 				indexSubstr = lwrData.find(lwrQuery, 0);
 				while(indexSubstr!=string::npos) {
 #ifdef DEBUG
+#if 0
 /*					printf("Checking possible match:\n"
 						   "Query:       [%s]\n"
 						   "Data string: [%s]\n"
@@ -238,6 +239,7 @@ bool WDict::Search(const wstring& query, list<int>& results,
 						<< "Data string: " << lwrData << "\n"
 						<< "Index of match: " << indexSubstr;
 					el.Push(EL_Info, oss.str());
+#endif
 #endif
 					if(
 						/* Check for beginning of data string or preceding
@@ -273,6 +275,7 @@ bool WDict::Search(const wstring& query, list<int>& results,
 			} else {
 				indexSubstr = vSubIt->find(utfQuery, 0);
 #ifdef DEBUG
+#if 0
 /*					printf("Checking possible match:\n"
 						   "Query:       [%s]\n"
 						   "Data string: [%s]\n"
@@ -285,7 +288,7 @@ bool WDict::Search(const wstring& query, list<int>& results,
 						<< "Index of match: " << indexSubstr;
 					el.Push(EL_Info, oss.str());
 #endif
-
+#endif
 			}
 			if(indexSubstr!=string::npos) {
 				/* A match was found.

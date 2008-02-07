@@ -22,23 +22,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "errorlog.h"
+#include "encoding_convert.h" /* Required for wxMessageBox output */
 
 ErrorLog el;
 
 list<string>* ErrorLog::GetList(ELType t) {
-	switch(t) {
-	case EL_Error:
-		return &errors;
-	case EL_Warning:
-		return &warnings;
-	case EL_Info:
-		return &info;
-	}
-	return NULL;
+	return &logdata[t];
 }
 
 int ErrorLog::Size() {
-	return errors.size() + warnings.size() + info.size();
+	size_t s=0;
+	for(map<ELType, list<string> >::iterator mi = logdata.begin();
+		mi != logdata.end(); mi++) {
+		s += mi->second.size();
+	}
+	return s;
 }
 
 int ErrorLog::Count(ELType t) {
@@ -67,7 +65,17 @@ string ErrorLog::PopBack(ELType t) {
 	return s;
 }
 
-void ErrorLog::Push(ELType t, string message) {
+void ErrorLog::Push(ELType t, string message, void *srcObj) {
 	list<string> *l = GetList(t);
 	l->push_back(message);
+	if(t==EL_Error) {
+		wxMessageBox(utfconv_mw(message), _T("Error"),
+					 wxOK | wxICON_ERROR, (wxWindow *)srcObj);
+	} else if(t==EL_Warning) {
+		wxMessageBox(utfconv_mw(message), _T("Warning"),
+					 wxOK | wxICON_WARNING, (wxWindow *)srcObj);
+	} else if(t==EL_Info) {
+		wxMessageBox(utfconv_mw(message), _T("Info"),
+					 wxOK | wxICON_INFORMATION, (wxWindow *)srcObj);
+	}
 }

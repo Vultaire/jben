@@ -139,13 +139,6 @@ void PanelWordDict::UpdateHtmlOutput() {
 	} else {
 		/* Get search results string */
 		if(wd->Search(currentSearchString.c_str(), resultList)) {
-			/* Check error log */
-#ifdef DEBUG
-			wxMessageBox(wxString(_T("Original query: ")).append(currentSearchString.c_str()), _T("Info"), wxOK | wxICON_INFORMATION, this);
-			while(el.Count(EL_Info)>0) {
-				wxMessageBox(wxString(utfconv_mw(el.PopFront(EL_Info))), _T("Info"), wxOK | wxICON_INFORMATION, this);
-			}
-#endif
 			/* Create merged wx-compatible results string */
 			wxString resultString, temp;
 			for(list<int>::iterator li = resultList.begin();

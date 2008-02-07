@@ -105,7 +105,7 @@ int VocabList::AddList(const wstring& s) {
 	if(duplicates>0) {
 		ostringstream os;
 		os << duplicates << " duplicate entries were detected, and were therefore ommitted.";
-		el.Push(EL_Info, os.str());
+		el.Push(EL_Info, os.str(), (void *)this);
 	}
 	return count;
 }
