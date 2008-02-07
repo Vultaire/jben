@@ -1,17 +1,20 @@
 # J-Ben Makefile for Linux and Windows
+# Note: Windows builds expect MinGW, GNUWin32 CoreUtils, and NSIS
+#       binaries in your path!
 
 ### User-editable options ###
 # PLATFORM: either windows or gtk20
 PLATFORM = gtk20
 # BUILD: either release, debug, or profile
 BUILD = release
-# MAKE: change the make command, if needed
+# JBEN_VERSION: Used for labeling release packages
+JBEN_VERSION = 1.1.3
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
 #	CHANGE THESE 4 VARIABLES
 	MAKE = mingw32-make
-	mingwbase = C:/dev/MinGW
+	mingwbase = C:/MinGW
 	boostbase = C:/dev/boost_1_34_1
 	wxbase = C:/dev/wxMSW-2.8.7
 	wxbuildflags = -DWXUSINGDLL -DwxUSE_UNICODE
@@ -79,7 +82,7 @@ build_bindir = bin/$(PLATFORM)/$(BUILD)
 ifeq ($(PLATFORM),gtk20)
 	MAKE = make
 	SharedCXXFLAGS = `wx-config --cxxflags` `pkg-config --cflags gtk+-2.0`
-	SharedCPPFLAGS = `wx-config --cppflags` -DDATADIR=\"$(datadir)/jben\" \
+	SharedCPPFLAGS = `wx-config --cppflags` -DJB_DATADIR=\"$(datadir)/jben\" \
 		-DDOCDIR=\"$(docdir)/doc\" -DLICENSEDIR=\"$(docdir)/license\"
 	libs = `wx-config --libs` `pkg-config --libs gtk+-2.0`
 	mkdircmd = mkdir -p
@@ -128,9 +131,11 @@ endif
 ### Targets ###
 
 all: $(build_bindir)/$(target) kpengine
+ifeq ($(PLATFORM),windows)
+	@echo J-Ben was built successfully.
+else
 	@echo
 	@echo "J-Ben was built successfully."
-ifeq ($(PLATFORM),gtk20)
 	@echo "To install, use \"make install\" with the same options used to compile the"
 	@echo "program."
 endif
@@ -160,7 +165,10 @@ cleanall : clean cleandep
 
 $(build_objdir)/%.o : %.cpp
 	$(mkdircmd) $(build_objdir)
-	$(CXX) $(CPPFLAGS) -c -o $@ $(@F:%.o=%.cpp) $(CXXFLAGS) 
+# Working Linux build command
+#	$(CXX) $(CPPFLAGS) -c -o $@ $(@F:%.o=%.cpp) $(CXXFLAGS)
+# Testing Windows build command
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(@F:%.o=%.cpp)
 
 # Object dependency tracking
 include $(sources:%.cpp=$(build_depdir)/%.d)
@@ -176,8 +184,35 @@ endif
 	@rm $@.mktmp
 
 install:
-ifeq ($(platform),windows)
-	@echo "\"make install\" is not supported on Windows."
+ifeq ($(PLATFORM),windows)
+#	On Windows, "make install" makes the J-Ben NSIS installer.
+#	Step 1: Prep the output directory
+	$(mkdircmd) J-Ben
+	cp "$(stlportbase)/bin/libstlport.5.1.dll" J-Ben
+	cp "$(mingwbase)/bin/mingwm10.dll" J-Ben
+	cp "$(wxliblink)/wxbase28u_gcc_vultaire.net.dll" J-Ben
+	cp "$(wxliblink)/wxmsw28u_core_gcc_vultaire.net.dll" J-Ben
+	cp "$(wxliblink)/wxmsw28u_html_gcc_vultaire.net.dll" J-Ben
+	cp "$(iconvbase)/bin/libcharset1.dll" J-Ben
+	cp "$(iconvbase)/bin/libiconv2.dll" J-Ben
+	cp README.txt J-Ben
+	cp CHANGELOG.txt J-Ben
+	cp "$(build_bindir)/$(target)" J-Ben
+	cp "kanjipad/$(build_bindir)/jben_kpengine.exe" J-Ben
+	cp -R license J-Ben
+	$(mkdircmd) J-Ben/kpengine_data J-Ben/dicts J-Ben/sods
+	cp kanjipad/*.unistrok J-Ben/kpengine_data
+	cp dicts/edict2 dicts/kanjidic dicts/radkfile \
+		dicts/kradfile dicts/README.txt J-Ben/dicts
+	cp sods/README.txt J-Ben/sods
+	@echo J-Ben distribution created in .\J-Ben.
+#	Step 2: Run NSIS script
+	makensis /Dversion=$(JBEN_VERSION) installer.nsi
+#   Step 3: Zip the output folder into 7z and zip archives
+	7z a -tzip J-Ben_$(JBEN_VERSION)_windows.zip J-Ben
+	7z a -t7z J-Ben_$(JBEN_VERSION)_windows.7z J-Ben
+#	Step 4: Remove the output folder
+	rm -rf J-Ben
 else
 	$(INSTALL) -d $(bindir) $(datadir)/jben/dicts $(datadir)/jben/sods \
 		$(docdir)/license
@@ -194,8 +229,8 @@ else
 endif
 
 uninstall:
-ifeq ($(platform),windows)
-	@echo "\"make uninstall\" is not supported on Windows."
+ifeq ($(PLATFORM),windows)
+	@echo "make uninstall" is not supported on Windows.
 else
 	cd kanjipad \
 		&& $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) uninstall \

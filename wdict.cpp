@@ -200,7 +200,7 @@ bool WDict::Search(const wstring& query, list<int>& results,
 	char c;
 
 	utfQuery = utfconv_wm(query);
-	lwrQuery = StrToLower(utfQuery); /* For English searching, store a
+	lwrQuery = ToLower(utfQuery); /* For English searching, store a
 										lowercase query */
 	i = 0;
 	
@@ -220,18 +220,24 @@ bool WDict::Search(const wstring& query, list<int>& results,
 				      sequences inside of a word.) */
 
 				/* Convert target string to lower case */
-				lwrData = StrToLower(*vSubIt);
+				lwrData = ToLower(*vSubIt);
 
 				/* Find the first match that is bounded by non-alpha characters
 				   or beginning/end of string. */
 				indexSubstr = lwrData.find(lwrQuery, 0);
 				while(indexSubstr!=string::npos) {
 #ifdef DEBUG
-					printf("Checking possible match:\n"
+/*					printf("Checking possible match:\n"
 						   "Query:       [%s]\n"
 						   "Data string: [%s]\n"
 						   "Index of match: %d\n",
-						   lwrQuery.c_str(), lwrData.c_str(), indexSubstr);
+						   lwrQuery.c_str(), lwrData.c_str(), indexSubstr);*/
+					ostringstream oss;
+					oss << "Checking possible match:\n"
+						<< "Query:       " << lwrQuery << "\n"
+						<< "Data string: " << lwrData << "\n"
+						<< "Index of match: " << indexSubstr;
+					el.Push(EL_Info, oss.str());
 #endif
 					if(
 						/* Check for beginning of data string or preceding
@@ -266,6 +272,20 @@ bool WDict::Search(const wstring& query, list<int>& results,
 				}
 			} else {
 				indexSubstr = vSubIt->find(utfQuery, 0);
+#ifdef DEBUG
+/*					printf("Checking possible match:\n"
+						   "Query:       [%s]\n"
+						   "Data string: [%s]\n"
+						   "Index of match: %d\n",
+						   lwrQuery.c_str(), lwrData.c_str(), indexSubstr);*/
+					ostringstream oss;
+					oss << "Checking possible match:\n"
+						<< "Query:       " << utfQuery << "\n"
+						<< "Data string: " << *vSubIt << "\n"
+						<< "Index of match: " << indexSubstr;
+					el.Push(EL_Info, oss.str());
+#endif
+
 			}
 			if(indexSubstr!=string::npos) {
 				/* A match was found.

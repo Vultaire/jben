@@ -39,14 +39,11 @@ basic_string<tdest> ConvertString
  const char* sourceEncoding,
  const char* targetEncoding)  {
 	basic_string<tdest> result;
-	size_t inputBytesLeft = (sourceData.length()+1) * sizeof(tsrc);
-
-	/* Set sizing vars, and create a byte buffer sufficiently large for any
-	   conversion. */
-	size_t outputBytesLeft =
-		(inputBytesLeft) * (sizeof(wchar_t) / sizeof(tsrc));
-	char *buffer = new char[outputBytesLeft + sizeof(wchar_t)];
-	memset((void*)buffer, 0, outputBytesLeft + sizeof(wchar_t));
+	int sLen = sourceData.length()+1;
+	size_t inputBytesLeft  = sLen * sizeof(tsrc);
+	size_t outputBytesLeft = sLen * 4;
+	char *buffer = new char[outputBytesLeft];
+	memset((void*)buffer, 0, outputBytesLeft);
 	/* The libc iconv function takes a char* source, while the libiconv iconv
 	   takes a const char* source. */
 #ifdef __WXMSW__

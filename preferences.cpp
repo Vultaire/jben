@@ -21,8 +21,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef DATADIR
-	#define DATADIR "."
+#ifndef JB_DATADIR
+	#define JB_DATADIR "."
 #endif
 
 #include "preferences.h"
@@ -89,11 +89,11 @@ void Preferences::SetDefaultPrefs() {
 		cfgFile = GetCWD();
 	}
 	cfgFile.append("\\jben.cfg");
-	stringOpts["kdict_kanjidic"] = DATADIR "\\dicts\\kanjidic";
-	stringOpts["kdict_kradfile"] = DATADIR "\\dicts\\kradfile";
-	stringOpts["kdict_radkfile"] = DATADIR "\\dicts\\radkfile";
-	stringOpts["wdict_edict2"]   = DATADIR "\\dicts\\edict2";
-	stringOpts["sod_dir"]        = DATADIR "\\sods";
+	stringOpts["kdict_kanjidic"] = JB_DATADIR "\\dicts\\kanjidic";
+	stringOpts["kdict_kradfile"] = JB_DATADIR "\\dicts\\kradfile";
+	stringOpts["kdict_radkfile"] = JB_DATADIR "\\dicts\\radkfile";
+	stringOpts["wdict_edict2"]   = JB_DATADIR "\\dicts\\edict2";
+	stringOpts["sod_dir"]        = JB_DATADIR "\\sods";
 #else
 	cfgFile = getenv("HOME");
 	if(cfgFile.length()==0) {
@@ -101,11 +101,11 @@ void Preferences::SetDefaultPrefs() {
 		cfgFile = GetCWD();
 	}
 	cfgFile.append("/.jben");
-	stringOpts["kdict_kanjidic"] = DATADIR "/dicts/kanjidic";
-	stringOpts["kdict_kradfile"] = DATADIR "/dicts/kradfile";
-	stringOpts["kdict_radkfile"] = DATADIR "/dicts/radkfile";
-	stringOpts["wdict_edict2"]   = DATADIR "/dicts/edict2";
-	stringOpts["sod_dir"]        = DATADIR "/sods";
+	stringOpts["kdict_kanjidic"] = JB_DATADIR "/dicts/kanjidic";
+	stringOpts["kdict_kradfile"] = JB_DATADIR "/dicts/kradfile";
+	stringOpts["kdict_radkfile"] = JB_DATADIR "/dicts/radkfile";
+	stringOpts["wdict_edict2"]   = JB_DATADIR "/dicts/edict2";
+	stringOpts["sod_dir"]        = JB_DATADIR "/sods";
 #endif
 
 

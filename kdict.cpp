@@ -147,8 +147,12 @@ int KDict::LoadRadkfile(const char *filename) {
 				list<wstring> entryData =
 					StrTokenize<wchar_t>(entry, L"\n", false, 2);
 				if(entryData.size()!=2) {
-					cerr << "Error: entryData.size() == "
-						 << entryData.size() << "!!" << endl;
+					ostringstream os;
+					os << "Error: entryData.size() == "
+					   << entryData.size()
+					   << " for entry \""
+					   << utfconv_wm(entry) << "!!" << endl;
+					el.Push(EL_Error, os.str());
 				} else {
 					wchar_t key;
 					int strokeCount;

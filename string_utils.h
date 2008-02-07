@@ -28,7 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <list>
 using namespace std;
 
-string StrToLower(const string& src);
 bool GetIndexAfterParens(const string& s, size_t indexParen, size_t& indexNext,
 						 char cOpenParen='(', char cCloseParen=')');
 bool GetIndexBeforeParens(const string& s, size_t indexParen, size_t& indexNext,

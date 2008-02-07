@@ -23,14 +23,15 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "panel_kanjipad.h"
-#ifndef DATADIR
-	#define DATADIR "."
+#include "string_utils.h"
+#ifndef JB_DATADIR
+	#define JB_DATADIR "."
 #endif
 #ifndef KPENGINE_DATADIR
 	#ifdef __WXMSW__
-		#define KPENGINE_DATADIR DATADIR "\\kpengine_data"
+		#define KPENGINE_DATADIR JB_DATADIR "\\kpengine_data"
 	#else
-		#define KPENGINE_DATADIR DATADIR "/kpengine_data"
+		#define KPENGINE_DATADIR JB_DATADIR "/kpengine_data"
 	#endif
 #endif
 
@@ -251,14 +252,14 @@ void PanelKanjiPad::AfterEngineCall(wxProcessEvent& ev) {
 			}
 
 			if(strlen(buffer)>0) {
-				string errstr("Errors: [");
+				string errstr;
 				errstr.append(buffer);
 				while(kpStderr->CanRead()) {
 					kpStderr->Read(buffer, 80);
 					errstr.append(buffer);
 				}
-				errstr.append("]\n");
-				wxMessageBox(wxString(errstr.c_str(), wxConvUTF8),
+				errstr = string("Errors: [").append(Trim(errstr)).append("]");
+				wxMessageBox(wxString(errstr.c_str(), wxConvUTF8).Trim(true).Trim(false),
 							 _T("Error on kpengine call"),
 							 wxOK | wxICON_ERROR, this);
 			}

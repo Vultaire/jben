@@ -26,14 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <cwctype>
 using namespace std;
 
-string StrToLower(const string& src) {
-	string result = src;
-	for(string::iterator it=result.begin(); it!=result.end(); it++) {
-		*it = tolower(*it);
-	}
-	return result;
-}
-
 bool GetIndexAfterParens(const string& s, size_t indexParen, size_t& indexNext,
 						 char cOpenParen, char cCloseParen) {
 	int parenCount = 1;
