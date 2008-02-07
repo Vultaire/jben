@@ -238,10 +238,6 @@ void FrameMainGUI::OnKanjiAddByGrade(wxCommandEvent& event) {
 		dialogAddKanjiByGrade = new DialogAddKanjiByGrade(this);
 	int result = dialogAddKanjiByGrade->ShowModal();
 	if(result==wxID_OK) {
-		/*printf("Selected grades: %d to %d\n",
-			dialogAddKanjiByGrade->GetLowGrade(),
-			dialogAddKanjiByGrade->GetHighGrade()
-		);*/
 		result = jben->kanjiList->AddByGrade(
 			dialogAddKanjiByGrade->GetLowGrade(),
 			dialogAddKanjiByGrade->GetHighGrade());
@@ -250,7 +246,7 @@ void FrameMainGUI::OnKanjiAddByGrade(wxCommandEvent& event) {
 			_T("Added %d kanji to the list."), result),
 			_T("Add Kanji by Jouyou Grade"), wxOK | wxICON_INFORMATION, this);
 	} else if(result==wxID_CANCEL) {
-		/*printf("Cancel event occurred within dialog!\n");*/
+		/* Do nothing */
 	}
 #ifdef DEBUG
 	else printf("Unknown key (%08X) pressed within dialog!\n", result);
@@ -262,10 +258,6 @@ void FrameMainGUI::OnKanjiAddByFreq(wxCommandEvent& event) {
 		dialogAddKanjiByFreq = new DialogAddKanjiByFreq(this);
 	int result = dialogAddKanjiByFreq->ShowModal();
 	if(result==wxID_OK) {
-		/*printf("Selected frequencies: %d to %d\n",
-			dialogAddKanjiByFreq->GetLowFreq(),
-			dialogAddKanjiByFreq->GetHighFreq()
-		);*/
 		result = jben->kanjiList->AddByFrequency(
 			dialogAddKanjiByFreq->GetLowFreq(),
 			dialogAddKanjiByFreq->GetHighFreq());

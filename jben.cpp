@@ -64,8 +64,7 @@ bool JBen::OnInit() {
 	/* Dictionary loading, etc., depends on our config file. */
 	Preferences *prefs = Preferences::Get();
 	if(!prefs) {
-		/* Add more graceful handling later.  No prefs file found should just
-		   cause a prefs file to be written, rather than aborting. */
+		/* This -should- never occur now. */
 		fprintf(stderr, "Could not create preferences object.  FATAL ERROR!\n\n");
 		return false;
 	}

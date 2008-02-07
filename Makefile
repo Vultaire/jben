@@ -209,8 +209,8 @@ ifeq ($(PLATFORM),windows)
 #	Step 2: Run NSIS script
 	makensis /Dversion=$(JBEN_VERSION) installer.nsi
 #   Step 3: Zip the output folder into 7z and zip archives
-	7z a -tzip J-Ben_$(JBEN_VERSION)_windows.zip J-Ben
-	7z a -t7z J-Ben_$(JBEN_VERSION)_windows.7z J-Ben
+	7z a -tzip jben-$(JBEN_VERSION)-win-binary.zip J-Ben
+	7z a -t7z jben-$(JBEN_VERSION)-win-binary.7z J-Ben
 #	Step 4: Remove the output folder
 	rm -rf J-Ben
 else

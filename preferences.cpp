@@ -54,9 +54,6 @@ Preferences *Preferences::Get() {
 		string homedir = getenv("HOME");
 		homedir.append(1, '/');
 #endif
-#ifdef DEBUG
-		cout << "Preferences DEBUG: Home dir is " << homedir << "." << endl;
-#endif
 		if(prefsSingleton->LoadFile(
 			   string(homedir).append(".jben").c_str()
 			   ) != REF_SUCCESS)
@@ -141,7 +138,6 @@ int Preferences::LoadFile(const char *filename) {
 					if(subToken==L"kanjidicoptionmask") {
 						subToken = token.substr(index+1);
 						subToken = Trim(subToken);
-						/*subToken.ToULong(&kanjidicOptions, 0);*/
 						/* We know the subtoken starts with 0x, so skip the
 						   first two characters. */
 						wistringstream(subToken.substr(2))
@@ -150,14 +146,9 @@ int Preferences::LoadFile(const char *filename) {
 					} else if(subToken==L"kanjidicdictionarymask") {
 						subToken = token.substr(index+1);
 						subToken = Trim(subToken);
-						/*subToken.ToULong(&kanjidicDictionaries, 0);*/
 						wistringstream(subToken.substr(2))
 							>> hex >> kanjidicDictionaries;
 
-					} else if(subToken==L"kanjilist") {
-						subToken = token.substr(index+1);
-						subToken = Trim(subToken);
-						stringOpts["kanjilist"] = utfconv_wm(subToken);
 					} else if(subToken==L"vocablist") {
 						subToken = token.substr(index+1);
 						subToken = Trim(subToken);
@@ -174,28 +165,12 @@ int Preferences::LoadFile(const char *filename) {
 							}
 						}
 
-					} else if(subToken==L"edict") {
-						subToken = token.substr(index+1);
-						stringOpts["edict"]
-							= utfconv_wm(Trim(subToken));
-
-					} else if(subToken==L"kanjidic") {
-						subToken = token.substr(index+1);
-						stringOpts["kanjidic"]
-							= utfconv_wm(Trim(subToken));
-
-					} else if(subToken==L"kradfile") {
-						subToken = token.substr(index+1);
-						stringOpts["kradfile"]
-							= utfconv_wm(Trim(subToken));
-
-					} else if(subToken==L"radkfile") {
-						subToken = token.substr(index+1);
-						stringOpts["radkfile"]
-							= utfconv_wm(Trim(subToken));
-
 					} else {
-						/* Unhandled - do nothing */
+						/* Default handling for any
+						   other string-based entries */
+						string key = utfconv_wm(subToken);
+						subToken = token.substr(index+1);						
+						stringOpts[key] = utfconv_wm(Trim(subToken));
 					}
 				} else {
 					/* No space/tab was found.  Check no-arg options, if any.
@@ -204,12 +179,12 @@ int Preferences::LoadFile(const char *filename) {
 			} /* if(tokenlen>0, token[0]!=# */
 		} /* while(hasmoretokens) */
 	} /* if(file opened) */
-#ifdef DEBUG
 	else {
-		cout << "Preferences file \"" << filename
-			 << "\" could NOT be loaded." << endl;
+		ostringstream oss;
+		oss << "Preferences file \"" << filename
+			<< "\" could NOT be loaded." << endl;
+		el.Push(EL_Silent, oss.str());
 	}
-#endif
 	return e;
 }
 
@@ -223,12 +198,12 @@ Preferences::~Preferences() {
 #endif
 		ofile << prefs;
 	}
-#ifdef DEBUG
 	else {
-		cerr << "Error: Unable to save preferences to file \"" << cfgFile
-			 << "\"!" << endl;
+		ostringstream oss;
+		oss << "Error: Unable to save preferences to file \"" << cfgFile
+			<< "\"!" << endl;
+		el.Push(EL_Error, oss.str());
 	}
-#endif
 	ofile.close();
 }
 
@@ -240,16 +215,24 @@ string Preferences::GetPrefsStr() {
 	kanjiList = utfconv_wm(jben->kanjiList->ToString());
 	vocabList = utfconv_wm(jben->vocabList->ToString(';'));
 
-	prefs << "KanjidicOptionMask 0x"
+	prefs << "KanjidicOptionMask\t0x"
 		  << uppercase << hex << setw(8) << setfill('0')
 		  << kanjidicOptions << '\n';
-	prefs << "KanjidicDictionaryMask 0x"
+	prefs << "KanjidicDictionaryMask\t0x"
 		  << uppercase << hex << setw(8) << setfill('0')
 		  << kanjidicDictionaries << '\n';
-	prefs << "KanjiList "
+	prefs << "KanjiList\t"
 		  << utfconv_wm(jben->kanjiList->ToString()) << '\n';
-	prefs << "VocabList "
+	prefs << "VocabList\t"
 		  << utfconv_wm(jben->vocabList->ToString(';')) << '\n';
+
+	/* Append any other variables stored */
+	for(map<string, string>::iterator mi = stringOpts.begin();
+		mi != stringOpts.end(); mi++) {
+		if(mi->first!="kanjilist" && mi->first!="vocablist") {
+			prefs << mi->first << '\t' << mi->second << '\n';
+		}
+	}
 
 	return prefs.str();
 }
