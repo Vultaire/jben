@@ -1,3 +1,57 @@
+1.1.3:
+For end users:
+* New installers for both Linux and Windows.
+  * Linux: Makefile now supports "make install".
+  * Windows: There's now a proper installer program which sets up shortcuts,
+    adds entries to Add/Remove Programs, etc.
+* Configuration files are now stored in your personal folder.
+  For Linux, this means: ~/.jben.
+  For Windows, this typically means:
+    C:\Documents and Settings\UserName\Application Data\jben.cfg
+For developers:
+* Major under-the-hood changes.  
+  * Dictionary objects have been renamed and modified for future support of
+    multiple kanji/word dictionary files.
+  * Dictionary files now implemented as singletons.
+  * Almost all code not tied to wxWidgets GUI functionality has had all
+    references to wxWidgets code removed.  This will better allow changes
+    in the GUI, including changing toolkits, in the future.
+  * Encoding conversions and multichar/wchar conversions via libiconv instead
+    of wxCSConv.
+  * New functions for converting between wide/multibyte strings, for replacing
+    substrings, and for splitting strings into list<strings> based on
+    delimiters.
+  * Preferences object now loads config files based upon the user's home
+    directory, or the current directory in the (rare) case a home folder
+    cannot be found.
+  * Errors are handled through a global ErrorLog object.  This object
+    maintains a log of errors, warnings, and informative messages given to the
+    user while running the program, and can also store "silent" messages which
+    are only seen when explicitly queried.
+* Windows-specific changes:
+  * MinGW's current stable GCC does not have full wide character support in
+    libstdc++.  So, I've switched to using STLport, which although it seems to
+    have some issues when running its unit tests, it does seem to at least
+    work for my purposes for now.
+* Major makefile changes.
+  * Build files are now stored in dep, obj, and bin folders, further broken
+    down into platform (gtk20/windos) and build type (release/debug).  This
+    allows us to keep the source directory cleaner and to not have multiple
+    builds walking over each other.
+  * kpengine now has its own Makefile in the kanjipad directory, which is 
+    called in turn from the main Makefile.
+  * For Linux: the Makefile now operates in a more "traditional" fashion.
+    "make install" works: binaries go to /usr/local/bin, data to
+    /usr/local/share/jben and docs/license stuff to /usr/local/share/doc/jben.
+    Custom prefix can be specified (ex: /usr instead of /usr/local).
+  * For Windows: the Makefile now depends on NSIS and 7-Zip being reachable
+    from the path, but now "make install" will build an EXE installer and
+    auto-archive .7z and .zip binary folders.
+* DocBook-based manual written.  It currently reflects version 1.1.2, but this
+  is acceptable since the UI has not really changed.
+* The doc directory in the J-Ben source archives also contains a .dia file
+  showing a general outline of how J-Ben's source code is structured.
+
 1.1.2:
 * Integrated KanjiPad.  Code based on or borrowed from the KanjiPad code used by
   im-ja.  Accessible through Kanji -> Find Kanji -> By Handwriting.
