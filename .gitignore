@@ -10,3 +10,5 @@ sods/sod*
 *~
 archives
 doc/*html
+doc/*manual.tar.bz2
+doc/*manual.zip
