@@ -30,11 +30,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define REF_FILE_OPEN_ERROR    REF_FAILURE | 0x2
 
 #ifdef __WXMSW__
-#define DIRSEP  '\\'
-#define WDIRSEP L'\\'
+#define DSCHAR   '\\'
+#define WDSCHAR L'\\'
+#define DSSTR    "\\"
+#define WDSTR   L"\\"
 #else
-#define DIRSEP  '/'
-#define WDIRSEP L'/'
+#define DSCHAR   '/'
+#define WDSCHAR L'/'
+#define DSSTR    "/"
+#define WDSSTR  L"/"
 #endif
 
 #include <string>

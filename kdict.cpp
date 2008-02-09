@@ -347,10 +347,14 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 		wstringstream sod;
 		/* Load static SOD, if present */
 		if((options & KDO_SOD_STATIC) != 0) {
+			Preferences *p = Preferences::Get();
 			ostringstream fn;
-			fn << "sods" << DIRSEP
-			   << "sod-utf8-hex" << DIRSEP
+			string sodDir = p->GetSetting("sod_dir");
+			if(sodDir.length()==0) sodDir = "sods";
+			fn << sodDir << DSCHAR
+			   << "sod-utf8-hex" << DSCHAR
 			   << ss.str() << ".png";
+
 #ifdef DEBUG
 			printf("DEBUG: Checking for existance of file \"%s\"...\n", fn.str().c_str());
 #endif
@@ -364,8 +368,8 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 		/* Load animated SOD, if present */
 		if((options & KDO_SOD_ANIM) != 0) {
 			ostringstream fn;
-			fn << "sods" << DIRSEP
-			   << "soda-utf8-hex" << DIRSEP
+			fn << "sods" << DSCHAR
+			   << "soda-utf8-hex" << DSCHAR
 			   << ss.str() << ".gif";
 #ifdef DEBUG
 			printf("DEBUG: Checking for existance of file \"%s\"...\n", fn.str().c_str());

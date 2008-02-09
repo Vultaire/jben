@@ -328,7 +328,7 @@ void FrameMainGUI::OnHelpAbout(wxCommandEvent& event) {
 }
 
 void FrameMainGUI::OnHelpLicense(wxCommandEvent& event) {
-	wxMessageBox(_T(
+	wxString licenseMessage = _T(
 		"Program distributed under the GNU General Public License (GPL) version 2:\n"
 		"http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt\n\n"
 		"EDICT2 and KANJIDIC distributed under a separate license specified at\n"
@@ -340,8 +340,15 @@ void FrameMainGUI::OnHelpLicense(wxCommandEvent& event) {
 
 		"Copies of the GNU General Public License, Monash University's license for "
 		"the dictionary files and documentation for the dictionary files are "
-		"contained in this program's \"license\" directory."),
-		_T("License Information"), wxOK | wxICON_INFORMATION, this);
+		"contained in this program's \"license\" directory.");
+#ifndef __WXMSW__
+	licenseMessage.append(
+		_T("  (On this system, it should be located in\n"));
+	licenseMessage.append(utfconv_mw(LICENSEDIR));
+	licenseMessage.append(_T(".)"));
+#endif
+	wxMessageBox(licenseMessage, _T("License Information"),
+				 wxOK | wxICON_INFORMATION, this);
 }
 
 void FrameMainGUI::OnMajorTabChanged(wxNotebookEvent& event) {

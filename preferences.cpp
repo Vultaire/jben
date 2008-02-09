@@ -22,7 +22,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #ifndef JB_DATADIR
-	#define JB_DATADIR "."
+#	define JB_DATADIR "."
+#endif
+
+#ifdef __WXMSW__
+#	define CFGFILE "jben.cfg"
+#	define HOMEENV "APPDATA"
+#else
+#	define CFGFILE ".jben"
+#	define HOMEENV "HOME"
 #endif
 
 #include "preferences.h"
@@ -46,28 +54,18 @@ Preferences *Preferences::Get() {
 		/* Load with default preferences, and overwrite with any stored
 		   preferences. */
 		prefsSingleton->SetDefaultPrefs();
-		/* Try to load .jben, followed by jben.cfg if the first fails. */
-#ifdef __WXMSW__
-		string homedir = getenv("AppData");
-		homedir.append(1, '\\');
-#else
-		string homedir = getenv("HOME");
-		homedir.append(1, '/');
-#endif
+
 		/* Check for the config file in the user's home directory. */
+		string homedir = getenv(HOMEENV);
+		homedir.append(1, DSCHAR);
 		bool OK = (prefsSingleton
-				   ->LoadFile(string(homedir).append(".jben").c_str())
+				   ->LoadFile(string(homedir).append(CFGFILE).c_str())
 				   == REF_SUCCESS);
-		if(!OK)
-			OK = (prefsSingleton
-				  ->LoadFile(string(homedir).append("jben.cfg").c_str())
-				  == REF_SUCCESS);
+
 		/* If the config file could not be loaded from the home directory,
 		   fall back and check the current directory. */
 		if(!OK)
-			OK = (prefsSingleton->LoadFile(".jben") == REF_SUCCESS);
-		if(!OK)
-			prefsSingleton->LoadFile("jben.cfg");
+			prefsSingleton->LoadFile(CFGFILE);
 	}
 	return prefsSingleton;
 }
@@ -88,33 +86,11 @@ void Preferences::SetDefaultPrefs() {
 		KDO_READINGS | KDO_MEANINGS | KDO_HIGHIMPORTANCE | KDO_VOCABCROSSREF;
 	kanjidicDictionaries = 0;
 	stringOpts["config_version"] = "1";
-#ifdef __WXMSW__
-	cfgFile = getenv("AppData");
-	if(cfgFile.length()==0) {
-		el.Push(EL_Error, "Could not retrieve home directory.");
-		cfgFile = GetCWD();
-	}
-	cfgFile.append("\\jben.cfg");
-	stringOpts["kdict_kanjidic"] = JB_DATADIR "\\dicts\\kanjidic";
-	stringOpts["kdict_kradfile"] = JB_DATADIR "\\dicts\\kradfile";
-	stringOpts["kdict_radkfile"] = JB_DATADIR "\\dicts\\radkfile";
-	stringOpts["wdict_edict2"]   = JB_DATADIR "\\dicts\\edict2";
-	stringOpts["sod_dir"]        = JB_DATADIR "\\sods";
-#else
-	cfgFile = getenv("HOME");
-	if(cfgFile.length()==0) {
-		el.Push(EL_Error, "Could not retrieve home directory.");
-		cfgFile = GetCWD();
-	}
-	cfgFile.append("/.jben");
-	stringOpts["kdict_kanjidic"] = JB_DATADIR "/dicts/kanjidic";
-	stringOpts["kdict_kradfile"] = JB_DATADIR "/dicts/kradfile";
-	stringOpts["kdict_radkfile"] = JB_DATADIR "/dicts/radkfile";
-	stringOpts["wdict_edict2"]   = JB_DATADIR "/dicts/edict2";
-	stringOpts["sod_dir"]        = JB_DATADIR "/sods";
-#endif
-
-
+	stringOpts["kdict_kanjidic"] = JB_DATADIR DSSTR "dicts" DSSTR "kanjidic";
+	stringOpts["kdict_kradfile"] = JB_DATADIR DSSTR "dicts" DSSTR "kradfile";
+	stringOpts["kdict_radkfile"] = JB_DATADIR DSSTR "dicts" DSSTR "radkfile";
+	stringOpts["wdict_edict2"]   = JB_DATADIR DSSTR "dicts" DSSTR "edict2";
+	stringOpts["sod_dir"]        = JB_DATADIR DSSTR "sods";
 }
 
 int Preferences::LoadFile(const char *filename) {
@@ -124,7 +100,6 @@ int Preferences::LoadFile(const char *filename) {
 
 	int e = ReadEncodedFile(filename, s);
 	if(e==REF_SUCCESS) {
-		cfgFile = filename;
 #ifdef DEBUG
 		cout << "Preferences file \"" << filename
 			 << "\" loaded successfully." << endl;
@@ -199,7 +174,15 @@ int Preferences::LoadFile(const char *filename) {
 
 Preferences::~Preferences() {
 	string prefs = GetPrefsStr();
-	ofstream ofile(cfgFile.c_str(), ios::out | ios::binary);
+	ofstream ofile;
+	if(ToLower(stringOpts["config_save_target"]) == "home")
+		ofile.open(
+			string(getenv(HOMEENV))
+			.append(1, DSCHAR)
+			.append(CFGFILE).c_str(),
+			ios::out | ios::binary);
+	if(!ofile.is_open())
+		ofile.open(CFGFILE, ios::out | ios::binary);
 	if(ofile.is_open()) {
 #ifdef DEBUG
 		cout << "Preferences saved to file \"" << cfgFile
@@ -209,7 +192,7 @@ Preferences::~Preferences() {
 	}
 	else {
 		ostringstream oss;
-		oss << "Error: Unable to save preferences to file \"" << cfgFile
+		oss << "Error: Unable to save preferences to file \"" << CFGFILE
 			<< "\"!" << endl;
 		el.Push(EL_Error, oss.str());
 	}
@@ -252,5 +235,5 @@ string Preferences::GetPrefsStr() {
 }
 
 string& Preferences::GetSetting(string key) {
-	return stringOpts[key];
+	return stringOpts[ToLower(key)];
 }

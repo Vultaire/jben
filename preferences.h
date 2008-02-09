@@ -47,8 +47,6 @@ private:
 	int LoadFile(const char *filename);
 	string GetPrefsStr();
 
-	/* Filename for config file */
-	string cfgFile;
 	/* Use a map for storing all other options we may add. */
 	map<string, string> stringOpts;
 
