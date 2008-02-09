@@ -54,11 +54,20 @@ Preferences *Preferences::Get() {
 		string homedir = getenv("HOME");
 		homedir.append(1, '/');
 #endif
-		if(prefsSingleton->LoadFile(
-			   string(homedir).append(".jben").c_str()
-			   ) != REF_SUCCESS)
-			prefsSingleton->LoadFile(
-				string(homedir).append("jben.cfg").c_str());
+		/* Check for the config file in the user's home directory. */
+		bool OK = (prefsSingleton
+				   ->LoadFile(string(homedir).append(".jben").c_str())
+				   == REF_SUCCESS);
+		if(!OK)
+			OK = (prefsSingleton
+				  ->LoadFile(string(homedir).append("jben.cfg").c_str())
+				  == REF_SUCCESS);
+		/* If the config file could not be loaded from the home directory,
+		   fall back and check the current directory. */
+		if(!OK)
+			OK = (prefsSingleton->LoadFile(".jben") == REF_SUCCESS);
+		if(!OK)
+			prefsSingleton->LoadFile("jben.cfg");
 	}
 	return prefsSingleton;
 }

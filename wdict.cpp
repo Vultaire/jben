@@ -37,6 +37,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <sstream>
 using namespace std;
 
+#ifdef __WXMSW__
+#	define FALLBACK_DICTDIR "dicts\\"
+#else
+#	define FALLBACK_DICTDIR "dicts/"
+#endif
+
 /* SEARCH_MAX is our hard-coded cutoff point for searches.  It should be high
    enough not to interfere with normal "single page" operation, but it should
    also prevent the user from doing something too stupid and having to wait a
@@ -56,7 +62,8 @@ const WDict *WDict::Get() {
 
 WDict::WDict() {
 	Preferences *p = Preferences::Get();
-	LoadEdict2(p->GetSetting("wdict_edict2").c_str());
+	if(LoadEdict2(p->GetSetting("wdict_edict2").c_str())!=ED_SUCCESS)
+		LoadEdict2(FALLBACK_DICTDIR "edict2");
 }
 
 void WDict::Destroy() {

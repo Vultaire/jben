@@ -34,6 +34,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <list>
 using namespace std;
 
+#ifdef __WXMSW__
+#	define FALLBACK_DICTDIR "dicts\\"
+#else
+#	define FALLBACK_DICTDIR "dicts/"
+#endif
+
 KDict* KDict::kdictSingleton = NULL;
 
 const KDict *KDict::Get() {
@@ -44,9 +50,12 @@ const KDict *KDict::Get() {
 
 KDict::KDict() {
 	Preferences *p = Preferences::Get();
-	LoadKanjidic(p->GetSetting("kdict_kanjidic").c_str());
-	LoadKradfile(p->GetSetting("kdict_kradfile").c_str());
-	LoadRadkfile(p->GetSetting("kdict_radkfile").c_str());
+	if(LoadKanjidic(p->GetSetting("kdict_kanjidic").c_str())!=KD_SUCCESS)
+		LoadKanjidic(FALLBACK_DICTDIR "kanjidic");
+	if(LoadKradfile(p->GetSetting("kdict_kradfile").c_str())!=KD_SUCCESS)
+		LoadKanjidic(FALLBACK_DICTDIR "kradfile");
+	if(LoadRadkfile(p->GetSetting("kdict_radkfile").c_str())!=KD_SUCCESS);
+		LoadKanjidic(FALLBACK_DICTDIR "radkfile");
 }
 
 void KDict::Destroy() {
