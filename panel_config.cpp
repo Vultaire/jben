@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "panel_config.h"
 #include "jben.h"
 #include "kdict.h"
+#include "file_utils.h"
 
 enum {
 	ID_chkReadings=1,
@@ -202,6 +203,23 @@ void PanelConfig::Redraw() {
 	chkLowImportance->SetValue(options & KDO_LOWIMPORTANCE);
 	chkUseSODs->SetValue(options & KDO_SOD_STATIC);
 	chkUseSODAs->SetValue(options & KDO_SOD_ANIM);
+
+	/* Enable/disable SOD/SODA checkboxes based on existance of directory */
+	string sodDir = Preferences::Get()->GetSetting("sod_dir");
+	chkUseSODs->Enable(
+		FileExists(
+			string(sodDir)
+			.append(1,DSCHAR)
+			.append("sod-utf8-hex")
+			.append(1,DSCHAR)
+			.append("README-License").c_str()));
+	chkUseSODAs->Enable(
+		FileExists(
+			string(sodDir)
+			.append(1,DSCHAR)
+			.append("soda-utf8-hex")
+			.append(1,DSCHAR)
+			.append("README-License").c_str()));
 
 	int dictCount = dictionaryList.Count();
 	for(int i=0;i<dictCount;i++) {
