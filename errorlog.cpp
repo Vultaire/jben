@@ -26,6 +26,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 ErrorLog el;
 
+ErrorLog::ErrorLog() {
+	dispFunc = NULL;
+}
+
 list<string>* ErrorLog::GetList(ELType t) {
 	return &logdata[t];
 }
@@ -68,14 +72,13 @@ string ErrorLog::PopBack(ELType t) {
 void ErrorLog::Push(ELType t, string message, void *srcObj) {
 	list<string> *l = GetList(t);
 	l->push_back(message);
-	if(t==EL_Error) {
-		wxMessageBox(utfconv_mw(message), _T("Error"),
-					 wxOK | wxICON_ERROR, (wxWindow *)srcObj);
-	} else if(t==EL_Warning) {
-		wxMessageBox(utfconv_mw(message), _T("Warning"),
-					 wxOK | wxICON_WARNING, (wxWindow *)srcObj);
-	} else if(t==EL_Info) {
-		wxMessageBox(utfconv_mw(message), _T("Info"),
-					 wxOK | wxICON_INFORMATION, (wxWindow *)srcObj);
-	}
+	/* If dispFunc is defined, pass it a message.  It's up to it to determine
+	   what to show and what to keep silent. */
+	if(dispFunc)
+		(*dispFunc)(t, message, srcObj);
+}
+
+void ErrorLog::RegDisplayFunc(
+	void (*newDispFunc)(ELType, const string&, void*)) {
+	dispFunc = newDispFunc;
 }

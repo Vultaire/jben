@@ -184,10 +184,6 @@ Preferences::~Preferences() {
 	if(!ofile.is_open())
 		ofile.open(CFGFILE, ios::out | ios::binary);
 	if(ofile.is_open()) {
-#ifdef DEBUG
-		cout << "Preferences saved to file \"" << cfgFile
-			 << "\"." << endl;
-#endif
 		ofile << prefs;
 	}
 	else {

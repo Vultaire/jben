@@ -23,17 +23,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "kanjilist.h"
 #include "kdict.h"
+#include "errorlog.h"
+#include <sstream>
 #include <algorithm>
 using namespace std;
 
-KanjiList::KanjiList(const BoostHM<wchar_t,string>* const kDictHash) {
+KanjiList::KanjiList(const BoostHM<wchar_t, KInfo>* kDictHash) {
 	kanjiHash = kDictHash;
 }
 
 int KanjiList::AddFromString(const wstring& s) {
 	int kanjiAdded = 0, len = s.length();
 	wchar_t c;
-	BoostHM<wchar_t,string>::const_iterator it;
+	BoostHM<wchar_t,KInfo>::const_iterator it;
 
 	for(int i=0;i<len;i++) {
 		c = s[i];
@@ -75,10 +77,10 @@ void KanjiList::Clear() {
 int KanjiList::AddByGrade(int lowGrade, int highGrade) {
 	wstring kanjiStr;
 	int grade;
-	const KDict* kd = KDict::Get();
 
-	for(BoostHM<wchar_t,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
-		grade = kd->GetIntField(ki->first, L"G");
+	for(BoostHM<wchar_t,KInfo>::const_iterator
+			ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
+		grade = ki->second.grade;
 		if(grade>=lowGrade &&
 		  (grade<=highGrade || highGrade==0))
 			kanjiStr.append(1, ki->first);
@@ -90,10 +92,9 @@ int KanjiList::AddByGrade(int lowGrade, int highGrade) {
 int KanjiList::AddByFrequency(int lowFreq, int highFreq) {
 	wstring kanjiStr;
 	int freq;
-	const KDict* kd = KDict::Get();
 
-	for(BoostHM<wchar_t,string>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
-		freq = kd->GetIntField(ki->first, L"F");
+	for(BoostHM<wchar_t,KInfo>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
+		freq = ki->second.freq;
 		if(freq>=lowFreq && freq<=highFreq)
 			kanjiStr.append(1, ki->first);
 	}
@@ -136,23 +137,22 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 	myCharIndexer->clear();
 	vector<wchar_t>::iterator vi;
 
-	wstring fieldMarker;
-	switch(sortType) {
-	case ST_GRADE:
-		fieldMarker=L"G";
-		break;
-	case ST_FREQUENCY:
-		fieldMarker=L"F";
-		break;
-	default:
-		fieldMarker=L"INVALID";
-	}
-
 	/* Create index based on the sort type */
 	int value;
 	const KDict* kd = KDict::Get();
+	const KInfo* ki;
 	for(vi=kanjiList.begin();vi!=kanjiList.end();vi++) {
-		value = kd->GetIntField(*vi, fieldMarker);
+		ki = kd->GetEntry(*vi);
+		if(sortType==ST_GRADE)
+			value = ki->grade;
+		else if(sortType==ST_FREQUENCY)
+			value = ki->grade;
+		else {
+			ostringstream oss;
+			oss << "Unknown sort type: " << sortType << endl;
+			el.Push(EL_Error, oss.str());
+			break;
+		}
 		if(value==-1) value=INT_MAX;
 		myCharIndexer->assign(*vi, value);
 	}
@@ -165,7 +165,9 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 	   http://www.cppreference.com/cppalgorithm/inplace_merge.html */
 	int rangeSize, rangeStart;
 	for(rangeSize=1; rangeSize<totalSize; rangeSize *= 2) {
-		for(rangeStart=0; rangeStart<totalSize-rangeSize; rangeStart += rangeSize*2) {
+		for(rangeStart=0;
+			rangeStart<totalSize-rangeSize;
+			rangeStart += rangeSize*2) {
 			/* Our range sort function is HERE */
 			InplaceMerge(
 			  kanjiList,

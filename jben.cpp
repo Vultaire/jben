@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "wdict.h"
 #include "kdict.h"
 #include "encoding_convert.h"
+#include "errorlog.h"
 
 #include <cstdlib>
 #ifndef __WXMSW__
@@ -36,17 +37,36 @@ JBen *jben;
 /* The application entry point */
 IMPLEMENT_APP(JBen)
 
+void ErrorLogDisplayFunc(ELType t, const string& message, void *srcObj) {
+	switch(t) {
+	case EL_Error:
+		cerr << message << endl;
+		wxMessageBox(utfconv_mw(message), _T("Error"),
+					 wxOK | wxICON_ERROR, (wxWindow*)srcObj);
+		break;
+	case EL_Warning:
+		cerr << message << endl;
+		wxMessageBox(utfconv_mw(message), _T("Warning"),
+					 wxOK | wxICON_ERROR, (wxWindow*)srcObj);
+		break;
+	case EL_Info:
+		cout << message << endl;
+		wxMessageBox(utfconv_mw(message), _T("Info"),
+					 wxOK | wxICON_ERROR, (wxWindow*)srcObj);
+		break;
+	default:
+		/* do nothing */
+		break;
+	}
+}
+
 bool JBen::OnInit() {
 	jben = this;
 	kanjiList = (KanjiList *)NULL;
 	vocabList = (VocabList *)NULL;
 	gui = (FrameMainGUI *)NULL;
 
-	/* Set our wide character type */
-	if(sizeof(wchar_t)==2)
-		wcType = "UCS-2LE";
-	else
-		wcType = "UCS-4LE";
+	/* the below -might- help on win32 systems, but for now is unused. */
 #if 0
 #ifndef __WXMSW__
 	setlocale(LC_ALL, "");
@@ -60,6 +80,10 @@ bool JBen::OnInit() {
 									 or so.  That's why I spin off a few
 									 iterations of rand() before really using
 									 it. */
+
+	/* Various initialization */
+	InitUTFConv();
+	el.RegDisplayFunc(ErrorLogDisplayFunc);
 
 	/* Dictionary loading, etc., depends on our config file. */
 	Preferences *prefs = Preferences::Get();
@@ -101,6 +125,7 @@ int JBen::OnExit() {
 	Preferences::Destroy();
 	if(kanjiList) delete kanjiList;
 	if(vocabList) delete vocabList;
+	DestroyUTFConv();
 #ifdef DEBUG
 	printf("Terminating program.\n");
 #endif

@@ -21,16 +21,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#include "jben.h"
 #include "kdict.h"
-#include "file_utils.h"
-#include "jutils.h"
+#include "preferences.h"
 #include "encoding_convert.h"
 #include "string_utils.h"
+#include "file_utils.h"
+#include "jutils.h"
 #include "errorlog.h"
-#include <sstream>
+#include <libxml/xmlreader.h>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 #include <list>
 using namespace std;
 
@@ -40,7 +41,14 @@ using namespace std;
 #	define FALLBACK_DICTDIR "dicts/"
 #endif
 
+#define cerrlog cerr << __FILE__ << ':' << __LINE__ << ": "
+
 KDict* KDict::kdictSingleton = NULL;
+
+KInfo::KInfo() {
+	radical = radicalNelson = (unsigned char) 0;
+	grade = strokeCount = freq = 0;
+}
 
 const KDict *KDict::Get() {
 	if(!kdictSingleton)
@@ -53,9 +61,9 @@ KDict::KDict() {
 	if(LoadKanjidic(p->GetSetting("kdict_kanjidic").c_str())!=KD_SUCCESS)
 		LoadKanjidic(FALLBACK_DICTDIR "kanjidic");
 	if(LoadKradfile(p->GetSetting("kdict_kradfile").c_str())!=KD_SUCCESS)
-		LoadKanjidic(FALLBACK_DICTDIR "kradfile");
+		LoadKradfile(FALLBACK_DICTDIR "kradfile");
 	if(LoadRadkfile(p->GetSetting("kdict_radkfile").c_str())!=KD_SUCCESS);
-		LoadKanjidic(FALLBACK_DICTDIR "radkfile");
+		LoadRadkfile(FALLBACK_DICTDIR "radkfile");
 }
 
 void KDict::Destroy() {
@@ -95,6 +103,208 @@ int KDict::LoadKanjidic(const char *filename) {
 		returnCode = KD_FAILURE;
 
 	if(rawData) delete[] rawData;
+	return returnCode;
+}
+
+int KDict::LoadKanjidic2(const char *filename) {
+	int returnCode = KD_FAILURE;
+	xmlTextReaderPtr reader;
+	xmlChar *ptr;
+	int ret;
+
+	/* Vars for navigating through the data */
+	string element, d1element;
+	map<string, string> attributes;
+	map<string, string>::iterator mssi;
+	int nodeType;
+	bool isAttribute=false;
+	/* Var for storing values of the entries */
+	string sValue;
+	/* GP vars */
+	string temp;
+
+	reader = xmlNewTextReaderFilename(filename);
+	KInfo *k=NULL;
+	if(reader) {
+		returnCode = KD_SUCCESS;
+		ret = xmlTextReaderRead(reader);
+		while(ret==1) {
+			/* Act based on node type */
+			nodeType = xmlTextReaderNodeType(reader);
+			switch(nodeType) {
+			case XML_READER_TYPE_ELEMENT:
+				element = (char*)xmlTextReaderName(reader);
+				if(xmlTextReaderDepth(reader)==1) d1element=element;
+				if(element=="character") {
+					/* Opening of character entry - create new data object */
+					if(k) delete k;
+					k = new KInfo;
+				}
+				attributes.clear();
+				break;
+			case XML_READER_TYPE_END_ELEMENT:
+				element = (char*)xmlTextReaderName(reader);
+				if(element=="character") {
+					wchar_t wc = utfconv_mw(k->literal)[0];
+					/* End of character entry: append to data list */
+					if(!kdictData.assign(wc, *k)) {
+						el.Push(EL_Error,
+								"Error assigning kanjidic2 entry to hash table!\n");
+					}
+					delete k;
+					k = NULL;
+				}
+				attributes.clear();
+				break;
+			case XML_READER_TYPE_ATTRIBUTE:
+				temp = (char*)xmlTextReaderName(reader);
+				ptr = xmlTextReaderValue(reader);
+				attributes[temp] = (char*)ptr;
+				xmlFree(ptr);
+				break;
+			case XML_READER_TYPE_TEXT:
+				ptr = xmlTextReaderValue(reader);
+				sValue = (char*)ptr;
+				xmlFree(ptr);
+
+				if(d1element=="header") {
+					if(element=="file_version") {
+						if(sValue!="4") {
+							cerr << "Warning: the KANJIDIC2 reader only"
+								" supports KANJIDIC2 version 4!" << endl;
+						}
+					}
+				}
+				if(d1element=="character") {
+					if(!k) {
+						cerrlog << "k is NULL!" << endl;
+					} else if(element=="literal") {
+						k->literal = sValue;
+					} else if(element=="cp_value") {
+						k->codepoint[attributes["cp_type"]] = sValue;
+					} else if(element=="rad_value") {
+						temp = attributes["rad_type"];
+						if(temp == "classical")
+							k->radical
+								= (unsigned char)atoi(sValue.c_str());
+						else if(temp == "nelson_c")
+							k->radicalNelson
+								= (unsigned char)atoi(sValue.c_str());
+						else
+							cerrlog << "Unhandled radical: "
+									<< "type=" << temp
+									<< ", value=[" << sValue
+									<< "]!" << endl;
+					} else if(element=="grade") {
+						k->grade = (unsigned char)atoi(sValue.c_str());
+					} else if(element=="stroke_count") {
+						k->strokeCount = (unsigned char)atoi(sValue.c_str());
+					} else if(element=="variant") {
+						k->variant[attributes["var_type"]] = sValue;
+					} else if(element=="freq") {
+						k->freq = atoi(sValue.c_str());
+					} else if(element=="rad_name") {
+						k->radicalName = sValue;
+					} else if(element=="dic_ref") {
+						k->dictCode[attributes["dr_type"]] = sValue;
+						if(attributes["dr_type"]=="moro"
+						   && attributes["m_vol"].length()>0) {
+							temp = "V";
+							temp.append(attributes["m_vol"]);
+							temp.append(1, 'P');
+							temp.append(attributes["m_page"]);
+							k->dictCode["moro"].append(temp);
+						}
+					} else if(element=="q_code") {
+						if(attributes["qc_type"]=="skip"
+						   && attributes["skip_misclass"].length()>0) {
+							k->skipMisclass.push_back(
+								pair<string,string>(
+									attributes["skip_misclass"],
+									sValue));
+						} else {
+							k->queryCode[attributes["qc_type"]] = sValue;
+						}
+					} else if(element=="reading") {
+						temp = attributes["r_type"];
+						if(temp=="pinyin") {
+							k->pinyin.push_back(sValue);
+						} else if(temp=="korean_r") {
+							k->korean_r.push_back(sValue);					
+						} else if(temp=="korean_h") {
+							k->korean_h.push_back(sValue);
+						} else if(temp=="ja_on") {
+							/* Need to handle r_status and on_type! */
+							/* Need to convert xx.x to xx(x) notation. */
+							k->onyomi.push_back(sValue);
+						} else if(temp=="ja_kun") {
+							/* Need to handle r_status! */
+							/* Need to convert xx.x to xx(x) notation. */
+							k->kunyomi.push_back(sValue);
+						} else {
+							cerrlog << "Invalid r_type: " << temp << endl;
+						}
+						/* This section is "to-do" */
+					} else if(element=="meaning") {
+						temp = attributes["m_lang"];
+						if(temp.length()==0) temp = "en";
+						k->meaning[temp].push_back(sValue);;
+					} else if(element=="nanori") {
+						k->nanori.push_back(sValue);
+					} else {
+						cerrlog << "UNHANDLED element: " << element << endl;
+					}
+				}
+				/* default parsing */
+				else {
+					/*cout << "DEBUG: Depth 1 element is " << d1element
+					  << ", element is " << element
+					  << ", value is " << sValue << endl;*/
+				}
+				break;
+			default:
+				/* do nothing */
+				break;
+			}
+
+			/* If element has attributes, go to the next attribute if present.
+			   Otherwise, go to the next element. */
+			if(!isAttribute) ret = xmlTextReaderHasAttributes(reader);
+			if(isAttribute || ret==1) {
+				ret = xmlTextReaderMoveToNextAttribute(reader);
+			}
+			/* ret==-1 is an error */
+			if(ret==-1) {
+					cerrlog << "xmlTextReaderMoveToNextAttribute returned "
+						"an error!" << endl;
+			}
+			/* If ret==1, an attribute was loaded.
+			   If not, go to the next element. */
+			if(ret==1) {
+				isAttribute=true;
+			} else {
+				isAttribute=false;
+				ret = xmlTextReaderRead(reader);
+			}
+		}
+		xmlFreeTextReader(reader);
+		if(ret!=0) {
+			cerrlog << __FILE__ << ":" << __LINE__
+				 << "Parsing error occurred in " << filename << "." << endl;
+		}
+
+	} else {
+		cerrlog << "Unable to open " << filename << "!" << endl;
+		return -1;
+	}
+
+	if(k) {
+		cerrlog << __FILE__ << ":" << __LINE__
+			 << ": k is not NULL!  This shouldn't happen!";
+		delete k;
+		k = NULL;
+	}
+
 	return returnCode;
 }
 
@@ -211,9 +421,313 @@ int KDict::LoadRadkfile(const char *filename) {
 	return returnCode;
 }
 
+string JisHexToKuten(const string& jisHex) {
+	int i;
+	stringstream ss(jisHex);
+	ss >> hex >> i;
+	ss.clear();
+	ss << (((i & 0xFF00) >> 8) - 0x20)
+	   << '-' << ((i & 0xFF) - 0x20);
+	return ss.str();
+}
+
+/* This function converts from KANJIDIC-style entries to internally used
+   KInfo objects (which are structurally based off the newer KANJIDIC2). */
+void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* jisStd) {
+	list<string> tl = StrTokenize<char>(kanjidicEntry, " ");
+	if(tl.size()<2) return; /* KANJIDIC entries must AT LEAST have the char
+							   and the JIS hex code. */
+	int tmode = 0;
+	string sTemp;
+	wstring wsTemp;
+	wchar_t cKanaTest;
+
+	/* First 2 fields are always the same: process them here */
+	k.literal = tl.front(); tl.pop_front();
+	/* JIS code needs to be converted to ku-ten
+	   format to coincide with KANJIDIC2. */
+	k.codepoint[jisStd] = JisHexToKuten(tl.front()); tl.pop_front();
+
+	/* Now, just loop through the remaining entries in the list. */
+	string *ps;
+	while(tl.size()>0) {
+		ps = &(tl.front());
+		switch ((*ps)[0]) {
+		case 'T':  /* Change "t mode" */
+			tmode = atoi(ps->substr(1).c_str());
+			break;
+		case 'B':  /* Nelson-reclassified radical */
+			k.radicalNelson = (unsigned char)atoi(ps->substr(1).c_str());
+			break;
+		case 'C':  /* Classical radical (KangXi Zidian) */
+			k.radical = (unsigned char)atoi(ps->substr(1).c_str());
+			break;
+		case 'F':  /* Frequency */
+			k.freq = atoi(ps->substr(1).c_str());
+			break;
+		case 'G':  /* Grade level */
+			k.grade = atoi(ps->substr(1).c_str());
+			break;
+		case 'S':  /* Stroke count */
+			if(k.strokeCount==0)
+				k.strokeCount = atoi(ps->substr(1).c_str());
+			else
+				k.misstrokes.push_back(atoi(ps->substr(1).c_str()));
+			break;
+		case 'U':  /* Unicode value */
+			k.codepoint["ucs"] = ps->substr(1);
+			break;
+		/* Dictionary codes for most of the following */
+		case 'H':
+			/* New Japanese-English Character Dictionary (Halpern) */
+			k.dictCode["halpern_njecd"] = ps->substr(1);
+			break;
+		case 'N':
+			/* Modern Reader's Japanese-English Character Dictionary (Nelson) */
+			k.dictCode["nelson_c"] = ps->substr(1);
+			break;
+		case 'V':
+			/* The New Nelson's Japanese-English Character Dictionary */
+			k.dictCode["nelson_n"] = ps->substr(1);
+			break;
+		case 'P':
+			/* SKIP codes. */
+			/* Thanks to changes in permissible SKIP code usage (change to
+			   Creative Commons licensing in January 2008), we can now use
+			   this without problems. */
+			k.queryCode["skip"] = ps->substr(1);
+			break;
+		case 'I':  /* Spahn/Hadamitzky dictionaries */
+			if((*ps)[1]=='N') {
+				/* Kanji & Kana (Spahn, Hadamitzky) */
+				k.dictCode["sh_kk"] = ps->substr(2);
+			} else {
+				/* Query Code: Kanji Dictionary (Spahn, Hadamitzky) */
+				k.queryCode["sh_desc"] = ps->substr(1);
+			}
+			break;
+		case 'Q':
+			/* Four Corner code */
+			k.queryCode["four_corner"] = ps->substr(1);
+			break;
+		case 'M':
+			if((*ps)[1]=='N') {
+				/* Morohashi Daikanwajiten Index */
+				k.dictCode["moro"].insert(0, ps->substr(2));
+			} else if((*ps)[1]=='P') {
+				/* Morohashi Daikanwajiten Volume/Page */
+				k.dictCode["moro"]
+					.append(1, '/')
+					.append(ps->substr(2));
+			}
+			break;
+		case 'E':
+			/* A Guide to Remembering Japanese Characters (Henshall) */
+			k.dictCode["henshall"] = ps->substr(1);
+			break;
+		case 'K':
+			/* Gakken Kanji Dictionary ("A New Dictionary of Kanji Usage") */
+			k.dictCode["gakken"] = ps->substr(1);
+			break;
+		case 'L':
+			/* Remembering the Kanji (Heisig) */
+			k.dictCode["heisig"] = ps->substr(1);
+			break;
+		case 'O':
+			/* Japanese Names (O'Neill) */
+			k.dictCode["oneill_names"] = ps->substr(1);
+			break;
+		case 'D':
+			switch((*ps)[1]) {
+			case 'B':
+				/* Japanese for Busy People (AJLT) */
+				k.dictCode["busy_people"] = ps->substr(1);
+				break;
+			case 'C':
+				/* The Kanji Way to Japanese Language Power (Crowley) */
+				k.dictCode["crowley"] = ps->substr(1);
+				break;
+			case 'F':
+				/* Japanese Kanji Flashcards (White Rabbit Press) */
+				k.dictCode["jf_cards"] = ps->substr(1);
+				break;
+			case 'G':
+				/* Kodansha Compact Kanji Guide */
+				k.dictCode["kodansha_compact"] = ps->substr(1);
+				break;
+			case 'H':
+				/* A Guide To Reading and Writing Japanese (Henshall) */
+				k.dictCode["henshall3"] = ps->substr(1);
+				break;
+			case 'J':
+				/* Kanji in Context (Nishiguchi and Kono) */
+				k.dictCode["kanji_in_context"] = ps->substr(1);
+				break;
+			case 'K':
+				/* Kodansha Kanji Learner's Dictionary (Halpern) */
+				k.dictCode["halpern_kkld"] = ps->substr(1);
+				break;
+			case 'O':
+				/* Essential Kanji (O'Neill) */
+				k.dictCode["oneill_kk"] = ps->substr(1);
+				break;
+			case 'R':
+				/* Query Code: 2001 Kanji (De Roo) */
+				k.queryCode["deroo"] = ps->substr(1);
+				break;
+			case 'S':
+				/* A Guide to Reading and Writing Japanese (Sakade) */
+				k.dictCode["sakade"] = ps->substr(1);
+				break;
+			case 'T':
+				/* Tuttle Kanji Cards (Kask) */
+				k.dictCode["tutt_cards"] = ps->substr(1);
+				break;
+			default:
+				cerrlog << "Unhandled: " << *ps;
+				break;
+			}
+			break;
+			/* Crossreferences and miscodes */
+		case 'X':
+			switch((*ps)[1]) {
+			case 'D':
+				/* De Roo code */
+				k.variant["deroo"]=ps->substr(2);
+				break;	
+			case 'H':
+				/* NJECD code */
+				k.variant["njecd"]=ps->substr(2);
+				break;
+			case 'I':
+				/* S_H code */
+				k.variant["s_h"]=ps->substr(2);
+				break;
+			case 'J':
+				/* XJ# = JIS hex code: 0=jis208, 1=jis212, 2=jis213 */
+				switch((*ps)[2]) {
+				case '0':
+					k.variant["jis208"]=JisHexToKuten(ps->substr(3));
+					break;
+				case '1':
+					k.variant["jis212"]=JisHexToKuten(ps->substr(3));
+					break;
+				case '2':
+					k.variant["jis213"]=JisHexToKuten(ps->substr(3));
+					break;
+				}
+				break;
+			case 'N':
+				/* nelson_c code */
+				k.variant["nelson_c"]=ps->substr(2);
+				break;
+			case 'O':
+				/* oneill code */
+				k.variant["oneill"]=ps->substr(2);
+				break;
+			default:
+				cerrlog << "Unknown entry \"" << *ps << "\" found!" << endl;
+			}
+			break;
+		case 'Z':
+			sTemp = ps->substr(0,3);
+			if(sTemp == "ZBP")
+				k.skipMisclass.push_back(
+					pair<string,string>("stroke_and_posn", ps->substr(3)));
+			else if(sTemp == "ZPP") {
+				k.skipMisclass.push_back(
+					pair<string,string>("posn", ps->substr(3)));
+			} else if(sTemp == "ZRP") {
+				k.skipMisclass.push_back(
+					pair<string,string>("stroke_diff", ps->substr(3)));
+			} else if(sTemp == "ZSP") {
+				k.skipMisclass.push_back(
+					pair<string,string>("stroke_count", ps->substr(3)));
+			} else {
+				cerrlog << "Unknown entry \"" << *ps << "\" found!" << endl;
+			}
+			break;
+		/* Korean/Pinyin (Chinese) romanization */
+		case 'W':
+			k.korean_r.push_back(ps->substr(1));
+			break;
+		case 'Y':
+			k.pinyin.push_back(ps->substr(1));
+			break;
+		case '{':
+			/* MEANINGS */
+			sTemp = *ps;
+			/* Make sure we grab the whole meaning entry - pop more tokens and
+			   append if necessary. */
+			while(*(sTemp.rbegin()) != '}') {
+				tl.pop_front();
+				if(tl.size()==0) break;
+				sTemp.append(1, ' ');
+				sTemp.append(tl.front());
+			}
+			if(*(sTemp.rbegin()) != '}') {
+				/* Shouldn't happen, but I want to be safe. */
+				cerrlog << "Error: unable to find ending '}' character!\n"
+						<< "Entry responsible: ["
+						<< kanjidicEntry
+						<< "]" << endl;
+				/* Strip only the starting {, since } is not present. */
+				sTemp = sTemp.substr(1, sTemp.length()-1);
+			} else {
+				/* Strip {} from around the string. */
+				sTemp = sTemp.substr(1, sTemp.length()-2);				
+			}
+			k.meaning["en"].push_back(sTemp);
+			break;
+		default:
+			switch(tmode) {
+			case 0:
+				/* Check for readings */
+				/* The first character may be 〜, but if so, it -will- be
+				   followed by a kana character. */
+				wsTemp = utfconv_mw(*ps);
+				if(wsTemp[0]==L'〜')
+					cKanaTest = wsTemp[1];
+				else cKanaTest = wsTemp[0];
+
+				if(IsHiragana(cKanaTest)) {
+					k.kunyomi.push_back(*ps);
+				} else if(IsKatakana(cKanaTest)) {
+					k.onyomi.push_back(*ps);
+				} else {
+					cerrlog << "UNHANDLED entry \""
+							<< *ps << "\" encountered!" << endl;
+					cerrlog << "\twsTemp = [" << utfconv_wm(wsTemp)
+							<< "]" << endl;
+					cerrlog << "\twsTemp length: " << wsTemp.length() << endl;
+					cerrlog << "\tcKanaTest: ["
+							<< utfconv_wm(wstring().append(1,cKanaTest))
+							<< "]" << endl;
+					cerrlog << "\tcKanaTest hex code: "
+							<< hex << (unsigned int)cKanaTest << dec << endl;
+				}
+
+				break;
+			case 1:
+				k.nanori.push_back(*ps);
+				break;
+			case 2:
+				k.radicalName = *ps;
+				break;
+			default:
+				cerrlog << "Unknown tmode value (" << tmode
+						<< ") encountered!" << endl;
+			}
+			
+			break;			
+		}
+		tl.pop_front();
+	}
+}
+
 /* This could be sped up: copy the first UTF-8 character into a string, then
    run a conversion on that.  Trivial though. */
-void KDict::KanjidicParser(char *kanjidicRawData) {
+void KDict::KanjidicParser(char *kanjidicRawData, const char* jisStd) {
 	char *token = strtok(kanjidicRawData, "\n");
 	wstring wToken;
 	while(token) {
@@ -221,8 +735,17 @@ void KDict::KanjidicParser(char *kanjidicRawData) {
 			wToken = utfconv_mw(token);
 			/* Convert token to proper format */
 			wToken = ConvertKanjidicEntry(wToken);
+			/* Create new KInfo object.
+			   If one already exists for this character, copy over the
+			   information. */
+			KInfo k;
+			BoostHM<wchar_t, KInfo>::iterator it = kdictData.find(wToken[0]);
+			if(it!=kdictData.end()) k = it->second;
+			/* Fill the KInfo structure */
+			KanjidicToKInfo(utfconv_wm(wToken), k, jisStd);
+
 			/* Add to hash table */
-			if(!kanjidicData.assign(wToken[0], token)) {
+			if(!kdictData.assign(wToken[0], k)) {
 				ostringstream os;
 				string temp = utfconv_wm(wToken);
 				os << "Error assigning (" << temp[0]
@@ -236,19 +759,6 @@ void KDict::KanjidicParser(char *kanjidicRawData) {
 
 KDict::~KDict() {
 	/* Currently: nothing here. */
-}
-
-/* This function returns a wstring containing the desired line of the
-   kanjidic hash table.  A conversion from string to wstring is included
-   in this call since standardstrings are only used for more compressed
-   internal storage.  This is followed by a slight reformatting of the
-   string for better presentation. */
-wstring KDict::GetKanjidicStr(wchar_t c) const {
-	BoostHM<wchar_t,string>::iterator it = kanjidicData.find(c);
-	if(it==kanjidicData.end()) return L"";
-	wstring s;
-	s = utfconv_mw(it->second);
-	return ConvertKanjidicEntry(s);
 }
 
 /*
@@ -293,19 +803,20 @@ wstring KDict::ConvertKanjidicEntry(const wstring& s) {
 	return temp;
 }
 
-wstring KDict::KanjidicToHtml(const wstring& kanjidicStr) {
+wstring KDict::KInfoToHtml(const KInfo& kInfo) {
 	Preferences *prefs = Preferences::Get();
-	return KanjidicToHtml(kanjidicStr,
-						  prefs->kanjidicOptions,
-						  prefs->kanjidicDictionaries);
+	return KInfoToHtml(kInfo,
+					   prefs->kanjidicOptions,
+					   prefs->kanjidicDictionaries);
 }
 
-wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
-							  long options, long dictionaries) {
+wstring KDict::KInfoToHtml(const KInfo& kInfo,
+						   long options, long dictionaries) {
 /*	return wstring(L"<p>")
 		.append(s[0])
 		.append(L"</p>");*/
-
+	#warning KInfoToHtml currently is unimplemented!
+#if 0
 	wostringstream result;
 	wostringstream header;
 	wstring onyomi, kunyomi, nanori, radicalReading, english;
@@ -744,114 +1255,22 @@ wstring KDict::KanjidicToHtml(const wstring& kanjidicStr,
 	result << L"</ul>";
 
 	return result.str();
+#endif
+	return wstring();
 }
 
-int KDict::GetIntField(wchar_t kanji, const wstring& marker) const {
-	wstring markerStr, kanjiEntry, temp;
-	size_t index=0;
-	long value=-1;
-	int markerLen;
-
-	markerStr.append(L" ").append(marker);
-	markerLen=markerStr.length();
-
-	kanjiEntry = GetKanjidicStr(kanji);
-	if(kanjiEntry.length()>0) {
-		index = kanjiEntry.find(markerStr);
-		if(index!=wstring::npos) {
-			temp = kanjiEntry.substr(
-				index+markerLen,
-				kanjiEntry.find(L" ", index+1) - index - (markerLen-1));
-			/*temp.ToLong(&value);*/
-			wistringstream(temp) >> value;
-		}
-	}
-
-	return (int)value;
-}
-
-const BoostHM<wchar_t,string>* KDict::GetHashTable() const {
-	return &kanjidicData;
-}
-
-enum {
-	KDR_Onyomi=1,
-	KDR_Kunyomi,
-	KDR_English
-};
-
-wstring KDict::GetOnyomiStr(wchar_t c) const {
-	return GetKanjidicReading(c, KDR_Onyomi);
-}
-
-wstring KDict::GetKunyomiStr(wchar_t c) const {
-	return GetKanjidicReading(c, KDR_Kunyomi);
-}
-
-wstring KDict::GetEnglishStr(wchar_t c) const {
-	return GetKanjidicReading(c, KDR_English);
-}
-
-wstring KDict::GetKanjidicReading(wchar_t c, int readingType) const {
-	wostringstream result;
-	wstring kanjidicStr = GetKanjidicStr(c);
-
-	long tmode = 0;
-	wstring sTemp, token;
-	list<wstring> t = StrTokenize<wchar_t>(kanjidicStr, L" ");
-
-	/* The first two tokens are guaranteed not to be what we're looking for.  Skip them. */
-	if(t.size()>1) {
-		t.pop_front();
-		t.pop_front();
-	}
-	while(t.size()>0) {
-		token = t.front();
-		t.pop_front();
-		sTemp = token;
-		c = sTemp[0];
-		/* If a preceding character is detected, strip it */
-		if(c == L'(' || c == L'〜') {
-			sTemp = sTemp.substr(1);
-			c = sTemp[0];
-		}
-		if(tmode==0) {
-			if(IsKatakana(c) && readingType==KDR_Onyomi) {
-				/* Onyomi reading detected */
-				if(result.str().length()>0) result << L"  ";
-				result << token;   /* Copy the original string,
-									  including ()'s and 〜's */
-				continue;
-			}
-			else if(IsHiragana(c) && readingType==KDR_Kunyomi) {
-				/* Kunyomi reading detected */
-				if(result.str().length()>0) result << L"  ";
-				result << token;   /* Copy the original string,
-									  including ()'s and 〜's */
-				continue;
-			}
-		}
-		if(c == L'{' && readingType==KDR_English) {
-			/* English meaning detected
-			   Special handling is needed to take care of spaces, though.
-			   We'll "cheat" and mess with our iterator a bit if a space is detected. */
-			while(t.size()>0 && sTemp[sTemp.length()-1] != L'}') {
-				sTemp.append(L" ").append(t.front());
-				t.pop_front();
-			}
-			if(result.str().length()>0) result << L", ";
-			result << sTemp.substr(1,sTemp.length()-2);  /* Strip the {} */
-		}
-		else if(c==L'T') {
-			/*wstring(sTemp.substr(1)).ToLong(&tmode);*/
-			wistringstream(sTemp.substr(1)) >> tmode;
-		}
-	}
-
-	return result.str();
+const BoostHM<wchar_t,KInfo>* KDict::GetHashTable() const {
+	return &kdictData;
 }
 
 bool KDict::MainDataLoaded() const {
-	if(kanjidicData.size()>0) return true;
+	if(kdictData.size()>0) return true;
 	return false;
+}
+
+const KInfo* KDict::GetEntry(const wchar_t key) const {
+	BoostHM<wchar_t, KInfo>::const_iterator kci = kdictData.find(key);
+	if(kci != kdictData.end())
+		return &(kci->second);
+	return NULL;;
 }

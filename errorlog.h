@@ -24,20 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef errorlog_h
 #define errorlog_h
 
-/* We include wxWidgets here simply for the ease of putting errors and
-   warnings in immediate view via wxMessageBox messages.  This can easily be
-   replaced with an alternative from another toolkit, or even just left
-   silent and depend on the program polling the error log object.
-   (Of course, errors at the very least really shouldn't be silent.) */
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
-
 #include <list>
 #include <map>
 #include <string>
@@ -52,13 +38,19 @@ enum ELType {
 
 class ErrorLog {
 public:
+	ErrorLog();
 	int Size();
 	int Count(ELType t);
 	string PopFront(ELType t);
 	string PopBack(ELType t);
 	void Push(ELType t, string message, void *srcObj=NULL);
+	void RegDisplayFunc(
+		void (*newDispFunc)(ELType, const string&, void*));
 private:
 	list<string>* GetList(ELType t);
+	/* This function lets us register gui-dependent external code
+	   for displaying error messages. */
+	void (*dispFunc)(ELType, const string&, void*);
 
 	map<ELType, list<string> > logdata;
 };

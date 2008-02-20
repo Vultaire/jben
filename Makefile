@@ -81,10 +81,10 @@ build_bindir = bin/$(PLATFORM)/$(BUILD)
 # Get flags/libs for GTK builds
 ifeq ($(PLATFORM),gtk20)
 	MAKE = make
-	SharedCXXFLAGS = `wx-config --cxxflags` `pkg-config --cflags gtk+-2.0`
+	SharedCXXFLAGS = `wx-config --cxxflags` `pkg-config --cflags gtk+-2.0 libxml-2.0`
 	SharedCPPFLAGS = `wx-config --cppflags` -DJB_DATADIR=\"$(datadir)/jben\" \
 		-DDOCDIR=\"$(docdir)/doc\" -DLICENSEDIR=\"$(docdir)/license\"
-	libs = `wx-config --libs` `pkg-config --libs gtk+-2.0`
+	libs = `wx-config --libs` `pkg-config --libs gtk+-2.0 libxml-2.0`
 	mkdircmd = mkdir -p
 endif
 

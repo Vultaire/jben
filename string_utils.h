@@ -100,4 +100,22 @@ basic_string<t> TextReplace(const basic_string<t>& src,
 	return result;
 }
 
+/* t must be a class based upon std::basic_string, like string or wstring. */
+template <class t>
+t ListToString(const list<t>& l, const t& separator) {
+	t target;
+
+	/* Append the first entry */
+	typename list<t>::const_iterator li = l.begin();
+	if(li!=l.end()) target.append(*li);
+
+	/* Append remaining entries */
+	for(li++; li!=l.end(); li++) {
+		target.append(separator);
+		target.append(*li);
+	}
+
+	return target;
+}
+
 #endif

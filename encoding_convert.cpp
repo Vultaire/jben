@@ -24,3 +24,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "encoding_convert.h"
 
 string wcType;
+
+bool InitUTFConv() {
+	bool result = true;
+	/* Set our wide character type */
+	if(sizeof(wchar_t)==2)
+		wcType = "UCS-2LE";
+	else
+		wcType = "UCS-4LE";
+
+	return result;
+}
+
+void DestroyUTFConv() {
+	/* Nothing to do as currently implemented. */
+}

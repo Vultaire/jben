@@ -25,8 +25,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "jben.h"
 #include "frame_maingui.h"
 #include "kdict.h"
+#include "string_utils.h"
+#include "encoding_convert.h"
+#include "errorlog.h"
 #include <cstdlib>
 #include <algorithm>
+#include <sstream>
 using namespace std;
 
 enum {
@@ -322,6 +326,7 @@ void PanelKanjiDrill::OnRdoStartIndex(wxCommandEvent& ev) {
 
 void PanelKanjiDrill::ShowNextKanji() {
 	const KDict* kd = KDict::Get();
+	const KInfo* ki;
 	/* Remove the current kanji, and get the new one */
 	if(!extraPractice) {
 		if(currentKanjiIndex!=-1)
@@ -349,14 +354,27 @@ void PanelKanjiDrill::ShowNextKanji() {
 	}
 
 	/* Update CoveredTextBoxes with new info from KANJIDIC. */
+	ki = kd->GetEntry(currentKanji);
 	txtKanji->Cover();
 	txtOnyomi->Cover();
 	txtKunyomi->Cover();
 	txtEnglish->Cover();
 	txtKanji->SetHiddenStr(wxString(currentKanji));
-	txtOnyomi->SetHiddenStr(kd->GetOnyomiStr(currentKanji));
-	txtKunyomi->SetHiddenStr(kd->GetKunyomiStr(currentKanji));
-	txtEnglish->SetHiddenStr(kd->GetEnglishStr(currentKanji));
+	txtOnyomi->SetHiddenStr(
+		utfconv_mw(ListToString<string>(ki->onyomi, "、")));
+	txtKunyomi->SetHiddenStr(
+		utfconv_mw(ListToString<string>(ki->kunyomi, "、")));
+	map<string, list<string> >::const_iterator
+		mslsi = ki->meaning.find("en");
+	if(mslsi != ki->meaning.end()) {
+		txtEnglish->SetHiddenStr(
+			utfconv_mw(ListToString<string>(mslsi->second, "、")));
+	} else {
+		ostringstream oss;
+		oss << "Unable to find english meaning in character "
+			<< ki->literal << "!";
+		el.Push(EL_Warning, oss.str());
+	}
 
 	/* Update the test status label */
 	double score=0.0;

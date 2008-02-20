@@ -103,6 +103,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define KDD_ALL    0xFFFFFFFF
 
 #include "boosthm.h"
+#include <string>
+#include <iostream>
+#include <list>
+#include <map>
+using namespace std;
+
+class KInfo {
+public:
+	KInfo();
+
+	string literal;
+	map<string,string> codepoint;
+	unsigned char radical, radicalNelson;
+	int grade;
+	int strokeCount;
+	list<int> misstrokes;
+	map<string,string> variant;
+	int freq;
+	string radicalName;
+	map<string,string> dictCode;
+	map<string,string> queryCode;
+	list< pair<string,string> > skipMisclass;
+	list<string> pinyin, korean_r, korean_h,
+		onyomi, kunyomi, nanori;
+	/* FOR NOW: I am ignoring onyomi and kunyomi r_status and on_type flags.
+	   In the KANJIDIC2 dated 2008-02-12, there was only one entry, "行く",
+	   which had any of these flags.  Not worth the effort. */
+	map<string, list<string> > meaning;
+};
 
 class KDict {
 public:
@@ -110,15 +139,12 @@ public:
 	static void Destroy();
 	~KDict();
 
-	/* Kanjidic-specific functions */
-	wstring GetKanjidicStr(wchar_t c) const;
-	static wstring KanjidicToHtml(const wstring& kanjidicStr);
-	static wstring KanjidicToHtml(const wstring& kanjidicStr, long options, long dictionaries);
-	int GetIntField(wchar_t kanji, const wstring& marker) const;
-	wstring GetOnyomiStr(wchar_t c) const;
-	wstring GetKunyomiStr(wchar_t c) const;
-	wstring GetEnglishStr(wchar_t c) const;
-	const BoostHM<wchar_t, string>* GetHashTable() const;
+	/* General purpose access functions */
+	static wstring KInfoToHtml(const KInfo& kInfo);
+	static wstring KInfoToHtml(const KInfo& kInfo,
+							   long options, long dictionaries);
+	const KInfo* GetEntry(const wchar_t key) const;
+	const BoostHM<wchar_t, KInfo>* GetHashTable() const;
 
 	/* Other functions */
 	bool MainDataLoaded() const;
@@ -128,17 +154,18 @@ private:
 	
 	/* Dictionary file loaders */
 	int LoadKanjidic(const char *filename);
+	int LoadKanjidic2(const char *filename);
 	int LoadRadkfile(const char *filename);
 	int LoadKradfile(const char *filename);
 
 	/* Kanjidic-specific stuff */
-	void KanjidicParser(char *kanjidicRawData);
+	void KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* jisStd);
+	void KanjidicParser(char *kanjidicRawData, const char* jisStd="jis208");
 	static wstring ConvertKanjidicEntry(const wstring& s);
-	wstring GetKanjidicReading(wchar_t c, int readingType) const;
 
 	/* Data */
 	static KDict *kdictSingleton;
-	BoostHM<wchar_t, string> kanjidicData;
+	BoostHM<wchar_t, KInfo> kdictData;
 	BoostHM<wchar_t, wstring> radkData, kradData;
 	BoostHM<wchar_t, int> radkDataStrokes;
 };

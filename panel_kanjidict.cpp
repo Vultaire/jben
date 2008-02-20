@@ -135,16 +135,15 @@ void PanelKanjiDict::Redraw() {
 void PanelKanjiDict::UpdateHtmlOutput() {
 	const KDict* kd = KDict::Get();
 	wxString html = _T("<html><body><font face=\"Serif\">");
-	wxString htmlContent, kanjiEntry;
+	wxString htmlContent;
+	const KInfo *ki;
 
 	wxChar c;
 	int len = currentSearchString.length();
 	for(int i=0;i<len;i++) {
 		c = currentSearchString[i];
-		kanjiEntry = kd->GetKanjidicStr(c);
-		if(kanjiEntry.length()>0) {
-			htmlContent.append(KDict::KanjidicToHtml(kanjiEntry.c_str()));
-		}
+		ki = kd->GetEntry(c);
+		if(ki) htmlContent.append(KDict::KInfoToHtml(*ki));
 	}
 
 	if(htmlContent.length()>0)
