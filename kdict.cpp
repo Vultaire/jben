@@ -41,8 +41,6 @@ using namespace std;
 #	define FALLBACK_DICTDIR "dicts/"
 #endif
 
-#define cerrlog cerr << __FILE__ << ':' << __LINE__ << ": "
-
 KDict* KDict::kdictSingleton = NULL;
 
 KInfo::KInfo() {
@@ -50,20 +48,35 @@ KInfo::KInfo() {
 	grade = strokeCount = freq = 0;
 }
 
-const KDict *KDict::Get() {
+const KDict* KDict::Get() {
 	if(!kdictSingleton)
 		kdictSingleton = new KDict;
 	return kdictSingleton;
 }
 
 KDict::KDict() {
-	Preferences *p = Preferences::Get();
-	if(LoadKanjidic(p->GetSetting("kdict_kanjidic").c_str())!=KD_SUCCESS)
-		LoadKanjidic(FALLBACK_DICTDIR "kanjidic");
-	if(LoadKradfile(p->GetSetting("kdict_kradfile").c_str())!=KD_SUCCESS)
-		LoadKradfile(FALLBACK_DICTDIR "kradfile");
-	if(LoadRadkfile(p->GetSetting("kdict_radkfile").c_str())!=KD_SUCCESS);
-		LoadRadkfile(FALLBACK_DICTDIR "radkfile");
+	Preferences* p = Preferences::Get();
+	int result;
+	/* Load KANJIDIC2, if present. */
+	result = LoadKanjidic2(p->GetSetting("kdict_kanjidic2").c_str());
+	if(result!=KD_SUCCESS)
+		result = LoadKanjidic2(FALLBACK_DICTDIR "kanjidic2.xml");
+
+	/* If KANJIDIC2 is not present, load KANJIDIC and/or KANJD212 */
+	if(result!=KD_SUCCESS) {
+		result = LoadKanjidic(p->GetSetting("kdict_kanjidic").c_str());
+		if(result!=KD_SUCCESS) LoadKanjidic(FALLBACK_DICTDIR "kanjidic");
+		result =
+			LoadKanjidic(p->GetSetting("kdict_kanjd212").c_str(), "jis212");
+		if(result!=KD_SUCCESS)
+			LoadKanjidic(FALLBACK_DICTDIR "kanjd212", "jis212");
+	}
+
+	/* Load supplemental dictionary files */
+	result = LoadKradfile(p->GetSetting("kdict_kradfile").c_str());
+	if(result!=KD_SUCCESS) LoadKradfile(FALLBACK_DICTDIR "kradfile");
+	result = LoadRadkfile(p->GetSetting("kdict_radkfile").c_str());
+	if(result!=KD_SUCCESS) LoadRadkfile(FALLBACK_DICTDIR "radkfile");
 }
 
 void KDict::Destroy() {
@@ -73,8 +86,8 @@ void KDict::Destroy() {
 	}
 }
 
-int KDict::LoadKanjidic(const char *filename) {
-	char *rawData = NULL;
+int KDict::LoadKanjidic(const char* filename, const char* jisStd) {
+	char* rawData = NULL;
 	unsigned int size;
 	int returnCode=KD_FAILURE;
 
@@ -86,18 +99,21 @@ int KDict::LoadKanjidic(const char *filename) {
 		rawData[size] = '\0';
 		ifile.read(rawData, size);
 		if(strlen(rawData)!=size) {
-			ostringstream os;
-			os << "kanjidic file size: "
-			   << strlen(rawData)
-			   << ", read-in string: "
-			   << size << "\n";
-			el.Push(EL_Warning, os.str());
+			ostringstream oss;
+			oss << ERR_PREF
+				<< "kanjidic file size: "
+				<< strlen(rawData)
+				<< ", read-in string: "
+				<< size;
+			el.Push(EL_Warning, oss.str());
 		}
 
 		/* Create the kanjidic object with our string data. */
-		this->KanjidicParser(rawData);
+		this->KanjidicParser(rawData, jisStd);
 
 		returnCode = KD_SUCCESS;
+		el.Push(EL_Silent, string("Kanji dictionary file \"")
+				.append(filename).append("\" loaded successfully."));
 	}
 	else
 		returnCode = KD_FAILURE;
@@ -106,10 +122,10 @@ int KDict::LoadKanjidic(const char *filename) {
 	return returnCode;
 }
 
-int KDict::LoadKanjidic2(const char *filename) {
+int KDict::LoadKanjidic2(const char* filename) {
 	int returnCode = KD_FAILURE;
 	xmlTextReaderPtr reader;
-	xmlChar *ptr;
+	xmlChar* ptr;
 	int ret;
 
 	/* Vars for navigating through the data */
@@ -124,9 +140,8 @@ int KDict::LoadKanjidic2(const char *filename) {
 	string temp;
 
 	reader = xmlNewTextReaderFilename(filename);
-	KInfo *k=NULL;
+	KInfo* k=NULL;
 	if(reader) {
-		returnCode = KD_SUCCESS;
 		ret = xmlTextReaderRead(reader);
 		while(ret==1) {
 			/* Act based on node type */
@@ -148,8 +163,10 @@ int KDict::LoadKanjidic2(const char *filename) {
 					wchar_t wc = utfconv_mw(k->literal)[0];
 					/* End of character entry: append to data list */
 					if(!kdictData.assign(wc, *k)) {
-						el.Push(EL_Error,
-								"Error assigning kanjidic2 entry to hash table!\n");
+						ostringstream oss;
+						oss << ERR_PREF
+							<< "Error assigning kanjidic2 entry to hash table!";
+						el.Push(EL_Error, oss.str());
 					}
 					delete k;
 					k = NULL;
@@ -170,14 +187,19 @@ int KDict::LoadKanjidic2(const char *filename) {
 				if(d1element=="header") {
 					if(element=="file_version") {
 						if(sValue!="4") {
-							cerr << "Warning: the KANJIDIC2 reader only"
-								" supports KANJIDIC2 version 4!" << endl;
+							ostringstream oss;
+							oss << ERR_PREF
+								<< "Warning: the KANJIDIC2 reader only"
+								" supports KANJIDIC2 version 4!";
+							el.Push(EL_Warning, oss.str());
 						}
 					}
 				}
 				if(d1element=="character") {
 					if(!k) {
-						cerrlog << "k is NULL!" << endl;
+						ostringstream oss;
+						oss << ERR_PREF << "k is NULL!";
+						el.Push(EL_Error, oss.str());
 					} else if(element=="literal") {
 						k->literal = sValue;
 					} else if(element=="cp_value") {
@@ -190,11 +212,15 @@ int KDict::LoadKanjidic2(const char *filename) {
 						else if(temp == "nelson_c")
 							k->radicalNelson
 								= (unsigned char)atoi(sValue.c_str());
-						else
-							cerrlog << "Unhandled radical: "
-									<< "type=" << temp
-									<< ", value=[" << sValue
-									<< "]!" << endl;
+						else {
+							ostringstream oss;
+							oss << ERR_PREF
+								<< "Unhandled radical: "
+								<< "type=" << temp
+								<< ", value=[" << sValue
+								<< "]!";
+							el.Push(EL_Error, oss.str());
+						}
 					} else if(element=="grade") {
 						k->grade = (unsigned char)atoi(sValue.c_str());
 					} else if(element=="stroke_count") {
@@ -242,7 +268,9 @@ int KDict::LoadKanjidic2(const char *filename) {
 							/* Need to convert xx.x to xx(x) notation. */
 							k->kunyomi.push_back(sValue);
 						} else {
-							cerrlog << "Invalid r_type: " << temp << endl;
+							ostringstream oss;
+							oss << ERR_PREF << "Invalid r_type: " << temp;
+							el.Push(EL_Error, oss.str());
 						}
 						/* This section is "to-do" */
 					} else if(element=="meaning") {
@@ -252,7 +280,9 @@ int KDict::LoadKanjidic2(const char *filename) {
 					} else if(element=="nanori") {
 						k->nanori.push_back(sValue);
 					} else {
-						cerrlog << "UNHANDLED element: " << element << endl;
+						ostringstream oss;
+						oss << ERR_PREF << "UNHANDLED element: " << element;
+						el.Push(EL_Error, oss.str());
 					}
 				}
 				/* default parsing */
@@ -275,8 +305,10 @@ int KDict::LoadKanjidic2(const char *filename) {
 			}
 			/* ret==-1 is an error */
 			if(ret==-1) {
-					cerrlog << "xmlTextReaderMoveToNextAttribute returned "
-						"an error!" << endl;
+				ostringstream oss;
+				oss << ERR_PREF
+					<< "xmlTextReaderMoveToNextAttribute returned an error!";
+				el.Push(EL_Error, oss.str());
 			}
 			/* If ret==1, an attribute was loaded.
 			   If not, go to the next element. */
@@ -289,18 +321,21 @@ int KDict::LoadKanjidic2(const char *filename) {
 		}
 		xmlFreeTextReader(reader);
 		if(ret!=0) {
-			cerrlog << __FILE__ << ":" << __LINE__
-				 << "Parsing error occurred in " << filename << "." << endl;
+			ostringstream oss;
+			oss << ERR_PREF
+				<< "Parsing error occurred in " << filename << ".";
+			el.Push(EL_Error, oss.str());
 		}
 
-	} else {
-		cerrlog << "Unable to open " << filename << "!" << endl;
-		return -1;
-	}
+		returnCode = KD_SUCCESS;
+		el.Push(EL_Silent, string("Kanji dictionary file \"")
+				.append(filename).append("\" loaded successfully."));
+	} else return returnCode;
 
 	if(k) {
-		cerrlog << __FILE__ << ":" << __LINE__
-			 << ": k is not NULL!  This shouldn't happen!";
+		ostringstream oss;
+		oss << ERR_PREF << ": k is not NULL!  This shouldn't happen!";
+		el.Push(EL_Error, oss.str());
 		delete k;
 		k = NULL;
 	}
@@ -308,7 +343,7 @@ int KDict::LoadKanjidic2(const char *filename) {
 	return returnCode;
 }
 
-int KDict::LoadKradfile(const char *filename) {
+int KDict::LoadKradfile(const char* filename) {
 	int returnCode = KD_FAILURE;
 	stringbuf sb;
 	ifstream f(filename, ios::in|ios::binary);
@@ -327,23 +362,23 @@ int KDict::LoadKradfile(const char *filename) {
 				token = TextReplace<wchar_t>(token, L" ", L"");
 				/* Now we can easily pull in the data */
 				if(!kradData.assign(token[0], token.substr(2))) {
-					ostringstream os;
-					os << "KRADFILE: Error assigning ("
-					   << utfconv_wm(token.substr(0,1))
-					   << ", "
-					   << utfconv_wm(token.substr(2))
-					   << ") to hash table!\n";
-					el.Push(EL_Error, os.str());
+					ostringstream oss;
+					oss << ERR_PREF << "KRADFILE: Error assigning ("
+						<< utfconv_wm(token.substr(0,1)) << ", "
+						<< utfconv_wm(token.substr(2)) << ") to hash table!";
+					el.Push(EL_Error, oss.str());
 				}
 			}
 		}
 
 		returnCode = KD_SUCCESS;
+		el.Push(EL_Silent, string("Kanji dictionary file \"")
+				.append(filename).append("\" loaded successfully."));
 	}
 	return returnCode;
 }
 
-int KDict::LoadRadkfile(const char *filename) {
+int KDict::LoadRadkfile(const char* filename) {
 	int returnCode = KD_FAILURE;
 	stringbuf sb;
 	ifstream f(filename, ios::in|ios::binary);
@@ -366,12 +401,11 @@ int KDict::LoadRadkfile(const char *filename) {
 				list<wstring> entryData =
 					StrTokenize<wchar_t>(entry, L"\n", false, 2);
 				if(entryData.size()!=2) {
-					ostringstream os;
-					os << "Error: entryData.size() == "
-					   << entryData.size()
-					   << " for entry \""
-					   << utfconv_wm(entry) << "!!" << endl;
-					el.Push(EL_Error, os.str());
+					ostringstream oss;
+					oss << ERR_PREF
+						<< "Error: entryData.size() == " << entryData.size()
+						<< " for entry \"" << utfconv_wm(entry) << "!!";
+					el.Push(EL_Error, oss.str());
 				} else {
 					wchar_t key;
 					int strokeCount;
@@ -397,26 +431,26 @@ int KDict::LoadRadkfile(const char *filename) {
 					value = TextReplace<wchar_t>(value, L" ", L"");				
 
 					if(!radkData.assign(key, value)) {
-						ostringstream os;
-						os << "RADKFILE: Error assigning ("
-						   << utfconv_wm(wstring().append(1,key))
-						   << ", "
-						   << utfconv_wm(value)
-						   << ") to hash table!\n";
-						el.Push(EL_Error, os.str());
+						ostringstream oss;
+						oss << ERR_PREF << "RADKFILE: Error assigning ("
+							<< utfconv_wm(wstring().append(1,key)) << ", "
+							<< utfconv_wm(value) << ") to hash table!";
+						el.Push(EL_Error, oss.str());
 					}
 					if(!radkDataStrokes.assign(key, strokeCount)) {
-						ostringstream os;
-						os << "RADKFILE: Error assigning ("
-						   << utfconv_wm(wstring().append(1,key))
-						   << ", " << strokeCount << ") to hash table!\n";
-						el.Push(EL_Error, os.str());
+						ostringstream oss;
+						oss << ERR_PREF << "RADKFILE: Error assigning ("
+							<< utfconv_wm(wstring().append(1,key))
+							<< ", " << strokeCount << ") to hash table!";
+						el.Push(EL_Error, oss.str());
 					}
 				}
 			}
 		}
 
 		returnCode = KD_SUCCESS;
+		el.Push(EL_Silent, string("Kanji dictionary file \"")
+				.append(filename).append("\" loaded successfully."));
 	}
 	return returnCode;
 }
@@ -433,7 +467,8 @@ string JisHexToKuten(const string& jisHex) {
 
 /* This function converts from KANJIDIC-style entries to internally used
    KInfo objects (which are structurally based off the newer KANJIDIC2). */
-void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* jisStd) {
+void KDict::KanjidicToKInfo(const string& kanjidicEntry,
+							KInfo& k, const char* jisStd) {
 	list<string> tl = StrTokenize<char>(kanjidicEntry, " ");
 	if(tl.size()<2) return; /* KANJIDIC entries must AT LEAST have the char
 							   and the JIS hex code. */
@@ -449,7 +484,7 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* j
 	k.codepoint[jisStd] = JisHexToKuten(tl.front()); tl.pop_front();
 
 	/* Now, just loop through the remaining entries in the list. */
-	string *ps;
+	string* ps;
 	while(tl.size()>0) {
 		ps = &(tl.front());
 		switch ((*ps)[0]) {
@@ -584,8 +619,12 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* j
 				k.dictCode["tutt_cards"] = ps->substr(1);
 				break;
 			default:
-				cerrlog << "Unhandled: " << *ps;
-				break;
+				{
+					ostringstream oss;
+					oss << ERR_PREF << "Unhandled: " << *ps;
+					el.Push(EL_Error, oss.str());
+				}
+			break;
 			}
 			break;
 			/* Crossreferences and miscodes */
@@ -626,7 +665,11 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* j
 				k.variant["oneill"]=ps->substr(2);
 				break;
 			default:
-				cerrlog << "Unknown entry \"" << *ps << "\" found!" << endl;
+				{
+					ostringstream oss;
+					oss << ERR_PREF << "Unknown entry \"" << *ps << "\" found!";
+					el.Push(EL_Error, oss.str());
+				}
 			}
 			break;
 		case 'Z':
@@ -644,7 +687,9 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* j
 				k.skipMisclass.push_back(
 					pair<string,string>("stroke_count", ps->substr(3)));
 			} else {
-				cerrlog << "Unknown entry \"" << *ps << "\" found!" << endl;
+				ostringstream oss;
+				oss << ERR_PREF << "Unknown entry \"" << *ps << "\" found!";
+				el.Push(EL_Error, oss.str());
 			}
 			break;
 		/* Korean/Pinyin (Chinese) romanization */
@@ -667,10 +712,10 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* j
 			}
 			if(*(sTemp.rbegin()) != '}') {
 				/* Shouldn't happen, but I want to be safe. */
-				cerrlog << "Error: unable to find ending '}' character!\n"
-						<< "Entry responsible: ["
-						<< kanjidicEntry
-						<< "]" << endl;
+				ostringstream oss;
+				oss << ERR_PREF << "Unable to find ending '}' character!\n"
+					<< "Entry responsible: [" << kanjidicEntry << "]";
+				el.Push(EL_Error, oss.str());
 				/* Strip only the starting {, since } is not present. */
 				sTemp = sTemp.substr(1, sTemp.length()-1);
 			} else {
@@ -695,16 +740,10 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* j
 				} else if(IsKatakana(cKanaTest)) {
 					k.onyomi.push_back(*ps);
 				} else {
-					cerrlog << "UNHANDLED entry \""
-							<< *ps << "\" encountered!" << endl;
-					cerrlog << "\twsTemp = [" << utfconv_wm(wsTemp)
-							<< "]" << endl;
-					cerrlog << "\twsTemp length: " << wsTemp.length() << endl;
-					cerrlog << "\tcKanaTest: ["
-							<< utfconv_wm(wstring().append(1,cKanaTest))
-							<< "]" << endl;
-					cerrlog << "\tcKanaTest hex code: "
-							<< hex << (unsigned int)cKanaTest << dec << endl;
+					ostringstream oss;
+					oss << ERR_PREF
+						<< "UNHANDLED entry \"" << *ps << "\" encountered!";
+					el.Push(EL_Error, oss.str());
 				}
 
 				break;
@@ -715,8 +754,12 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* j
 				k.radicalName = *ps;
 				break;
 			default:
-				cerrlog << "Unknown tmode value (" << tmode
-						<< ") encountered!" << endl;
+				{
+					ostringstream oss;
+					oss << ERR_PREF
+						<< "Unknown tmode value (" << tmode << ") encountered!";
+					el.Push(EL_Error, oss.str());
+				}
 			}
 			
 			break;			
@@ -727,8 +770,8 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* j
 
 /* This could be sped up: copy the first UTF-8 character into a string, then
    run a conversion on that.  Trivial though. */
-void KDict::KanjidicParser(char *kanjidicRawData, const char* jisStd) {
-	char *token = strtok(kanjidicRawData, "\n");
+void KDict::KanjidicParser(char* kanjidicRawData, const char* jisStd) {
+	char* token = strtok(kanjidicRawData, "\n");
 	wstring wToken;
 	while(token) {
 		if( (strlen(token)>0) && (token[0]!='#') ) {
@@ -746,11 +789,11 @@ void KDict::KanjidicParser(char *kanjidicRawData, const char* jisStd) {
 
 			/* Add to hash table */
 			if(!kdictData.assign(wToken[0], k)) {
-				ostringstream os;
+				ostringstream oss;
 				string temp = utfconv_wm(wToken);
-				os << "Error assigning (" << temp[0]
-				   << ", " << temp << ") to hash table!\n";
-				el.Push(EL_Error, os.str());
+				oss << ERR_PREF << "Error assigning (" << temp[0]<< ", "
+					<< temp << ") to hash table!";
+				el.Push(EL_Error, oss.str());
 			}
 		}
 		token = strtok(NULL, "\n");
@@ -788,10 +831,12 @@ wstring KDict::ConvertKanjidicEntry(const wstring& s) {
 		index = temp.find(L'.', lastIndex+1);
 	}
 
-	/* Second conversion: - to 〜, when a neighboring character is hiragana/katakana */
+	/* Second conversion: - to 〜, when a neighboring
+	   character is hiragana/katakana */
 	index = temp.find(L'-', 0);
 	while(index!=wstring::npos) {
-		/* Proceed if the character before or after the "-" is hiragana/katakana. */
+		/* Proceed if the character before or after
+		   the "-" is hiragana/katakana. */
 		if(IsFurigana(temp[index-1]) || IsFurigana(temp[index+1]))
 			temp[index]=L'〜';
 
@@ -804,7 +849,7 @@ wstring KDict::ConvertKanjidicEntry(const wstring& s) {
 }
 
 wstring KDict::KInfoToHtml(const KInfo& kInfo) {
-	Preferences *prefs = Preferences::Get();
+	Preferences* prefs = Preferences::Get();
 	return KInfoToHtml(kInfo,
 					   prefs->kanjidicOptions,
 					   prefs->kanjidicDictionaries);
@@ -858,7 +903,7 @@ wstring KDict::KInfoToHtml(const KInfo& kInfo,
 		wstringstream sod;
 		/* Load static SOD, if present */
 		if((options & KDO_SOD_STATIC) != 0) {
-			Preferences *p = Preferences::Get();
+			Preferences* p = Preferences::Get();
 			ostringstream fn;
 			string sodDir = p->GetSetting("sod_dir");
 			if(sodDir.length()==0) sodDir = "sods";
@@ -867,7 +912,8 @@ wstring KDict::KInfoToHtml(const KInfo& kInfo,
 			   << ss.str() << ".png";
 
 #ifdef DEBUG
-			printf("DEBUG: Checking for existance of file \"%s\"...\n", fn.str().c_str());
+			printf("DEBUG: Checking for existance of file \"%s\"...\n",
+				   fn.str().c_str());
 #endif
 			ifstream f(fn.str().c_str());
 			if(f.is_open()) {
@@ -883,7 +929,8 @@ wstring KDict::KInfoToHtml(const KInfo& kInfo,
 			   << "soda-utf8-hex" << DSCHAR
 			   << ss.str() << ".gif";
 #ifdef DEBUG
-			printf("DEBUG: Checking for existance of file \"%s\"...\n", fn.str().c_str());
+			printf("DEBUG: Checking for existance of file \"%s\"...\n",
+				   fn.str().c_str());
 #endif
 			ifstream f(fn.str().c_str());
 			if(f.is_open()) {
@@ -895,7 +942,8 @@ wstring KDict::KInfoToHtml(const KInfo& kInfo,
 		/* Append the chart(s) in a paragraph object. */
 		if(sod.str().length()>0) {
 			header << L"<p>" << sod.str() <<
-				L"<br /><font size=\"1\">(Kanji stroke order graphics used under license from KanjiCafe.com.)</font></p>";
+				L"<br /><font size=\"1\">(Kanji stroke order graphics "
+				L"used under license from KanjiCafe.com.)</font></p>";
 		}
 	}
 

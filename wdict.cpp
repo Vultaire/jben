@@ -88,7 +88,7 @@ int WDict::LoadEdict2(const char *filename) {
 #ifdef DEBUG
 		if(strlen(rawData)!=size) {
 			ostringstream os;
-			os << "edict file size: " << strlen(rawData) << ", read-in string: " << size << '\n';
+			os << "edict file size: " << strlen(rawData) << ", read-in string: " << size;
 			el.Push(EL_Warning, os.str());
 		}
 #endif

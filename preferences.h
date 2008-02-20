@@ -46,6 +46,7 @@ public:
 private:
 	int LoadFile(const char *filename);
 	string GetPrefsStr();
+	void UpgradeConfigFile();
 
 	/* Use a map for storing all other options we may add. */
 	map<string, string> stringOpts;

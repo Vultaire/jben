@@ -40,21 +40,30 @@ IMPLEMENT_APP(JBen)
 void ErrorLogDisplayFunc(ELType t, const string& message, void *srcObj) {
 	switch(t) {
 	case EL_Error:
-		cerr << message << endl;
+#ifdef DEBUG
+		cout << "[Error] " << message << endl;
+#endif
 		wxMessageBox(utfconv_mw(message), _T("Error"),
 					 wxOK | wxICON_ERROR, (wxWindow*)srcObj);
 		break;
 	case EL_Warning:
-		cerr << message << endl;
+#ifdef DEBUG
+		cout << "[Warning] " << message << endl;
+#endif
 		wxMessageBox(utfconv_mw(message), _T("Warning"),
 					 wxOK | wxICON_ERROR, (wxWindow*)srcObj);
 		break;
 	case EL_Info:
-		cout << message << endl;
+#ifdef DEBUG
+		cout << "[Info] " << message << endl;
+#endif
 		wxMessageBox(utfconv_mw(message), _T("Info"),
 					 wxOK | wxICON_ERROR, (wxWindow*)srcObj);
 		break;
-	default:
+	case EL_Silent:
+#ifdef DEBUG
+		cout << "[Silent] " << message << endl;
+#endif
 		/* do nothing */
 		break;
 	}

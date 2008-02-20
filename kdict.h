@@ -153,14 +153,15 @@ private:
 	KDict();
 	
 	/* Dictionary file loaders */
-	int LoadKanjidic(const char *filename);
-	int LoadKanjidic2(const char *filename);
-	int LoadRadkfile(const char *filename);
-	int LoadKradfile(const char *filename);
+	int LoadKanjidic(const char* filename, const char* jisStd="jis208");
+	int LoadKanjidic2(const char* filename);
+	int LoadRadkfile(const char* filename);
+	int LoadKradfile(const char* filename);
 
 	/* Kanjidic-specific stuff */
-	void KanjidicToKInfo(const string& kanjidicEntry, KInfo& k, const char* jisStd);
-	void KanjidicParser(char *kanjidicRawData, const char* jisStd="jis208");
+	void KanjidicToKInfo(const string& kanjidicEntry, KInfo& k,
+						 const char* jisStd);
+	void KanjidicParser(char* kanjidicRawData, const char* jisStd);
 	static wstring ConvertKanjidicEntry(const wstring& s);
 
 	/* Data */

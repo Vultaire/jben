@@ -33,6 +33,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #	define HOMEENV "HOME"
 #endif
 
+#define CURRENT_CONFIG_VERSION "1.1"
+
 #include "preferences.h"
 #include "jben.h"
 #include "file_utils.h"
@@ -85,8 +87,12 @@ void Preferences::SetDefaultPrefs() {
 	kanjidicOptions =
 		KDO_READINGS | KDO_MEANINGS | KDO_HIGHIMPORTANCE | KDO_VOCABCROSSREF;
 	kanjidicDictionaries = 0;
-	stringOpts["config_version"] = "1";
+	stringOpts["config_version"] = CURRENT_CONFIG_VERSION;
+	stringOpts["config_save_target"] = "home";
+	stringOpts["kdict_kanjidic2"]
+		= JB_DATADIR DSSTR "dicts" DSSTR "kanjidic2.xml";
 	stringOpts["kdict_kanjidic"] = JB_DATADIR DSSTR "dicts" DSSTR "kanjidic";
+	stringOpts["kdict_kanjd212"] = JB_DATADIR DSSTR "dicts" DSSTR "kanjd212";
 	stringOpts["kdict_kradfile"] = JB_DATADIR DSSTR "dicts" DSSTR "kradfile";
 	stringOpts["kdict_radkfile"] = JB_DATADIR DSSTR "dicts" DSSTR "radkfile";
 	stringOpts["wdict_edict2"]   = JB_DATADIR DSSTR "dicts" DSSTR "edict2";
@@ -100,10 +106,11 @@ int Preferences::LoadFile(const char *filename) {
 
 	int e = ReadEncodedFile(filename, s);
 	if(e==REF_SUCCESS) {
-#ifdef DEBUG
-		cout << "Preferences file \"" << filename
-			 << "\" loaded successfully." << endl;
-#endif
+		ostringstream oss;
+		oss << "Preferences file \"" << filename
+			<< "\" loaded successfully.";
+		el.Push(EL_Silent, oss.str());
+
 		/* Split into strings for each line */
 		list<wstring> tokenList = StrTokenize<wchar_t>(s, L"\n");
 		wstring token, subToken;
@@ -169,29 +176,59 @@ int Preferences::LoadFile(const char *filename) {
 			<< "\" could NOT be loaded." << endl;
 		el.Push(EL_Silent, oss.str());
 	}
+
+	/* The file is now loaded.
+	   Upgrade it to the latest version, if necessary. */
+	if(stringOpts["config_version"] != CURRENT_CONFIG_VERSION)
+		UpgradeConfigFile();
+
 	return e;
+}
+
+void Preferences::UpgradeConfigFile() {
+	string version = stringOpts["config_version"];
+	/* Iterate through the version-wise changes */
+	if(version=="1") {
+		el.Push(EL_Silent, "Upgrading config file from version 1 to 1.1.");
+		/* 1 to 1.1:
+		   - Add config_save_target setting
+		   - Add KANJIDIC2 and KANJD212 default settings */
+		stringOpts["config_save_target"] = "home";
+		stringOpts["kdict_kanjidic2"]
+			= JB_DATADIR DSSTR "dicts" DSSTR "kanjidic2.xml";
+		stringOpts["kdict_kanjd212"]
+			= JB_DATADIR DSSTR "dicts" DSSTR "kanjd212";
+		version = "1.1";
+	}
+	stringOpts["config_version"] = CURRENT_CONFIG_VERSION;	
 }
 
 Preferences::~Preferences() {
 	string prefs = GetPrefsStr();
 	ofstream ofile;
-	if(ToLower(stringOpts["config_save_target"]) == "home")
-		ofile.open(
-			string(getenv(HOMEENV))
-			.append(1, DSCHAR)
-			.append(CFGFILE).c_str(),
-			ios::out | ios::binary);
-	if(!ofile.is_open())
-		ofile.open(CFGFILE, ios::out | ios::binary);
+	string filename;
+	if(ToLower(stringOpts["config_save_target"]) == "home") {
+		filename = string(getenv(HOMEENV)).append(1, DSCHAR).append(CFGFILE);
+		ofile.open(filename.c_str(), ios::out | ios::binary);
+	}
+	if(!ofile.is_open()) {
+		filename = CFGFILE;
+		ofile.open(filename.c_str(), ios::out | ios::binary);
+	}
+
+	ostringstream oss;
 	if(ofile.is_open()) {
 		ofile << prefs;
+		oss << "Preferences file \"" << filename
+			<< "\" saved successfully.";
+		el.Push(EL_Silent, oss.str());
 	}
 	else {
-		ostringstream oss;
-		oss << "Error: Unable to save preferences to file \"" << CFGFILE
-			<< "\"!" << endl;
+		oss << "Unable to save preferences to file \"" << CFGFILE
+			<< "\"!";
 		el.Push(EL_Error, oss.str());
 	}
+
 	ofile.close();
 }
 

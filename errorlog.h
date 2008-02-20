@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef errorlog_h
 #define errorlog_h
 
+#define ERR_PREF __FILE__ << ':' << __LINE__ << ": "
+
 #include <list>
 #include <map>
 #include <string>
