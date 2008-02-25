@@ -42,8 +42,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 /* KanjiCafe.com Stroke Order Diagrams (if present) */
 #define KDO_SOD_STATIC    0x40
 #define KDO_SOD_ANIM      0x80
+/* Multi-radical information */
+#define KDO_MULTIRAD     0x100
 /* All options (except UNHANDLED) */
-#define KDO_ALL           0xFF
+#define KDO_ALL          0x1FF
 /* All unhandled dictionary stuff */
 #define KDO_UNHANDLED   0x8000
 
@@ -124,7 +126,8 @@ public:
 	string radicalName;
 	map<string,string> dictCode;
 	map<string,string> queryCode;
-	list< pair<string,string> > skipMisclass;
+	list< pair<string,string> > skipMisclass;  /* Maybe this should be a
+												  std::multimap instead? */
 	list<string> pinyin, korean_r, korean_h,
 		onyomi, kunyomi, nanori;
 	/* FOR NOW: I am ignoring onyomi and kunyomi r_status and on_type flags.
@@ -140,8 +143,8 @@ public:
 	~KDict();
 
 	/* General purpose access functions */
-	static wstring KInfoToHtml(const KInfo& kInfo);
-	static wstring KInfoToHtml(const KInfo& kInfo,
+	static wstring KInfoToHtml(const KInfo& k);
+	static wstring KInfoToHtml(const KInfo& k,
 							   long options, long dictionaries);
 	const KInfo* GetEntry(const wchar_t key) const;
 	const BoostHM<wchar_t, KInfo>* GetHashTable() const;
