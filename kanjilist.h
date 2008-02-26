@@ -35,7 +35,7 @@ using namespace std;
 
 class KanjiList {
 public:
-	KanjiList(const BoostHM<wchar_t, KInfo>* kDictHash);
+	KanjiList();
 	int AddFromString(const wstring& s);
 	int AddByGrade(int lowGrade, int highGrade);
 	int AddByFrequency(int lowFreq, int highFreq);
@@ -50,7 +50,6 @@ public:
 private:
 	void InplaceMerge(vector<wchar_t>& v, BoostHM<wchar_t, int>& indexer, int start, int middle, int end);
 
-	const BoostHM<wchar_t, KInfo> *kanjiHash;
 	vector<wchar_t> kanjiList;
 	BoostHM<wchar_t, int> *myCharIndexer;
 };

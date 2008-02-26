@@ -22,13 +22,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "frame_maingui.h"
-#include "jben.h"
-#include "version.h"
 #include "wx/msgdlg.h"
-#include "file_utils.h"
 #include "wx/ffile.h"
+#include "version.h"
+#include "file_utils.h"
 #include "frame_kanjipad.h"
 #include "encoding_convert.h"
+#include "listmanager.h"
 
 #ifndef __WXMSW__
 	#include "jben.xpm"
@@ -130,14 +130,15 @@ FrameMainGUI::FrameMainGUI() : wxFrame
 					_T("By Newspaper F&requency Ranking"));
 	kanjiMenu->AppendSubMenu(subMenu, _T("S&ort Kanji in List"));
 	/* Other Kanji Menu options */
+	ListManager* lm = ListManager::Get();
 	kanjiMenu->Append(ID_menuKanjiSaveToFile,
 					  _T("&Save Kanji List to File..."));
-	if(jben->kanjiList->Size()==0)
+	if(lm->KList()->Size()==0)
 		kanjiMenu->Enable(ID_menuKanjiSaveToFile, false);
 	kanjiMenu->AppendSeparator();
 	kanjiMenu->Append(ID_menuKanjiClearList,
 					  _T("&Clear Kanji List"));
-	if(jben->kanjiList->Size()==0)
+	if(lm->KList()->Size()==0)
 		kanjiMenu->Enable(ID_menuKanjiClearList, false);
 #ifdef DEBUG
 	kanjiMenu->Append(ID_menuKanjiDumpList, _T("&Dump Kanji List to Console"));
@@ -211,6 +212,7 @@ void FrameMainGUI::OnFileQuit(wxCommandEvent& event) {
 void FrameMainGUI::OnKanjiAddFromFile(wxCommandEvent& event) {
 	/* NOTE: We may add the flag wxFD_CHANGE_DIR later, if we add in code
 	   to save the full path for the jben.cfg file. */
+	ListManager* lm = ListManager::Get();
 	wxFileDialog *fd = new wxFileDialog(
 		this, _T("Open File"), wxEmptyString, wxEmptyString, _T("*"),
 		wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
@@ -224,7 +226,7 @@ void FrameMainGUI::OnKanjiAddFromFile(wxCommandEvent& event) {
 				   file)==REF_SUCCESS)
 				allFiles.append(file);
 		}
-		int result = jben->kanjiList->AddFromString(allFiles);
+		int result = lm->KList()->AddFromString(allFiles);
 		this->Redraw();
 		wxMessageBox(wxString::Format(
 			_T("Added %d kanji to the list."), result),
@@ -234,11 +236,12 @@ void FrameMainGUI::OnKanjiAddFromFile(wxCommandEvent& event) {
 }
 
 void FrameMainGUI::OnKanjiAddByGrade(wxCommandEvent& event) {
+	ListManager* lm = ListManager::Get();
 	if(!dialogAddKanjiByGrade)
 		dialogAddKanjiByGrade = new DialogAddKanjiByGrade(this);
 	int result = dialogAddKanjiByGrade->ShowModal();
 	if(result==wxID_OK) {
-		result = jben->kanjiList->AddByGrade(
+		result = lm->KList()->AddByGrade(
 			dialogAddKanjiByGrade->GetLowGrade(),
 			dialogAddKanjiByGrade->GetHighGrade());
 		this->Redraw();
@@ -254,11 +257,12 @@ void FrameMainGUI::OnKanjiAddByGrade(wxCommandEvent& event) {
 }
 
 void FrameMainGUI::OnKanjiAddByFreq(wxCommandEvent& event) {
+	ListManager* lm = ListManager::Get();
 	if(!dialogAddKanjiByFreq)
 		dialogAddKanjiByFreq = new DialogAddKanjiByFreq(this);
 	int result = dialogAddKanjiByFreq->ShowModal();
 	if(result==wxID_OK) {
-		result = jben->kanjiList->AddByFrequency(
+		result = lm->KList()->AddByFrequency(
 			dialogAddKanjiByFreq->GetLowFreq(),
 			dialogAddKanjiByFreq->GetHighFreq());
 		this->Redraw();
@@ -276,11 +280,12 @@ void FrameMainGUI::OnKanjiAddByFreq(wxCommandEvent& event) {
 void FrameMainGUI::OnKanjiSaveToFile(wxCommandEvent& event) {
 	/* NOTE: We may add the flag wxFD_CHANGE_DIR later, if we add in code
 	   to save the full path for the jben.cfg file. */
+	ListManager* lm = ListManager::Get();
 	wxFileDialog *fd = new wxFileDialog(
 		this, _T("Save Kanji List to File"), wxEmptyString, wxEmptyString,
 		_T("*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if(fd->ShowModal()==wxID_OK) {
-		wxString kanjiList = jben->kanjiList->ToString(20);
+		wxString kanjiList = lm->KList()->ToString(20);
 		wxString filename = fd->GetPath();
 		/* Open file/write to file/close file */ /* TO DO */
 		wxFFile f(filename, _T("w"));
@@ -293,13 +298,15 @@ void FrameMainGUI::OnKanjiSaveToFile(wxCommandEvent& event) {
 }
 
 void FrameMainGUI::OnKanjiClearList(wxCommandEvent& event) {
-	jben->kanjiList->Clear();
+	ListManager* lm = ListManager::Get();
+	lm->KList()->Clear();
 	this->Redraw();
 }
 
 #ifdef DEBUG
 void FrameMainGUI::OnKanjiDumpList(wxCommandEvent& event) {
-	printf("Current kanji list: %ls\n", jben->kanjiList->ToString().c_str());
+	ListManager* lm = ListManager::Get();	
+	printf("Current kanji list: %ls\n", lm->KList()->ToString().c_str());
 }
 #endif
 
@@ -456,12 +463,14 @@ void FrameMainGUI::OnTabChanging(wxNotebookEvent& event) {
 }
 
 void FrameMainGUI::OnKanjiSortByGrade(wxCommandEvent& ev) {
-	jben->kanjiList->Sort(ST_GRADE);
+	ListManager* lm = ListManager::Get();
+	lm->KList()->Sort(ST_GRADE);
 	this->Redraw();
 }
 
 void FrameMainGUI::OnKanjiSortByFreq(wxCommandEvent& ev) {
-	jben->kanjiList->Sort(ST_FREQUENCY);
+	ListManager* lm = ListManager::Get();
+	lm->KList()->Sort(ST_FREQUENCY);
 	this->Redraw();
 }
 
@@ -473,7 +482,8 @@ void FrameMainGUI::OnKanjiSearchKanjiPad(wxCommandEvent& ev) {
 }
 
 void FrameMainGUI::Redraw() {
-	bool state = (jben->kanjiList->Size()>0);
+	ListManager* lm = ListManager::Get();
+	bool state = (lm->KList()->Size()>0);
 	kanjiMenu->Enable(ID_menuKanjiSaveToFile, state);
 	kanjiMenu->Enable(ID_menuKanjiClearList, state);
 

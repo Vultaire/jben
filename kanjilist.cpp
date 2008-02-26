@@ -28,19 +28,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <algorithm>
 using namespace std;
 
-KanjiList::KanjiList(const BoostHM<wchar_t, KInfo>* kDictHash) {
-	kanjiHash = kDictHash;
-}
+KanjiList::KanjiList() {}
 
 int KanjiList::AddFromString(const wstring& s) {
 	int kanjiAdded = 0, len = s.length();
 	wchar_t c;
 	BoostHM<wchar_t,KInfo>::const_iterator it;
 
+	const BoostHM<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
+
 	for(int i=0;i<len;i++) {
 		c = s[i];
-		it = kanjiHash->find(c);
-		if(it!=kanjiHash->end()) {
+		it = ht->find(c);
+		if(it!=ht->end()) {
 			if(find(kanjiList.begin(), kanjiList.end(), c)==kanjiList.end()) {
 				kanjiList.push_back(c);
 				kanjiAdded++;
@@ -78,8 +78,10 @@ int KanjiList::AddByGrade(int lowGrade, int highGrade) {
 	wstring kanjiStr;
 	int grade;
 
+	const BoostHM<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
+
 	for(BoostHM<wchar_t,KInfo>::const_iterator
-			ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
+			ki=ht->begin(); ki!=ht->end(); ki++) {
 		grade = ki->second.grade;
 		if(grade>=lowGrade &&
 		  (grade<=highGrade || highGrade==0))
@@ -93,7 +95,9 @@ int KanjiList::AddByFrequency(int lowFreq, int highFreq) {
 	wstring kanjiStr;
 	int freq;
 
-	for(BoostHM<wchar_t,KInfo>::const_iterator ki=kanjiHash->begin(); ki!=kanjiHash->end(); ki++) {
+	const BoostHM<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
+
+	for(BoostHM<wchar_t,KInfo>::const_iterator ki=ht->begin(); ki!=ht->end(); ki++) {
 		freq = ki->second.freq;
 		if(freq>=lowFreq && freq<=highFreq)
 			kanjiStr.append(1, ki->first);

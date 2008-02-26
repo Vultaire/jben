@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "panel_config.h"
-#include "jben.h"
+#include "preferences.h"
 #include "kdict.h"
 #include "file_utils.h"
 

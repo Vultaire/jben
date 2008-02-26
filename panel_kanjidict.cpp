@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "panel_kanjidict.h"
-#include "jben.h"
 #include "kdict.h"
+#include "listmanager.h"
 #include <cstdlib>
 
 enum {
@@ -100,6 +100,7 @@ void PanelKanjiDict::OnSearch(wxCommandEvent& event) {
 }
 
 void PanelKanjiDict::SetSearchString(const wxString& searchString) {
+	ListManager* lm = ListManager::Get();
 	currentSearchString = searchString;
 	int len = currentSearchString.length();
 	if(len>1) {
@@ -107,14 +108,15 @@ void PanelKanjiDict::SetSearchString(const wxString& searchString) {
 		currentIndex = -1;
 	} else {
 		currentKanji = searchString[0];
-		currentIndex = jben->kanjiList->GetIndexByChar(searchString[0]);
+		currentIndex = lm->KList()->GetIndexByChar(searchString[0]);
 	}
 }
 
 void PanelKanjiDict::Redraw() {
 	/* If currentIndex has been changed, update any necessary data. */
+	ListManager* lm = ListManager::Get();
 	if(currentIndex!=-1) {
-		wxChar newKanji = (*jben->kanjiList)[currentIndex];
+		wxChar newKanji = (*lm->KList())[currentIndex];
 		if(newKanji==_T('\0'))    /* The returned may be 0 if the currentIndex no longer refers to a valid character. */
 			currentIndex = -1;    /* In this case, we'll reset our index to -1. */
 		else if(currentKanji!=newKanji)
@@ -124,7 +126,7 @@ void PanelKanjiDict::Redraw() {
 	/* Update most controls */
 	textSearch->ChangeValue(currentSearchString);
 	textIndex->ChangeValue(wxString::Format(_T("%d"), currentIndex+1));
-	lblIndex->SetLabel(wxString::Format(_T(" of %d kanji"), jben->kanjiList->Size()));
+	lblIndex->SetLabel(wxString::Format(_T(" of %d kanji"), lm->KList()->Size()));
 	/* We need to tell our sizer to refresh to accomodate the resizing of the label. */
 	this->GetSizer()->Layout();
 
@@ -156,14 +158,16 @@ void PanelKanjiDict::UpdateHtmlOutput() {
 }
 
 void PanelKanjiDict::OnPrevious(wxCommandEvent& event) {
+	ListManager* lm = ListManager::Get();
 	currentIndex--;
-	if(currentIndex<0) currentIndex = jben->kanjiList->Size()-1;
+	if(currentIndex<0) currentIndex = lm->KList()->Size()-1;
 
 	this->Redraw();
 }
 
 void PanelKanjiDict::OnNext(wxCommandEvent& event) {
-	int listSize = jben->kanjiList->Size();
+	ListManager* lm = ListManager::Get();
+	int listSize = lm->KList()->Size();
 	currentIndex++;
 	if(currentIndex>=listSize) currentIndex=0;
 	if(listSize==0) currentIndex=-1;
@@ -172,7 +176,8 @@ void PanelKanjiDict::OnNext(wxCommandEvent& event) {
 
 /* Very quick and dirty pseudorandom jump */
 void PanelKanjiDict::OnRandom(wxCommandEvent& event) {
-	int listSize = jben->kanjiList->Size();
+	ListManager* lm = ListManager::Get();
+	int listSize = lm->KList()->Size();
 	if(listSize>0) {
 		currentIndex = rand() % listSize;
 		this->Redraw();
@@ -180,9 +185,10 @@ void PanelKanjiDict::OnRandom(wxCommandEvent& event) {
 }
 
 void PanelKanjiDict::OnIndexUpdate(wxCommandEvent& event) {
+	ListManager* lm = ListManager::Get();
 	long l;
 	wxString str = textIndex->GetValue();
-	if(str.ToLong(&l) && (l>0) && (l <= jben->kanjiList->Size())) {
+	if(str.ToLong(&l) && (l>0) && (l <= lm->KList()->Size())) {
 		currentIndex = (int)(l-1);
 		this->Redraw();
 	} else textIndex->ChangeValue(wxString::Format(_T("%d"), currentIndex+1));

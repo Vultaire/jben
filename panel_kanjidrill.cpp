@@ -23,8 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "panel_kanjidrill.h"
 #include "jben.h"
-#include "frame_maingui.h"
 #include "kdict.h"
+#include "listmanager.h"
 #include "string_utils.h"
 #include "encoding_convert.h"
 #include "errorlog.h"
@@ -175,6 +175,7 @@ void PanelKanjiDrill::OnStart(wxCommandEvent& ev) {
 	   3. Load up the first kanji to be tested
 	   4. Switch to the test GUI */
 
+	ListManager* lm = ListManager::Get();
 	unsigned int i, startIndex;
 	if(!testing) {
 		/* Reset test variables */
@@ -197,10 +198,10 @@ void PanelKanjiDrill::OnStart(wxCommandEvent& ev) {
 			/* Copy from study list at specified index */
 			startIndex = spnStartIndex->GetValue() - 1;  /* Remember, the GUI uses a 1-base. */
 			for(i=startIndex; i < startIndex + totalToTest; i++)
-				testKanji.push_back((*jben->kanjiList)[i]);
+				testKanji.push_back((*lm->KList())[i]);
 		} else {
 			/* Random character selection */
-			vector<wxChar> localVector = jben->kanjiList->GetVector();
+			vector<wxChar> localVector = lm->KList()->GetVector();
 			wxChar c;
 			while(testKanji.size()<totalToTest) {
 				i = rand() % localVector.size();
@@ -280,7 +281,8 @@ void PanelKanjiDrill::OnStop(wxCommandEvent& ev) {
 bool PanelKanjiDrill::TestInProgress() {return testing;}
 
 void PanelKanjiDrill::UpdateKanjiCountSpinner() {
-	int max = jben->kanjiList->Size();
+	ListManager* lm = ListManager::Get();
+	int max = lm->KList()->Size();
 	if(max>0) {
 		spnKanjiCount->SetRange(1, max);
 		int i = spnKanjiCount->GetValue();
@@ -290,7 +292,8 @@ void PanelKanjiDrill::UpdateKanjiCountSpinner() {
 }
 
 void PanelKanjiDrill::UpdateStartIndexSpinner() {
-	int max = jben->kanjiList->Size();
+	ListManager* lm = ListManager::Get();
+	int max = lm->KList()->Size();
 	int i = spnKanjiCount->GetValue();
 	int indexMax = max - (i-1);
 	spnStartIndex->SetRange(1, indexMax);
@@ -304,8 +307,9 @@ void PanelKanjiDrill::OnKanjiCountChange(wxSpinEvent& ev) {
 }
 
 void PanelKanjiDrill::Redraw() {
+	ListManager* lm = ListManager::Get();
 	if(!testing) {
-		int max = jben->kanjiList->Size();
+		int max = lm->KList()->Size();
 		if(max>0) {
 			UpdateKanjiCountSpinner();
 			UpdateStartIndexSpinner();

@@ -22,9 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "panel_worddict.h"
-#include "jben.h"
 #include "jutils.h"
 #include "wdict.h"
+#include "listmanager.h"
 #include "encoding_convert.h"
 #include "errorlog.h"
 
@@ -103,14 +103,16 @@ void PanelWordDict::OnSearch(wxCommandEvent& event) {
 }
 
 void PanelWordDict::SetSearchString(const wxString& searchString) {
+	ListManager* lm = ListManager::Get();
 	currentSearchString = searchString;
-	currentIndex = jben->vocabList->GetIndexByWord(searchString.c_str());
+	currentIndex = lm->VList()->GetIndexByWord(searchString.c_str());
 }
 
 void PanelWordDict::Redraw() {
 	/* If currentIndex has been changed, update any necessary data. */
+	ListManager* lm = ListManager::Get();
 	if(currentIndex!=-1) {
-		wxString newVocab = (*jben->vocabList)[currentIndex];
+		wxString newVocab = (*lm->VList())[currentIndex];
 		if(newVocab==_T(""))    /* The returned may be 0 if the currentIndex no longer refers to a valid character. */
 			currentIndex = -1;    /* In this case, we'll reset our index to -1. */
 		else if(currentSearchString!=newVocab)
@@ -121,7 +123,7 @@ void PanelWordDict::Redraw() {
 	textSearch->ChangeValue(currentSearchString);
 	/* currentIndex is 0-based, so don't forget to adjust it. */
 	textIndex->ChangeValue(wxString::Format(_T("%d"), currentIndex+1));
-	lblIndex->SetLabel(wxString::Format(_T(" of %d vocab"), jben->vocabList->Size()));
+	lblIndex->SetLabel(wxString::Format(_T(" of %d vocab"), lm->VList()->Size()));
 	/* We need to tell our sizer to refresh to accomodate the resizing of the label. */
 	this->GetSizer()->Layout();
 
@@ -163,14 +165,16 @@ void PanelWordDict::UpdateHtmlOutput() {
 }
 
 void PanelWordDict::OnPrevious(wxCommandEvent& event) {
+	ListManager* lm = ListManager::Get();
 	currentIndex--;
-	if(currentIndex<0) currentIndex = jben->vocabList->Size()-1;
+	if(currentIndex<0) currentIndex = lm->VList()->Size()-1;
 
 	this->Redraw();
 }
 
 void PanelWordDict::OnNext(wxCommandEvent& event) {
-	int listSize = jben->vocabList->Size();
+	ListManager* lm = ListManager::Get();
+	int listSize = lm->VList()->Size();
 	currentIndex++;
 	if(currentIndex>=listSize) currentIndex=0;
 	if(listSize==0) currentIndex=-1;
@@ -179,7 +183,8 @@ void PanelWordDict::OnNext(wxCommandEvent& event) {
 
 /* Very quick and dirty pseudorandom jump */
 void PanelWordDict::OnRandom(wxCommandEvent& event) {
-	int listSize = jben->vocabList->Size();
+	ListManager* lm = ListManager::Get();
+	int listSize = lm->VList()->Size();
 	if(listSize>0) {
 		currentIndex = rand() % listSize;
 		this->Redraw();
@@ -187,9 +192,10 @@ void PanelWordDict::OnRandom(wxCommandEvent& event) {
 }
 
 void PanelWordDict::OnIndexUpdate(wxCommandEvent& event) {
+	ListManager* lm = ListManager::Get();
 	long l;
 	wxString str = textIndex->GetValue();
-	if(str.ToLong(&l) && (l>0) && (l <= jben->vocabList->Size())) {
+	if(str.ToLong(&l) && (l>0) && (l <= lm->VList()->Size())) {
 		currentIndex = (int)(l-1);
 		this->Redraw();
 	} else textIndex->ChangeValue(wxString::Format(_T("%d"), currentIndex+1));

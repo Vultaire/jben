@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "vocablist.h"
-#include "jben.h"
 #include "string_utils.h"
 #include "errorlog.h"
 #include <list>

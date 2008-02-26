@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "kdict.h"
 #include "preferences.h"
+#include "listmanager.h"
 #include "encoding_convert.h"
 #include "string_utils.h"
 #include "file_utils.h"
@@ -296,12 +297,6 @@ int KDict::LoadKanjidic2(const char* filename) {
 						oss << ERR_PREF << "UNHANDLED element: " << element;
 						el.Push(EL_Error, oss.str());
 					}
-				}
-				/* default parsing */
-				else {
-					/*cout << "DEBUG: Depth 1 element is " << d1element
-					  << ", element is " << element
-					  << ", value is " << sValue << endl;*/
 				}
 				break;
 			default:
@@ -936,8 +931,9 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 
 	/* Create header: char, optional sod display */
 	result << "<p><font size=\"7\">" << k.literal << "</font></p>";
+
 	/* Insert KanjiCafe.com SODs if present */
-	if(options & (KDO_SOD_STATIC | KDO_SOD_ANIM) != 0) {
+	if((options & (KDO_SOD_STATIC | KDO_SOD_ANIM)) != 0) {
 		result << GetSODHtml(k, options);
 	}
 
@@ -1035,102 +1031,10 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 		/* NOT YET IMPLEMENTED */
 	}
 
-	if((options & KDO_DICTIONARIES) != 0) {
-		result << "<li>Dictionary Codes:<ul>";
-		/* Dict/Query codes - ADD SKIP mis-codes! */
-		map<string, string>::const_iterator mssi;
-		/* Show Query codes first, followed by dict codes */
-		for(mssi = k.queryCode.begin(); mssi != k.queryCode.end(); mssi++) {
-			string key = mssi->first;
-			if(key=="skip") {
-				result << "<li>SKIP code: " << mssi->second;
-				if(k.skipMisclass.size()>0) {
-					/* Display miscode info */
-					list< pair<string,string> >::const_iterator iMiscode;
-					for(iMiscode = k.skipMisclass.begin();
-						iMiscode != k.skipMisclass.end(); iMiscode++) {
-						result << "<br />Miscode (" << iMiscode->first
-							   << "): " << iMiscode->second;
-					}
-				}
-				result << "</li>";
-			} else {
-				string displayKey;
-				/* Query Code: Kanji Dictionary (Spahn, Hadamitzky) */
-				if(key=="sh_desc") {
-					displayKey = "Spahn/Hadamitzky Kanji Dictionary code";
-				} else if(key=="four_corner") {
-					displayKey = "Four Corner code";
-				} else if(key=="deroo") {
-					displayKey = "De Roo code";
-				} else {
-					ostringstream oss;
-					oss << ERR_PREF
-						<< "Unexpected query code \"" << key << "\" encountered.";
-					el.Push(EL_Warning, oss.str());
-					displayKey = key;
-				}
-				result << "<li>" << displayKey << ": " << mssi->second << "</li>";
-			}
-		}
-		for(mssi = k.dictCode.begin(); mssi != k.dictCode.end(); mssi++) {
-			string key = mssi->first;
-			string displayKey;
-			if(key=="busy_people")
-				displayKey = "Japanese For Busy People (AJLT)";
-			else if(key=="crowley")
-				displayKey = "The Kanji Way to Japanese Language Power (Crowley)";
-			else if(key=="gakken")
-				displayKey = "A New Dictionary of Kanji Usage (Gakken)";
-			else if(key=="halpern_kkld")
-				displayKey = "Kodansha Kanji Learners Dictionary (Halpern)";
-			else if(key=="halpern_njecd")
-				displayKey = "New Japanese-English Character Dictionary (Halpern)";
-			else if(key=="heisig")
-				displayKey = "Remembering the Kanji (Heisig)";
-			else if(key=="henshall")
-				displayKey = "A Guide To Remembering Japanese Characters (Henshall)";
-			else if(key=="henshall3")
-				displayKey = "A Guide To Reading and Writing Japanese (Henshall)";
-			else if(key=="jf_cards")
-				displayKey = "Japanese Kanji Flashcards (Hodges/Okazaki)";
-			else if(key=="kanji_in_context")
-				displayKey = "Kanji in Context (Nishiguchi/Kono)";
-			else if(key=="kodansha_compact")
-				displayKey = "Kodansha Compact Kanji Guide";
-			else if(key=="moro")
-				displayKey = "Morohashi Daikanwajiten";
-			else if(key=="nelson_c")
-				displayKey = "Modern Reader's Japanese-English Character "
-					"Dictionary (Nelson)";
-			else if(key=="nelson_n")
-				displayKey = "The New Nelson Japanese-English Character Dictionary (Haig)";
-			else if(key=="oneill_kk")
-				displayKey = "Essential Kanji (O'Neill)";
-			else if(key=="oneill_names")
-				displayKey = "Japanese Names (O'Neill)";
-			else if(key=="sakade")
-				displayKey = "A Guide To Reading and Writing Japanese (Sakade)";
-			else if(key=="sh_kk")
-				displayKey = "Kanji and Kana (Spahn/Hadamitzky)";
-			else if(key=="tutt_cards")
-				displayKey = "Tuttle Kanji Cards (Kask)";
-			else {
-				ostringstream oss;
-				oss << ERR_PREF
-					<< "Unexpected dictionary code \"" << key << "\" encountered.";
-				el.Push(EL_Warning, oss.str());
-				displayKey = key;
-			}
-			result << "<li>" << displayKey << ": " << mssi->second << "</li>";		
-		}
-		result << "</ul></li>";
-	}
-
-#if 0
 	/* Vocab List Cross-ref */
 	if((options & KDO_VOCABCROSSREF) != 0) {
-		vector<wstring> *vList = &(jben->vocabList->GetVocabList());
+		ListManager* lm = ListManager::Get();
+		vector<wstring> *vList = &(lm->VList()->GetVocabList());
 		wchar_t thisKanji = utfconv_mw(k.literal)[0];
 		vector<wstring> crossRefList;
 		vector<wstring>::iterator vIt;
@@ -1143,14 +1047,135 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			result << "<li>This kanji is used by words in your "
 				"study list:<br><font size=\"7\">";
 			vIt = crossRefList.begin();
-			result << *vIt;
+			result << utfconv_wm(*vIt);
 			for(++vIt; vIt!=crossRefList.end(); vIt++) {
 				result << "&nbsp; " << utfconv_wm(*vIt);
 			}
 			result << "</font></li>";
 		}
 	}
-#endif
+
+	if((options & KDO_DICTIONARIES) != 0) {
+		ostringstream dictOut;
+		/* Dict/Query codes - ADD SKIP mis-codes! */
+		map<string, string>::const_iterator mssi;
+		/* Show Query codes first, followed by dict codes */
+		for(mssi = k.queryCode.begin(); mssi != k.queryCode.end(); mssi++) {
+			string key = mssi->first;
+			if(key=="skip") {
+				if((dictionaries & KDD_SKIP) == 0) continue;
+				dictOut << "<li>SKIP code: " << mssi->second;
+				if(k.skipMisclass.size()>0) {
+					/* Display miscode info */
+					list< pair<string,string> >::const_iterator iMiscode;
+					for(iMiscode = k.skipMisclass.begin();
+						iMiscode != k.skipMisclass.end(); iMiscode++) {
+						dictOut << "<br />Miscode (" << iMiscode->first
+								<< "): " << iMiscode->second;
+					}
+				}
+				dictOut << "</li>";
+			} else {
+				string displayKey;
+				/* Query Code: Kanji Dictionary (Spahn, Hadamitzky) */
+				if(key=="sh_desc") {
+					if((dictionaries & KDD_KD) == 0) continue;
+					displayKey = "Spahn/Hadamitzky Kanji Dictionary code";
+				} else if(key=="four_corner") {
+					if((dictionaries & KDD_FC) == 0) continue;
+					displayKey = "Four Corner code";
+				} else if(key=="deroo") {
+					if((dictionaries & KDD_DR) == 0) continue;
+					displayKey = "De Roo code";
+				} else {
+					ostringstream oss;
+					oss << ERR_PREF
+						<< "Unexpected query code \"" << key
+						<< "\" encountered.";
+					el.Push(EL_Warning, oss.str());
+					displayKey = key;
+				}
+				dictOut << "<li>" << displayKey << ": "
+					   << mssi->second << "</li>";
+			}
+		}
+		for(mssi = k.dictCode.begin(); mssi != k.dictCode.end(); mssi++) {
+			string key = mssi->first;
+			string displayKey;
+			if(key=="busy_people") {
+				if((dictionaries & KDD_JBP) == 0) continue;
+				displayKey = "Japanese For Busy People (AJLT)";
+			} else if(key=="crowley") {
+				if((dictionaries & KDD_KWJLP) == 0) continue;
+				displayKey = "The Kanji Way to Japanese Language Power (Crowley)";
+			} else if(key=="gakken") {
+				if((dictionaries & KDD_GKD) == 0) continue;
+				displayKey = "A New Dictionary of Kanji Usage (Gakken)";
+			} else if(key=="halpern_kkld") {
+				if((dictionaries & KDD_KLD) == 0) continue;
+				displayKey = "Kodansha Kanji Learners Dictionary (Halpern)";
+			} else if(key=="halpern_njecd") {
+				if((dictionaries & KDD_NJECD) == 0) continue;
+				displayKey = "New Japanese-English Character Dictionary (Halpern)";
+			} else if(key=="heisig") {
+				if((dictionaries & KDD_RTK) == 0) continue;
+				displayKey = "Remembering the Kanji (Heisig)";
+			} else if(key=="henshall") {
+				if((dictionaries & KDD_GRJC) == 0) continue;
+				displayKey = "A Guide To Remembering Japanese Characters (Henshall)";
+			} else if(key=="henshall3") {
+				if((dictionaries & KDD_GTRWJH) == 0) continue;
+				displayKey = "A Guide To Reading and Writing Japanese (Henshall)";
+			} else if(key=="jf_cards") {
+				if((dictionaries & KDD_JKF) == 0) continue;
+				displayKey = "Japanese Kanji Flashcards (Hodges/Okazaki)";
+			} else if(key=="kanji_in_context") {
+				if((dictionaries & KDD_KIC) == 0) continue;
+				displayKey = "Kanji in Context (Nishiguchi/Kono)";
+			} else if(key=="kodansha_compact") {
+				if((dictionaries & KDD_KCKG) == 0) continue;
+				displayKey = "Kodansha Compact Kanji Guide";
+			} else if(key=="moro") {
+				if((dictionaries & KDD_MORO) == 0) continue;
+				displayKey = "Morohashi Daikanwajiten";
+			} else if(key=="nelson_c") {
+				if((dictionaries & KDD_MRJECD) == 0) continue;
+				displayKey = "Modern Reader's Japanese-English Character "
+					"Dictionary (Nelson)";
+			} else if(key=="nelson_n") {
+				if((dictionaries & KDD_NNJECD) == 0) continue;
+				displayKey = "The New Nelson Japanese-English Character Dictionary (Haig)";
+			} else if(key=="oneill_kk") {
+				if((dictionaries & KDD_EK) == 0) continue;
+				displayKey = "Essential Kanji (O'Neill)";
+			} else if(key=="oneill_names") {
+				if((dictionaries & KDD_JN) == 0) continue;
+				displayKey = "Japanese Names (O'Neill)";
+			} else if(key=="sakade") {
+				if((dictionaries & KDD_GTRWJS) == 0) continue;
+				displayKey = "A Guide To Reading and Writing Japanese (Sakade)";
+			} else if(key=="sh_kk") {
+				if((dictionaries & KDD_KK) == 0) continue;
+				displayKey = "Kanji and Kana (Spahn/Hadamitzky)";
+			} else if(key=="tutt_cards") {
+				if((dictionaries & KDD_TKC) == 0) continue;
+				displayKey = "Tuttle Kanji Cards (Kask)";
+			} else {
+				ostringstream oss;
+				oss << ERR_PREF
+					<< "Unexpected dictionary code \"" << key
+					<< "\" encountered.";
+				el.Push(EL_Warning, oss.str());
+				displayKey = key;
+			}
+			dictOut << "<li>" << displayKey << ": "
+				   << mssi->second << "</li>";		
+		}
+		if(dictOut.str().length()>0)
+			result << "<li>Dictionary Codes:<ul>"
+				   << dictOut.str() << "</ul></li>";
+		else result << "<li>No dictionary codes found.</li>";
+	}
 
 	/* Low importance stuff */
 	if((options & KDO_LOWIMPORTANCE) != 0) {

@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "jben.h"
 #include "wdict.h"
 #include "kdict.h"
+#include "preferences.h"
+#include "listmanager.h"
 #include "encoding_convert.h"
 #include "errorlog.h"
 
@@ -32,10 +34,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <locale.h>
 #endif
 
-JBen *jben;
+#define DEFAULT_LIST_NAME "master"
 
 /* The application entry point */
 IMPLEMENT_APP(JBen)
+
+JBen* jben;
 
 void ErrorLogDisplayFunc(ELType t, const string& message, void *srcObj) {
 	switch(t) {
@@ -71,9 +75,9 @@ void ErrorLogDisplayFunc(ELType t, const string& message, void *srcObj) {
 
 bool JBen::OnInit() {
 	jben = this;
-	kanjiList = (KanjiList *)NULL;
-	vocabList = (VocabList *)NULL;
-	gui = (FrameMainGUI *)NULL;
+	KanjiList* kanjiList = NULL;
+	VocabList* vocabList = NULL;
+	gui = NULL;
 
 	/* the below -might- help on win32 systems, but for now is unused. */
 #if 0
@@ -104,15 +108,20 @@ bool JBen::OnInit() {
 
 	const KDict* kd = KDict::Get();
 	const WDict* wd = WDict::Get();
+	ListManager* lm = ListManager::Get();
 
 	if(wd->MainDataLoaded()) {
-		vocabList = new VocabList();
+		lm->AddVocabList(DEFAULT_LIST_NAME);
+		lm->ChooseVocabList(DEFAULT_LIST_NAME);
+		vocabList = lm->VList();
 		vocabList->AddList(
 			utfconv_mw(prefs->GetSetting("vocablist")));
 	}
 	else vocabList = NULL;
 	if(kd->MainDataLoaded()) {
-		kanjiList = new KanjiList(kd->GetHashTable());
+		lm->AddKanjiList(DEFAULT_LIST_NAME);
+		lm->ChooseKanjiList(DEFAULT_LIST_NAME);
+		kanjiList = lm->KList();
 		kanjiList->AddFromString(
 			utfconv_mw(prefs->GetSetting("kanjilist")));
 	}
@@ -129,11 +138,12 @@ int JBen::OnExit() {
 #ifdef DEBUG
 	printf("JBen::OnExit being processed...\n");
 #endif
+	/* Careful about destruction order!
+	   ~Preferences depends on ListManager! */
+	Preferences::Destroy();
+	ListManager::Destroy();
 	KDict::Destroy();
 	WDict::Destroy();
-	Preferences::Destroy();
-	if(kanjiList) delete kanjiList;
-	if(vocabList) delete vocabList;
 	DestroyUTFConv();
 #ifdef DEBUG
 	printf("Terminating program.\n");

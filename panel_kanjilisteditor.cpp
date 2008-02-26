@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "panel_kanjilisteditor.h"
 #include "jben.h"
+#include "listmanager.h"
 
 enum {
 	ID_btnRevert=1,
@@ -59,9 +60,10 @@ PanelKanjiListEditor::PanelKanjiListEditor(wxWindow *owner) : RedrawablePanel(ow
 }
 
 void PanelKanjiListEditor::Commit() {
+	ListManager* lm = ListManager::Get();
 	changeDetected = false;
-	jben->kanjiList->Clear();
-	int result = jben->kanjiList->AddFromString(
+	lm->KList()->Clear();
+	int result = lm->KList()->AddFromString(
 		textKanjiList->GetValue().c_str());
 
 	jben->gui->Redraw();
@@ -86,5 +88,6 @@ void PanelKanjiListEditor::OnTextChanged(wxCommandEvent& ev) {
 bool PanelKanjiListEditor::ChangeDetected() {return changeDetected;}
 
 void PanelKanjiListEditor::Redraw() {
-	textKanjiList->ChangeValue(jben->kanjiList->ToString(20));
+	ListManager* lm = ListManager::Get();
+	textKanjiList->ChangeValue(lm->KList()->ToString(20));
 }

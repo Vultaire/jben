@@ -36,7 +36,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define CURRENT_CONFIG_VERSION "1.1"
 
 #include "preferences.h"
-#include "jben.h"
+#include "kdict.h"
+#include "listmanager.h"
 #include "file_utils.h"
 #include "encoding_convert.h"
 #include "string_utils.h"
@@ -120,8 +121,8 @@ int Preferences::LoadFile(const char *filename) {
 			tokenList.pop_front();
 			if( (token.length()>0) && (token[0]!=L'#') ) {
 				/* We only want to split the string into two subtokens, so we'll
-			   	do it manually. */
-				index = token.find_first_of(_T(" \t"));
+				   do it manually. */
+				index = token.find_first_of(L" \t");
 				if(index!=wstring::npos) {
 					subToken = token.substr(0, index);
 					subToken = ToLower(subToken);
@@ -240,8 +241,10 @@ string Preferences::GetPrefsStr() {
 	prefs << "config_version\t" << stringOpts["config_version"] << '\n';
 
 	/* Get kanji and vocab lists in UTF-8 encoded strings */
-	kanjiList = utfconv_wm(jben->kanjiList->ToString());
-	vocabList = utfconv_wm(jben->vocabList->ToString(';'));
+	/* Currently we only save one list, "master", the currently selected one. */
+	ListManager* lm = ListManager::Get();
+	kanjiList = utfconv_wm(lm->KList()->ToString());
+	vocabList = utfconv_wm(lm->VList()->ToString(';'));
 
 	prefs << "KanjidicOptionMask\t0x"
 		  << uppercase << hex << setw(8) << setfill('0')
@@ -249,10 +252,8 @@ string Preferences::GetPrefsStr() {
 	prefs << "KanjidicDictionaryMask\t0x"
 		  << uppercase << hex << setw(8) << setfill('0')
 		  << kanjidicDictionaries << '\n';
-	prefs << "KanjiList\t"
-		  << utfconv_wm(jben->kanjiList->ToString()) << '\n';
-	prefs << "VocabList\t"
-		  << utfconv_wm(jben->vocabList->ToString(';')) << '\n';
+	prefs << "KanjiList\t" << kanjiList << '\n';
+	prefs << "VocabList\t" << vocabList << '\n';
 
 	/* Append any other variables stored */
 	for(map<string, string>::iterator mi = stringOpts.begin();

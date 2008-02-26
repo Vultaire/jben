@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "panel_vocablisteditor.h"
 #include "jben.h"
+#include "listmanager.h"
 
 enum {
 	ID_btnRevert=1,
@@ -61,9 +62,10 @@ void PanelVocabListEditor::Commit() {
 	/* This function, when called explicitly, caused a hard lock and
 	   LOTS of HDD activity.  Step through this with GDB, and monitor
 	   mem usage with top. */
+	ListManager* lm = ListManager::Get();
 	changeDetected = false;
-	jben->vocabList->Clear();
-	int result = jben->vocabList->AddList(textVocabList->GetValue().c_str());
+	lm->VList()->Clear();
+	int result = lm->VList()->AddList(textVocabList->GetValue().c_str());
 
 	jben->gui->Redraw();
 
@@ -87,18 +89,7 @@ void PanelVocabListEditor::OnTextChanged(wxCommandEvent& ev) {
 bool PanelVocabListEditor::ChangeDetected() {return changeDetected;}
 
 void PanelVocabListEditor::Redraw() {
-	/*textVocabList->ChangeValue(jben->vocabList->ToString());*/
-	wxString s = jben->vocabList->ToString();
-	textVocabList->ChangeValue(s);
-	textVocabList->ChangeValue(s);
-	textVocabList->ChangeValue(s);
-	textVocabList->ChangeValue(s);
-	textVocabList->ChangeValue(s);
-	textVocabList->ChangeValue(s);
-	textVocabList->ChangeValue(s);
-	textVocabList->ChangeValue(s);
+	ListManager* lm = ListManager::Get();
+	wxString s = lm->VList()->ToString();
 	textVocabList->ChangeValue(s);
 }
-
-
-

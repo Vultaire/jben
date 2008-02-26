@@ -62,7 +62,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define KDD_KWJLP  0x10
 /* DGnnn: Kodansha Compact Kanji Guide */
 #define KDD_KCKG   0x20
-/* DHnnnn: A Guide To Reading and Writing Japanese, Ken Hensall et al. */
+/* DHnnnn: A Guide To Reading and Writing Japanese, Ken Henshall et al. */
 #define KDD_GTRWJH 0x40
 /* DJnnnn: Kanji in Context, Nishiguchi and Kono */
 #define KDD_KIC    0x80
@@ -91,8 +91,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 /* MPnn.nnnn: Morohashi Daikanwajiten, volume.page number */
 #define KDD_MOROVP 0x80000
 /* Morohashi Daikanwajiten (Both indexing options) */
-#define KDD_MORO   KDD_MOROI | KDD_MOROVP;
-/* Ennnn: A Guide to Remembering Japanese Characters, Kenneth G. Henshal */
+#define KDD_MORO   (KDD_MOROI | KDD_MOROVP)
+/* Ennnn: A Guide to Remembering Japanese Characters, Kenneth G. Henshall */
 #define KDD_GRJC   0x100000
 /* Knnnn: Gakken Kanji Dictionary ("A New Dictionary of Kanji Usage") */
 #define KDD_GKD    0x200000

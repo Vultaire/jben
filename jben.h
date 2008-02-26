@@ -34,21 +34,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #endif
 
 #include "frame_maingui.h"
-#include "preferences.h"
-#include "kanjilist.h"
-#include "vocablist.h"
 
 class JBen: public wxApp {
 public:
 	/* Public objects */
 	FrameMainGUI *gui;
-	KanjiList *kanjiList;
-	VocabList *vocabList;
 private:
 	virtual bool OnInit();
 	virtual int OnExit();
 };
 
-extern JBen *jben;
+extern JBen* jben;
 
 #endif
