@@ -134,6 +134,7 @@ public:
 	   In the KANJIDIC2 dated 2008-02-12, there was only one entry, "行く",
 	   which had any of these flags.  Not worth the effort. */
 	map<string, list<string> > meaning;
+	wstring kradData;
 };
 
 class KDict {
@@ -170,7 +171,7 @@ private:
 	/* Data */
 	static KDict *kdictSingleton;
 	BoostHM<wchar_t, KInfo> kdictData;
-	BoostHM<wchar_t, wstring> radkData, kradData;
+	BoostHM<wchar_t, wstring> radkData;
 	BoostHM<wchar_t, int> radkDataStrokes;
 };
 

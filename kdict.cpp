@@ -262,11 +262,19 @@ int KDict::LoadKanjidic2(const char* filename) {
 						} else if(temp=="ja_on") {
 							/* Need to handle r_status and on_type! */
 							/* Need to convert xx.x to xx(x) notation. */
-							k->onyomi.push_back(sValue);
+							k->onyomi.push_back(
+								utfconv_wm(
+									ConvertKanjidicEntry(
+										utfconv_mw(
+											sValue))));
 						} else if(temp=="ja_kun") {
 							/* Need to handle r_status! */
 							/* Need to convert xx.x to xx(x) notation. */
-							k->kunyomi.push_back(sValue);
+							k->kunyomi.push_back(
+								utfconv_wm(
+									ConvertKanjidicEntry(
+										utfconv_mw(
+											sValue))));
 						} else {
 							ostringstream oss;
 							oss << ERR_PREF << "Invalid r_type: " << temp;
@@ -278,7 +286,11 @@ int KDict::LoadKanjidic2(const char* filename) {
 						if(temp.length()==0) temp = "en";
 						k->meaning[temp].push_back(sValue);;
 					} else if(element=="nanori") {
-						k->nanori.push_back(sValue);
+						k->nanori.push_back(
+							utfconv_wm(
+								ConvertKanjidicEntry(
+									utfconv_mw(
+										sValue))));
 					} else {
 						ostringstream oss;
 						oss << ERR_PREF << "UNHANDLED element: " << element;
@@ -360,8 +372,16 @@ int KDict::LoadKradfile(const char* filename) {
 				/* KRADFILE-specific stuff here */
 				/* Get rid of the spaces in the string */
 				token = TextReplace<wchar_t>(token, L" ", L"");
-				/* Now we can easily pull in the data */
-				if(!kradData.assign(token[0], token.substr(2))) {
+
+				bool isOK=true;
+				BoostHM<wchar_t, KInfo>::iterator i = kdictData.find(token[0]);
+				isOK = i!=kdictData.end();
+				if(isOK) {
+					KInfo k = i->second;
+					k.kradData = token.substr(2);
+					isOK = kdictData.assign(token[0], k);
+				}
+				if(!isOK) {
 					ostringstream oss;
 					oss << ERR_PREF << "KRADFILE: Error assigning ("
 						<< utfconv_wm(token.substr(0,1)) << ", "
@@ -458,7 +478,7 @@ int KDict::LoadRadkfile(const char* filename) {
 string JisHexToKuten(const string& jisHex) {
 	int i;
 	stringstream ss(jisHex);
-	ss >> hex >> i;
+	ss >> hex >> i >> dec;
 	ss.clear();
 	ss << (((i & 0xFF00) >> 8) - 0x20)
 	   << '-' << ((i & 0xFF) - 0x20);
@@ -1107,6 +1127,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 		result << "</ul></li>";
 	}
 
+#if 0
 	/* Vocab List Cross-ref */
 	if((options & KDO_VOCABCROSSREF) != 0) {
 		vector<wstring> *vList = &(jben->vocabList->GetVocabList());
@@ -1129,6 +1150,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			result << "</font></li>";
 		}
 	}
+#endif
 
 	/* Low importance stuff */
 	if((options & KDO_LOWIMPORTANCE) != 0) {
