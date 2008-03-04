@@ -214,16 +214,16 @@ ifeq ($(PLATFORM),windows)
 #	Step 4: Remove the output folder
 	rm -rf J-Ben
 else
-	$(INSTALL) -d $(bindir) $(datadir)/jben/dicts $(datadir)/jben/sods \
-		$(docdir)/license
-	$(INSTALL_PROGRAM) $(build_bindir)/$(target) $(bindir)
-	$(INSTALL_DATA) dicts/* $(datadir)/jben/dicts
-	$(INSTALL_DATA) sods/README.txt $(datadir)/jben/sods
-	$(INSTALL_DATA) license/* $(docdir)/license
-#	Install man page: $(INSTALL_DATA) <manpage> $(man1dir)
+	$(INSTALL) -d $(DESTDIR)$(bindir) $(DESTDIR)$(datadir)/jben/dicts \
+		$(DESTDIR)$(datadir)/jben/sods $(DESTDIR)$(docdir)/license
+	$(INSTALL_PROGRAM) $(build_bindir)/$(target) $(DESTDIR)$(bindir)
+	$(INSTALL_DATA) dicts/* $(DESTDIR)$(datadir)/jben/dicts
+	$(INSTALL_DATA) sods/README.txt $(DESTDIR)$(datadir)/jben/sods
+	$(INSTALL_DATA) license/* $(DESTDIR)$(docdir)/license
+#	Install man page: $(INSTALL_DATA) <manpage> $(DESTDIR)$(man1dir)
 	cd kanjipad \
-		&& $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) install \
-		&& cd ..
+		&& $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) DESTDIR=$(DESTDIR) \
+		install && cd ..
 	@echo
 	@echo "J-Ben was installed successfully."
 endif
@@ -233,16 +233,16 @@ ifeq ($(PLATFORM),windows)
 	@echo "make uninstall" is not supported on Windows.
 else
 	cd kanjipad \
-		&& $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) uninstall \
-		&& cd ..
-	rm -fv $(bindir)/$(target)
-	rm -fv $(datadir)/jben/dicts/*
-	rm -fv $(datadir)/jben/sods/README.txt
-	rm -fv $(docdir)/license/*
-#	rm -fv $(man1dir)/<manpage>
-	rmdir -p $(datadir)/jben/dicts || true
-	rmdir -p $(datadir)/jben/sods || true
-	rmdir -p $(docdir)/license || true
+		&& $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) DESTDIR=$(DESTDIR) \
+		uninstall && cd ..
+	rm -fv $(DESTDIR)$(bindir)/$(target)
+	rm -fv $(DESTDIR)$(datadir)/jben/dicts/*
+	rm -fv $(DESTDIR)$(datadir)/jben/sods/README.txt
+	rm -fv $(DESTDIR)$(docdir)/license/*
+#	rm -fv $(DESTDIR)$(man1dir)/<manpage>
+	rmdir -p $(DESTDIR)$(datadir)/jben/dicts || true
+	rmdir -p $(DESTDIR)$(datadir)/jben/sods || true
+	rmdir -p $(DESTDIR)$(docdir)/license || true
 	@echo
 	@echo "J-Ben was uninstalled successfully."
 endif

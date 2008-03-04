@@ -64,10 +64,10 @@ clean:
 	$(rmdircmd) bin obj
 
 install:
-	$(INSTALL) -d $(bindir) $(datadir)/jben/kpengine_data
-	$(INSTALL_PROGRAM) $(build_bindir)/$(kpengine) $(bindir)
-	$(INSTALL_DATA) *.unistrok $(datadir)/jben/kpengine_data
+	$(INSTALL) -d $(DESTDIR)$(bindir) $(DESTDIR)$(datadir)/jben/kpengine_data
+	$(INSTALL_PROGRAM) $(build_bindir)/$(kpengine) $(DESTDIR)$(bindir)
+	$(INSTALL_DATA) *.unistrok $(DESTDIR)$(datadir)/jben/kpengine_data
 
 uninstall:
-	rm -fv $(bindir)/$(kpengine)
-	rm -rfv $(datadir)/jben/kpengine_data
+	rm -fv $(DESTDIR)$(bindir)/$(kpengine)
+	rm -rfv $(DESTDIR)$(datadir)/jben/kpengine_data
