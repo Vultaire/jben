@@ -35,7 +35,7 @@ class VocabList {
 public:
 	VocabList();
 	bool Add(const wstring& s);
-	int AddList(const wstring& s);
+	int AddList(const wstring& s, void* srcObj=NULL);
 	wstring ToString(wchar_t separator=L'\n');
 	int Size();
 	void Clear();

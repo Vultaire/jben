@@ -88,7 +88,7 @@ bool VocabList::Add(const wstring& s) {
 	return false;
 }
 
-int VocabList::AddList(const wstring& s) {
+int VocabList::AddList(const wstring& s, void* srcObj) {
 	list<wstring> t = StrTokenize<wchar_t>(s, L"\n");
 	wstring token;
 	int count = 0;
@@ -105,7 +105,7 @@ int VocabList::AddList(const wstring& s) {
 		ostringstream os;
 		os << duplicates
 		   << " duplicate entries were detected, and were therefore ommitted.";
-		el.Push(EL_Info, os.str(), (void *)this);
+		el.Push(EL_Info, os.str(), srcObj);
 	}
 	return count;
 }

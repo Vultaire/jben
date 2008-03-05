@@ -65,7 +65,8 @@ void PanelVocabListEditor::Commit() {
 	ListManager* lm = ListManager::Get();
 	changeDetected = false;
 	lm->VList()->Clear();
-	int result = lm->VList()->AddList(textVocabList->GetValue().c_str());
+	int result = lm->VList()->AddList(textVocabList->GetValue().c_str(),
+									  (void*)this);
 
 	jben->gui->Redraw();
 
