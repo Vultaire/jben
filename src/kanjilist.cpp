@@ -150,7 +150,7 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 		if(sortType==ST_GRADE)
 			value = ki->grade;
 		else if(sortType==ST_FREQUENCY)
-			value = ki->grade;
+			value = ki->freq;
 		else {
 			ostringstream oss;
 			oss << "Unknown sort type: " << sortType << endl;

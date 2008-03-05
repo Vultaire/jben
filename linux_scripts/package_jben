@@ -48,7 +48,7 @@ if(result!=0):
 print 'Source archive "' + sourcePackageName + '.zip" created.'
 print 'Finished creating all archives for ' + packageName + '!'
 
-archiveDir = 'jben/archives/' + packageName
+archiveDir = 'jben/archives/' + version
 print 'Creating directory "' + archiveDir + '...'
 command = 'mkdir -p ' + archiveDir
 p = P(command, shell=True)

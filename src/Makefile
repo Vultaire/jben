@@ -73,9 +73,9 @@ mandir = $(datarootdir)/man
 man1dir = $(mandir)/man1
 
 # build dirs
-build_depdir = dep/$(PLATFORM)/$(BUILD)
-build_objdir = obj/$(PLATFORM)/$(BUILD)
-build_bindir = bin/$(PLATFORM)/$(BUILD)
+build_depdir = ../dep/$(PLATFORM)/$(BUILD)
+build_objdir = ../obj/$(PLATFORM)/$(BUILD)
+build_bindir = ../bin/$(PLATFORM)/$(BUILD)
 
 
 # Get flags/libs for GTK builds
@@ -152,10 +152,10 @@ $(build_objdir)/jben.res:
 	windres.exe -i jben.rc -J rc -o $(build_objdir)/jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
 
 kpengine:
-	cd kanjipad && $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) && cd ..
+	cd kpengine && $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) && cd ..
 
 clean:
-	cd kanjipad && make clean && cd ..
+	cd kpengine && make clean && cd ..
 	rm -rfv bin obj jben.res
 
 cleandep:
@@ -187,41 +187,44 @@ install:
 ifeq ($(PLATFORM),windows)
 #	On Windows, "make install" makes the J-Ben NSIS installer.
 #	Step 1: Prep the output directory
-	$(mkdircmd) J-Ben
-	cp "$(stlportbase)/bin/libstlport.5.1.dll" J-Ben
-	cp "$(mingwbase)/bin/mingwm10.dll" J-Ben
-	cp "$(wxliblink)/wxbase28u_gcc_vultaire.net.dll" J-Ben
-	cp "$(wxliblink)/wxmsw28u_core_gcc_vultaire.net.dll" J-Ben
-	cp "$(wxliblink)/wxmsw28u_html_gcc_vultaire.net.dll" J-Ben
-	cp "$(iconvbase)/bin/libcharset1.dll" J-Ben
-	cp "$(iconvbase)/bin/libiconv2.dll" J-Ben
-	cp README.txt J-Ben
-	cp CHANGELOG.txt J-Ben
-	cp "$(build_bindir)/$(target)" J-Ben
-	cp "kanjipad/$(build_bindir)/jben_kpengine.exe" J-Ben
-	cp -R license J-Ben
-	$(mkdircmd) J-Ben/kpengine_data J-Ben/dicts J-Ben/sods
-	cp kanjipad/*.unistrok J-Ben/kpengine_data
-	cp dicts/edict2 dicts/kanjidic dicts/radkfile \
-		dicts/kradfile dicts/README.txt J-Ben/dicts
-	cp sods/README.txt J-Ben/sods
-	@echo J-Ben distribution created in .\J-Ben.
+	$(mkdircmd) ../J-Ben
+	cp "$(stlportbase)/bin/libstlport.5.1.dll" ../J-Ben
+	cp "$(mingwbase)/bin/mingwm10.dll" ../J-Ben
+	cp "$(wxliblink)/wxbase28u_gcc_vultaire.net.dll" ../J-Ben
+	cp "$(wxliblink)/wxmsw28u_core_gcc_vultaire.net.dll" ../J-Ben
+	cp "$(wxliblink)/wxmsw28u_html_gcc_vultaire.net.dll" ../J-Ben
+	cp "$(iconvbase)/bin/libcharset1.dll" ../J-Ben
+	cp "$(iconvbase)/bin/libiconv2.dll" ../J-Ben
+	cp ../README.txt ../J-Ben
+	cp ../CHANGELOG.txt ../J-Ben
+	cp "$(build_bindir)/$(target)" ../J-Ben
+	cp "$(build_bindir)/kpengine/jben_kpengine.exe" ../J-Ben
+	cp -R ../license ../J-Ben
+	$(mkdircmd) ../J-Ben/kpengine_data ../J-Ben/dicts ../J-Ben/sods
+	cp kpengine/*.unistrok ../J-Ben/kpengine_data
+	cp ../dicts/edict2 ../dicts/kanjidic ../dicts/radkfile \
+		../dicts/kradfile ../dicts/README.txt ../J-Ben/dicts
+	cp ../sods/README.txt ../J-Ben/sods
+	@echo J-Ben distribution created in ..\J-Ben.
 #	Step 2: Run NSIS script
 	makensis /Dversion=$(JBEN_VERSION) installer.nsi
 #   Step 3: Zip the output folder into 7z and zip archives
-	7z a -tzip jben-$(JBEN_VERSION)-win-binary.zip J-Ben
-	7z a -t7z jben-$(JBEN_VERSION)-win-binary.7z J-Ben
+	$(mkdircmd) ../archives/$(JBEN_VERSION)
+	7z a -tzip ../archives/$(JBEN_VERSION)/jben-$(JBEN_VERSION)-win-binary.zip \
+		../J-Ben
+	7z a -t7z ../archives/$(JBEN_VERSION)/jben-$(JBEN_VERSION)-win-binary.7z \
+		../J-Ben
 #	Step 4: Remove the output folder
-	rm -rf J-Ben
+	rm -rf ../J-Ben
 else
 	$(INSTALL) -d $(DESTDIR)$(bindir) $(DESTDIR)$(datadir)/jben/dicts \
 		$(DESTDIR)$(datadir)/jben/sods $(DESTDIR)$(docdir)/license
 	$(INSTALL_PROGRAM) $(build_bindir)/$(target) $(DESTDIR)$(bindir)
-	$(INSTALL_DATA) dicts/* $(DESTDIR)$(datadir)/jben/dicts
-	$(INSTALL_DATA) sods/README.txt $(DESTDIR)$(datadir)/jben/sods
-	$(INSTALL_DATA) license/* $(DESTDIR)$(docdir)/license
-#	Install man page: $(INSTALL_DATA) <manpage> $(DESTDIR)$(man1dir)
-	cd kanjipad \
+	$(INSTALL_DATA) ../dicts/* $(DESTDIR)$(datadir)/jben/dicts
+	$(INSTALL_DATA) ../sods/README.txt $(DESTDIR)$(datadir)/jben/sods
+	$(INSTALL_DATA) ../license/* $(DESTDIR)$(docdir)/license
+#	Install man page: $(INSTALL_DATA) ../<manpage> $(DESTDIR)$(man1dir)
+	cd kpengine \
 		&& $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) DESTDIR=$(DESTDIR) \
 		install && cd ..
 	@echo
@@ -232,7 +235,7 @@ uninstall:
 ifeq ($(PLATFORM),windows)
 	@echo "make uninstall" is not supported on Windows.
 else
-	cd kanjipad \
+	cd kpengine \
 		&& $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) DESTDIR=$(DESTDIR) \
 		uninstall && cd ..
 	rm -fv $(DESTDIR)$(bindir)/$(target)

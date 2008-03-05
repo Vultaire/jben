@@ -1,11 +1,11 @@
-Name "J-Ben ${VERSION} Installer"
-OutFile "J-Ben_${VERSION}_Installer.exe"
+Name "J-Ben ${VERSION}"
+OutFile "..\archives\${VERSION}\J-Ben_${VERSION}_Installer.exe"
 InstallDir $PROGRAMFILES\J-Ben
 InstallDirRegKey HKLM \
 	"Software\Microsoft\Windows\CurrentVersion\Uninstall\J-Ben" \
 	"InstallLocation"
 
-LicenseData J-Ben\license\gpl-2.0.txt
+LicenseData ..\J-Ben\license\gpl-2.0.txt
 LicenseForceSelection checkbox
 
 Page license
@@ -24,36 +24,36 @@ UninstPage instfiles
 Section "!J-Ben Core"
 	# Program Files\J-Ben
 	SetOutPath "$INSTDIR"
-	File "J-Ben\jben.exe"
-	File "J-Ben\jben_kpengine.exe"
-	File "J-Ben\libcharset1.dll"
-	File "J-Ben\libiconv2.dll"
-	File "J-Ben\libstlport.5.1.dll"
-	File "J-Ben\mingwm10.dll"
-	File "J-Ben\wxbase28u_gcc_vultaire.net.dll"
-	File "J-Ben\wxmsw28u_core_gcc_vultaire.net.dll"
-	File "J-Ben\wxmsw28u_html_gcc_vultaire.net.dll"
-	File "J-Ben\README.txt"
-	File "J-Ben\CHANGELOG.txt"
+	File "..\J-Ben\jben.exe"
+	File "..\J-Ben\jben_kpengine.exe"
+	File "..\J-Ben\libcharset1.dll"
+	File "..\J-Ben\libiconv2.dll"
+	File "..\J-Ben\libstlport.5.1.dll"
+	File "..\J-Ben\mingwm10.dll"
+	File "..\J-Ben\wxbase28u_gcc_vultaire.net.dll"
+	File "..\J-Ben\wxmsw28u_core_gcc_vultaire.net.dll"
+	File "..\J-Ben\wxmsw28u_html_gcc_vultaire.net.dll"
+	File "..\J-Ben\README.txt"
+	File "..\J-Ben\CHANGELOG.txt"
 	# The following 2 folders will always be added/removed in full,
 	# so using File /r (and RMDir /r on uninstall) is acceptable.
-	File /r "J-Ben\kpengine_data"
-	File /r "J-Ben\license"
+	File /r "..\J-Ben\kpengine_data"
+	File /r "..\J-Ben\license"
 
 	# Program Files\J-Ben\dicts
 	# By default, we install EDICT2, KANJIDIC, KRADFILE and RADKFILE.
 	SetOutPath "$INSTDIR\dicts"
-	File "J-Ben\dicts\README.txt"
-	File "J-Ben\dicts\edict2"
-	File "J-Ben\dicts\kanjidic"
-	File "J-Ben\dicts\kradfile"
-	File "J-Ben\dicts\radkfile"
+	File "..\J-Ben\dicts\README.txt"
+	File "..\J-Ben\dicts\edict2"
+	File "..\J-Ben\dicts\kanjidic"
+	File "..\J-Ben\dicts\kradfile"
+	File "..\J-Ben\dicts\radkfile"
 
 	# Program Files\J-Ben\sods
 	# No SODs are loaded by default; this is an optional component.
 	# The only file to be copied is a readme.
 	SetOutPath "$INSTDIR\sods"
-	File "J-Ben\sods\README.txt"
+	File "..\J-Ben\sods\README.txt"
 
 	# Write registry settings and make uninstaller
 	WriteRegStr HKLM \

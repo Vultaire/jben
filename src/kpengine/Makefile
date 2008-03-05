@@ -30,8 +30,8 @@ datarootdir = $(prefix)/share
 datadir = $(datarootdir)
 
 # build dirs
-build_objdir = obj/$(PLATFORM)/$(BUILD)
-build_bindir = bin/$(PLATFORM)/$(BUILD)
+build_objdir = ../../obj/$(PLATFORM)/$(BUILD)/kpengine
+build_bindir = ../../bin/$(PLATFORM)/$(BUILD)/kpengine
 
 # Build object configuration
 ifeq ($(PLATFORM),windows)
