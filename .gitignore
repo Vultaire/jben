@@ -1,11 +1,9 @@
-*.d
-*.o
-jben
+dep
+obj
+bin
 .jben
 jben.cfg
 jben.res
-*.exe
-jben_kpengine
 sods/sod*
 *~
 archives
