@@ -1,78 +1,65 @@
-/*
-Project: J-Ben
-Author:  Paul Goins
-Website: http://www.vultaire.net/software/jben/
-License: GNU General Public License (GPL) version 2
-         (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
-
-File: dialog_addkanjibygrade.cpp
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
-
 #include "dialog_addkanjibygrade.h"
 
-enum {
-	ID_buttonOK=wxID_OK,
-	ID_buttonCancel=wxID_CANCEL,
-	ID_comboLow=1,
-	ID_comboHigh
+#include <glibmm/i18n.h>
+#include <gtkmm/stock.h>
+#include <gtkmm/messagedialog.h>
+
+#include <iostream>
+using namespace std;
+
+Glib::ustring strs[] = {
+	_("Jouyou Kanji Grade 1"),
+	_("Jouyou Kanji Grade 2"),
+	_("Jouyou Kanji Grade 3"),
+	_("Jouyou Kanji Grade 4"),
+	_("Jouyou Kanji Grade 5"),
+	_("Jouyou Kanji Grade 6"),
+	_("Jouyou Kanji, General Usage"),
+	_("Jinmeiyou Kanji (for names)"),
+	_("Non-Jouyou/Non-Jinmeiyou Kanji")
 };
+int strCount = 9;
 
-BEGIN_EVENT_TABLE(DialogAddKanjiByGrade, wxDialog)
-	EVT_BUTTON(ID_buttonOK, DialogAddKanjiByGrade::OnOK)
-	EVT_BUTTON(ID_buttonCancel, DialogAddKanjiByGrade::OnCancel)
-	EVT_KEY_DOWN(DialogAddKanjiByGrade::OnKeyDown)
-	EVT_COMBOBOX(ID_comboLow, DialogAddKanjiByGrade::OnLowValChange)
-	EVT_COMBOBOX(ID_comboHigh, DialogAddKanjiByGrade::OnHighValChange)
-END_EVENT_TABLE()
+DialogAddKanjiByGrade::DialogAddKanjiByGrade(Gtk::Window& parent)
+	: Dialog(_("Add Kanji By Grade"), parent, true),
+	  btnOK(Gtk::Stock::OK),
+	  btnCancel(Gtk::Stock::CANCEL)
+{
+	for(int i=0; i<9; i++) {
+		comboLowGrade.append_text(strs[i]);
+		comboHighGrade.append_text(strs[i]);
+	}
+	comboLowGrade.set_active_text(strs[0]);
+	comboHighGrade.set_active_text(strs[0]);
 
-wxString comboStrings[] = {
-	_T("Jouyou Kanji Grade 1"),
-	_T("Jouyou Kanji Grade 2"),
-	_T("Jouyou Kanji Grade 3"),
-	_T("Jouyou Kanji Grade 4"),
-	_T("Jouyou Kanji Grade 5"),
-	_T("Jouyou Kanji Grade 6"),
-	_T("Jouyou Kanji, General Usage"),
-	_T("Jinmeiyou Kanji (for names)"),
-	_T("Non-Jouyou/Non-Jinmeiyou Kanji")
-};
-int comboStringCount = 9;
+	comboLowGrade.signal_changed()
+		.connect(sigc::mem_fun(*this, &DialogAddKanjiByGrade::OnLowValChange));
+	comboHighGrade.signal_changed()
+		.connect(sigc::mem_fun(*this, &DialogAddKanjiByGrade::OnHighValChange));
+	btnOK.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogAddKanjiByGrade::OnOK));
+	btnCancel.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogAddKanjiByGrade::OnCancel));
 
-DialogAddKanjiByGrade::DialogAddKanjiByGrade(wxWindow *parent)
-  : wxDialog(parent, wxID_ANY, wxString(_T("Add Kanji By Grade"))) {
-	comboLowGrade = new wxComboBox(this, ID_comboLow, comboStrings[0], wxDefaultPosition, wxDefaultSize, 9, comboStrings, wxCB_DROPDOWN | wxCB_READONLY);
-	comboHighGrade = new wxComboBox(this, ID_comboHigh, comboStrings[0], wxDefaultPosition, wxDefaultSize, 9, comboStrings, wxCB_DROPDOWN | wxCB_READONLY);
+	set_border_width(5);
 
-	btnOK = new wxButton(this, ID_buttonOK, _T("OK"));
-	btnCancel = new wxButton(this, ID_buttonCancel, _T("Cancel"));
-	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-	mainSizer->Add(comboLowGrade, 0, wxALL, 10);
-	mainSizer->Add(comboHighGrade, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
-	wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-	buttonSizer->Add(btnOK, 0, wxRIGHT, 10);
-	buttonSizer->Add(btnCancel, 0);
-	mainSizer->Add(buttonSizer, 0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
-	this->SetSizerAndFit(mainSizer);
-	comboLowGrade->SetFocus();
+	Gtk::VBox* pvb = get_vbox();
+	pvb->set_spacing(5);
+	pvb->pack_start(comboLowGrade);
+	pvb->pack_start(comboHighGrade);
+
+	Gtk::HButtonBox* phbb = get_action_area();
+	phbb->pack_start(btnOK);
+	phbb->pack_start(btnCancel);
+
+	show_all_children();
 }
 
-int ComboBoxToKanjidicGrade(wxComboBox *c) {
+int ComboBoxToKanjidicGrade(const Gtk::ComboBoxText& c) {
 	int i;
-	for(i=0;i<comboStringCount;i++)
-		if(c->GetValue()==comboStrings[i]) break;
+	Glib::ustring uStr = c.get_active_text();
+	for(i=0;i<strCount;i++)
+		if(uStr==strs[i]) break;
 	if(i<6) return i+1;	/* G1-G6 in KANJIDIC */
 	if(i==6) return 8;  /* G8 (Jouyou Jr. High) in KANJIDIC */
 	if(i==7) return 9;  /* G9 (Jinmeiyou) in KANJIDIC */
@@ -80,57 +67,64 @@ int ComboBoxToKanjidicGrade(wxComboBox *c) {
 }
 
 int DialogAddKanjiByGrade::GetLowGrade() {
+	cout << "GetLowGrade" << endl;
 	return ComboBoxToKanjidicGrade(comboLowGrade);
 }
 
 int DialogAddKanjiByGrade::GetHighGrade() {
+	cout << "GetHighGrade" << endl;
 	return ComboBoxToKanjidicGrade(comboHighGrade);
 }
 
+void DialogAddKanjiByGrade::OnOK() {
+	cout << "OnOK" << endl;
+	OKProc();
+}
+
+void DialogAddKanjiByGrade::OnCancel() {
+	cout << "OnCancel" << endl;
+	CancelProc();
+}
+
+void DialogAddKanjiByGrade::OnLowValChange() {
+	cout << "OnLowValChange" << endl;
+	int low, high;
+	low = GetLowGrade();
+	high = GetHighGrade();
+	/* 0 is a special code for non-graded kanji and is treated
+	   as the highest grade level here. */
+	if(high!=0 && (low>high || low==0))
+		comboHighGrade.set_active_text(comboLowGrade.get_active_text());
+}
+
+void DialogAddKanjiByGrade::OnHighValChange() {
+	cout << "OnHighValChange" << endl;
+	int low, high;
+	low = GetLowGrade();
+	high = GetHighGrade();
+	/* 0 is a special code for non-graded kanji and is treated
+	   as the highest grade level here. */
+	if(high!=0 && (high<low || low==0))
+		comboLowGrade.set_active_text(comboHighGrade.get_active_text());
+}
+
 void DialogAddKanjiByGrade::OKProc() {
+	cout << "OKProc" << endl;
 	int l = GetLowGrade();
 	int h = GetHighGrade();
 	/* 0 is a special code for non-graded kanji and is treated
 	   as the highest grade level here. */
-	if((h<l && h!=0) || (l==0 && h!=0))
-		wxMessageBox(_T("Your high grade level cannot be less than your low grade level."), _T("Bad grade range"), wxOK | wxICON_WARNING, this);
-	else
-		EndModal(ID_buttonOK);
+	if((h<l && h!=0) || (l==0 && h!=0)) {
+		Gtk::MessageDialog md
+			(_("Your high grade level cannot be less than your low grade level."));
+		md.set_title(_("Bad grade range"));
+		md.run();
+		//md.hide();
+	} else
+		response(Gtk::RESPONSE_OK);
 }
 
 void DialogAddKanjiByGrade::CancelProc() {
-	EndModal(ID_buttonCancel);
-}
-
-void DialogAddKanjiByGrade::OnOK(wxCommandEvent& ev) {OKProc();}
-void DialogAddKanjiByGrade::OnCancel(wxCommandEvent& ev) {CancelProc();}
-
-void DialogAddKanjiByGrade::OnKeyDown(wxKeyEvent& ev) {
-	int i = ev.GetKeyCode();
-	switch(i) {
-	case WXK_ESCAPE:
-		CancelProc();
-		break;
-	case WXK_RETURN:
-		OKProc();
-		break;
-	default:
-		ev.Skip();
-	}
-}
-
-void DialogAddKanjiByGrade::OnLowValChange(wxCommandEvent& ev) {
-	int low, high;
-	low = GetLowGrade();
-	high = GetHighGrade();
-	if(high!=0 && (low>high || low==0))
-		comboHighGrade->SetValue(comboLowGrade->GetValue());
-}
-
-void DialogAddKanjiByGrade::OnHighValChange(wxCommandEvent& ev) {
-	int low, high;
-	low = GetLowGrade();
-	high = GetHighGrade();
-	if(high!=0 && (high<low || low==0))
-		comboLowGrade->SetValue(comboHighGrade->GetValue());
+	cout << "CancelProc" << endl;
+	response(Gtk::RESPONSE_CANCEL);
 }

@@ -1,68 +1,24 @@
-/*
-Project: J-Ben
-Author:  Paul Goins
-Website: http://www.vultaire.net/software/jben/
-License: GNU General Public License (GPL) version 2
-         (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
-
-File: panel_config.h
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
-
 #ifndef panel_config_h
 #define panel_config_h
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
+#include "widget_updatepanel.h"
+#include <gtkmm/checkbutton.h>
+#include <gtkmm/button.h>
+#include <vector>
 
-#include "redrawablepanel.h"
-#include "wx/scrolwin.h"
-#include "wx/checkbox.h"
-#include "scrolledcheck.h"
-
-class PanelConfig: public RedrawablePanel {
+class PanelConfig : public UpdatePanel {
 public:
-	PanelConfig(wxWindow *owner);
-	~PanelConfig();
-	void Redraw();
-	void OnApply(wxCommandEvent& event);
-	void OnDictionaryToggle(wxCommandEvent& event);
-	void OnCheckboxToggle(wxCommandEvent& event);
-	void Revert();
-	void Commit();
-	bool ChangeDetected();
+	PanelConfig();
+	void Update();
 private:
-	void UpdateDictionaryControls(bool state);
+	void OnApply();
+	void OnDictionaryToggle();
+	void OnCheckboxToggle();
 
-	bool changeDetected;
-	bool processingRedraw;
-	bool dictionariesEnabled;
-	wxCheckBox *chkReadings, *chkMeanings, *chkHighImportance,
-		*chkDictionaries, *chkVocabCrossRef, *chkLowImportance,
-		*chkUseSODs, *chkUseSODAs;
-	wxScrolledWindow *scrlDictionaries;
-	wxArrayString dictionaryList;
-	ScrolledCheck **chkarrayDictionaries;
-	DECLARE_EVENT_TABLE()
+	Gtk::CheckButton chkReadings, chkMeanings, chkHighImp, chkMultiRad, chkDict,
+		chkVocabCrossRef, chkLowImp, chkSodStatic, chkSodAnim;
+	Gtk::Button btnApply;
+	std::vector<Gtk::CheckButton*> vChkDict;
 };
-
 
 #endif

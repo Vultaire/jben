@@ -132,8 +132,9 @@ void VocabList::Clear() {
 
 int VocabList::Size() {return vocabList.size();}
 
-const wstring& VocabList::operator[](unsigned int index) {
-	return vocabList[index];
+wstring VocabList::operator[](unsigned int index) {
+	if(index<vocabList.size()) return vocabList[index];
+	return L"";
 }
 
 int VocabList::GetIndexByWord(const wstring& s) {

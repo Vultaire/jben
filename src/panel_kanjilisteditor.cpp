@@ -1,93 +1,75 @@
-/*
-Project: J-Ben
-Author:  Paul Goins
-Website: http://www.vultaire.net/software/jben/
-License: GNU General Public License (GPL) version 2
-         (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
-
-File: panel_kanjilisteditor.cpp
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
-
 #include "panel_kanjilisteditor.h"
-#include "jben.h"
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/buttonbox.h>
+#include <gtkmm/messagedialog.h>
+#include <gtkmm/stock.h>
+#include <glibmm/i18n.h>
+#include <boost/format.hpp>
 #include "listmanager.h"
+#include "encoding_convert.h"
 
-enum {
-	ID_btnRevert=1,
-	ID_btnCommit,
-	ID_textKanjiList
-};
+#include <iostream>
+using namespace std;
 
-BEGIN_EVENT_TABLE(PanelKanjiListEditor, wxPanel)
-	EVT_BUTTON(ID_btnRevert, PanelKanjiListEditor::OnRevert)
-	EVT_BUTTON(ID_btnCommit, PanelKanjiListEditor::OnCommit)
-	EVT_TEXT(ID_textKanjiList, PanelKanjiListEditor::OnTextChanged)
-END_EVENT_TABLE()
+PanelKanjiListEditor::PanelKanjiListEditor()
+	: btnApply(Gtk::Stock::APPLY),
+	  btnCancel(Gtk::Stock::CANCEL),
+	  bChanged(false) {
+	btnApply.signal_clicked()
+		.connect(sigc::mem_fun(*this, &PanelKanjiListEditor::OnApply));
+	btnCancel.signal_clicked()
+		.connect(sigc::mem_fun(*this, &PanelKanjiListEditor::OnCancel));
+	tvList.get_buffer()->signal_changed()
+		.connect(sigc::mem_fun(*this, &PanelKanjiListEditor::OnTextChanged));
+	tvList.set_accepts_tab(false);
 
-PanelKanjiListEditor::PanelKanjiListEditor(wxWindow *owner) : RedrawablePanel(owner) {
-	textKanjiList = new wxTextCtrl(this, ID_textKanjiList, wxEmptyString,
-		wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
-	wxButton *btnRevert = new wxButton(this, ID_btnRevert, _T("Revert"));
-	wxButton *btnCommit = new wxButton(this, ID_btnCommit, _T("Commit"));
+	Gtk::ScrolledWindow *pswTxtList = manage(new Gtk::ScrolledWindow);
+	Gtk::HButtonBox *phbbButtons
+		= manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_SPREAD));
 
-	wxBoxSizer *panelSizer = new wxBoxSizer(wxVERTICAL);
-	wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
+	pswTxtList->add(tvList);
+	pswTxtList->set_shadow_type(Gtk::SHADOW_IN);
+	pswTxtList->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-	buttonSizer->AddStretchSpacer(1);
-	buttonSizer->Add(btnRevert);
-	buttonSizer->AddStretchSpacer(1);
-	/*buttonSizer->AddStretchSpacer(1);*/
-	buttonSizer->Add(btnCommit);
-	buttonSizer->AddStretchSpacer(1);
-	panelSizer->Add(textKanjiList, 1, wxEXPAND | wxALL, 10);
-	panelSizer->Add(buttonSizer, 0, wxEXPAND | wxALIGN_CENTER | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	phbbButtons->pack_start(btnApply, Gtk::PACK_EXPAND_PADDING);
+	phbbButtons->pack_start(btnCancel, Gtk::PACK_EXPAND_PADDING);
 
-	changeDetected = false;
-	this->SetSizerAndFit(panelSizer);
+	set_border_width(5);
+	pack_start(*pswTxtList, Gtk::PACK_EXPAND_WIDGET);
+	pack_start(*phbbButtons, Gtk::PACK_SHRINK);	
 }
 
-void PanelKanjiListEditor::Commit() {
+void PanelKanjiListEditor::OnCancel() {
+	cout << "Cancel" << endl;
+	bChanged = false;
+	//Redraw();
+}
+
+void PanelKanjiListEditor::OnApply() {
+	cout << "Apply" << endl;
+	bChanged = false;
 	ListManager* lm = ListManager::Get();
-	changeDetected = false;
 	lm->KList()->Clear();
 	int result = lm->KList()->AddFromString(
-		textKanjiList->GetValue().c_str());
+		utfconv_mw(tvList.get_buffer()->get_text()).c_str());
 
-	jben->gui->Redraw();
+	//FrameMainGUI::Get()->Redraw();
+	//Redraw();	/* Might be redundant now with the above Redraw() call... */
 
-	Redraw();	/* Might be redundant now with the above Redraw() call... */
-	wxMessageBox(wxString::Format(_T("Changes Saved.\nTotal kanji in list: %d"), result),
-				_T("Kanji List Editor"), wxOK | wxICON_INFORMATION, this);
+	Gtk::MessageDialog md(
+		(boost::format(_("Changes Saved.\nTotal kanji in list: %d"))
+		 % result).str());
+	md.set_title(_("Kanji List Editor"));
+	md.run();
 }
 
-void PanelKanjiListEditor::Revert() {
-	changeDetected = false;
-	Redraw();
+void PanelKanjiListEditor::OnTextChanged() {
+	if(!bChanged) {
+		cout << "TextChanged" << endl;
+		bChanged = true;
+	}
 }
 
-void PanelKanjiListEditor::OnRevert(wxCommandEvent& ev) {Revert();}
-void PanelKanjiListEditor::OnCommit(wxCommandEvent& ev) {Commit();}
+bool PanelKanjiListEditor::ChangeDetected() {return bChanged;}
 
-void PanelKanjiListEditor::OnTextChanged(wxCommandEvent& ev) {
-	changeDetected = true;
-}
-
-bool PanelKanjiListEditor::ChangeDetected() {return changeDetected;}
-
-void PanelKanjiListEditor::Redraw() {
-	ListManager* lm = ListManager::Get();
-	textKanjiList->ChangeValue(lm->KList()->ToString(20));
-}
+void PanelKanjiListEditor::Update() {}

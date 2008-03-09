@@ -1,243 +1,182 @@
-/*
-Project: J-Ben
-Author:  Paul Goins
-Website: http://www.vultaire.net/software/jben/
-License: GNU General Public License (GPL) version 2
-         (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
-
-File: panel_config.cpp
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
-
 #include "panel_config.h"
-#include "preferences.h"
-#include "kdict.h"
-#include "file_utils.h"
+#include <glibmm/i18n.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/buttonbox.h>
 
-enum {
-	ID_chkReadings=1,
-	ID_chkMeanings,
-	ID_chkHighImportance,
-	ID_chkVocabCrossRef,
-	ID_chkLowImportance,
-	ID_chkUseSODs,
-	ID_chkUseSODAs,
+#include <iostream>
+using namespace std;
 
-	ID_scrlDictionaries,
-	ID_btnApply,
+PanelConfig::PanelConfig()
+	: chkReadings(_("Include on-yomi, kun-yomi and nanori (name) readings")),
+	  chkMeanings(_("Include English meanings")),
+	  chkHighImp(_("Include stroke count, Jouyou grade "
+				   "and newspaper frequency rank")),
+	  chkMultiRad(_("Include radical component list")),
+	  chkDict(_("Include dictionary reference codes")),
+	  chkVocabCrossRef(_("Show vocab from your study list "
+						 "which use the kanji")),
+	  chkLowImp(_("Other information (Radical #'s, "
+				  "Korean and Pinyin romanization)")),
+	  chkSodStatic(_("Use KanjiCafe.com stroke order diagrams")),
+	  chkSodAnim(_("Use KanjiCafe.com animated stroke order diagrams")),
+	  btnApply(_("Apply Changes"))
+{
+	std::vector<Gtk::CheckButton*>::iterator it;
 
-	ID_chkDictionaries,
-	ID_chkDictBase
-};
+	/* Create list of dictionary checkbuttons */
+	Gtk::CheckButton* pc;
+	pc = manage(
+		new Gtk::CheckButton(_("\"New Japanese-English Character Dictionary\" "
+							   "by Jack Halpern.")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Modern Reader's Japanese-English "
+							   "Character Dictionary\" by Andrew Nelson")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"The New Nelson Japanese-English "
+							   "Character Dictionary\" by John Haig")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Japanese for Busy People\" by AJLT")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"The Kanji Way to Japanese Language Power\" "
+							   "by Dale Crowley")));
+	vChkDict.push_back(pc);
+	pc = manage(new Gtk::CheckButton(_("\"Kodansha Compact Kanji Guide\"")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"A Guide To Reading and Writing Japanese\" "
+							   "by Ken Hensall et al.")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Kanji in Context\" by Nishiguchi and Kono")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Kanji Learner's Dictionary\" "
+							   "by Jack Halpern")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Essential Kanji\" by P.G. O'Neill")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"2001 Kanji\" by Father Joseph De Roo")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"A Guide To Reading and Writing Japanese\" "
+							   "by Florence Sakade")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Tuttle Kanji Cards\" by Alexander Kask")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Japanese Kanji Flashcards\" "
+							   "by White Rabbit Press")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("SKIP codes used by Halpern dictionaries")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Kanji Dictionary\" by Spahn && Hadamitzky")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Kanji && Kana\" by Spahn && Hadamitzky")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("Four Corner code (various dictionaries)")));
+	vChkDict.push_back(pc);
+	pc = manage(new Gtk::CheckButton(_("\"Morohashi Daikanwajiten\"")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"A Guide to Remembering Japanese Characters\" "
+							   "by Kenneth G. Henshal")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("Gakken Kanji Dictionary "
+							   "(\"A New Dictionary of Kanji Usage\")")));
+	vChkDict.push_back(pc);
+	pc = manage(
+		new Gtk::CheckButton(_("\"Remembering The Kanji\" by James Heisig")));
+	vChkDict.push_back(pc);
+	pc = manage(new Gtk::CheckButton(_("\"Japanese Names\" by P.G. O'Neill")));
 
-BEGIN_EVENT_TABLE(PanelConfig, wxPanel)
-	EVT_BUTTON(ID_btnApply, PanelConfig::OnApply)
-	EVT_CHECKBOX(ID_chkDictionaries, PanelConfig::OnDictionaryToggle)
-END_EVENT_TABLE()
-
-PanelConfig::PanelConfig(wxWindow *owner) : RedrawablePanel(owner) {
-	/* Make main controls */
-	chkReadings = new wxCheckBox(this, ID_chkReadings, _T("Include on-yomi, kun-yomi, and nanori (name) readings"));
-	chkMeanings = new wxCheckBox(this, ID_chkMeanings, _T("Include English meanings"));
-	chkHighImportance = new wxCheckBox(this, ID_chkHighImportance, _T("Include stroke count, Jouyou grade and newspaper frequency rank"));
-	chkDictionaries = new wxCheckBox(this, ID_chkDictionaries, _T("Include dictionary reference codes"));
-	scrlDictionaries = new wxScrolledWindow(this, ID_scrlDictionaries, wxDefaultPosition, wxDefaultSize, wxVSCROLL | wxHSCROLL | wxSUNKEN_BORDER | wxTAB_TRAVERSAL);
-	scrlDictionaries->SetBackgroundColour(*wxWHITE);
-	chkVocabCrossRef = new wxCheckBox(this, ID_chkVocabCrossRef, _T("Show vocab from your study list which use this kanji"));
-	chkLowImportance = new wxCheckBox(this, ID_chkLowImportance, _T("Other information (Radical #'s, Korean and Pinyin romanization)"));
-	chkUseSODs = new wxCheckBox(this, ID_chkUseSODs, _T("Use KanjiCafe.com stroke order diagrams"));
-	chkUseSODAs = new wxCheckBox(this, ID_chkUseSODAs, _T("Use KanjiCafe.com animated stroke order diagrams"));
-	wxButton *btnApply = new wxButton(this, ID_btnApply, _T("Apply Changes"));
-
-	/* Create our list of dictionaries */
-	dictionaryList.Add(_T("\"New Japanese-English Character Dictionary\" by Jack Halpern."));
-	dictionaryList.Add(_T("\"Modern Reader's Japanese-English Character Dictionary\" by Andrew Nelson"));
-	dictionaryList.Add(_T("\"The New Nelson Japanese-English Character Dictionary\" by John Haig"));
-	dictionaryList.Add(_T("\"Japanese for Busy People\" by AJLT"));
-	dictionaryList.Add(_T("\"The Kanji Way to Japanese Language Power\" by Dale Crowley"));
-	dictionaryList.Add(_T("\"Kodansha Compact Kanji Guide\""));
-	dictionaryList.Add(_T("\"A Guide To Reading and Writing Japanese\" by Ken Hensall et al."));
-	dictionaryList.Add(_T("\"Kanji in Context\" by Nishiguchi and Kono"));
-	dictionaryList.Add(_T("\"Kanji Learner's Dictionary\" by Jack Halpern"));
-	dictionaryList.Add(_T("\"Essential Kanji\" by P.G. O'Neill"));
-	dictionaryList.Add(_T("\"2001 Kanji\" by Father Joseph De Roo"));
-	dictionaryList.Add(_T("\"A Guide To Reading and Writing Japanese\" by Florence Sakade"));
-	dictionaryList.Add(_T("\"Tuttle Kanji Cards\" by Alexander Kask"));
-	dictionaryList.Add(_T("\"Japanese Kanji Flashcards\" by White Rabbit Press"));
-	dictionaryList.Add(_T("(Not yet supported) SKIP codes used by Halpern dictionaries"));
-	dictionaryList.Add(_T("\"Kanji Dictionary\" by Spahn && Hadamitzky"));
-	dictionaryList.Add(_T("\"Kanji && Kana\" by Spahn && Hadamitzky"));
-	dictionaryList.Add(_T("Four Corner code (various dictionaries)"));
-	dictionaryList.Add(_T("\"Morohashi Daikanwajiten\" (index number)"));
-	dictionaryList.Add(_T("\"Morohashi Daikanwajiten\" (volume.page number)"));
-	dictionaryList.Add(_T("\"A Guide to Remembering Japanese Characters\" by Kenneth G. Henshal"));
-	dictionaryList.Add(_T("Gakken Kanji Dictionary (\"A New Dictionary of Kanji Usage\")"));
-	dictionaryList.Add(_T("\"Remembering The Kanji\" by James Heisig"));
-	dictionaryList.Add(_T("\"Japanese Names\" by P.G. O'Neill"));
-
-	/* Make controls for dictionary stuff */
-	int dictCount = dictionaryList.Count();
-	if(dictCount>0)	chkarrayDictionaries = new ScrolledCheck*[dictCount];
-	else chkarrayDictionaries = NULL;
-	wxBoxSizer *dictSizer = new wxBoxSizer(wxVERTICAL);
-	int i;
-	for(i=0;i<dictCount;i++) {
-		chkarrayDictionaries[i] = new ScrolledCheck(scrlDictionaries, ID_chkDictBase+i, i, dictionaryList[i]);
-		dictSizer->Add(chkarrayDictionaries[i]);
-	}
-	if(dictCount>0)
-		scrlDictionaries->SetScrollRate(25, chkarrayDictionaries[0]->GetSize().GetHeight());
-	scrlDictionaries->SetSizer(dictSizer);
-
-	/* Connect event handlers for all checkboxes (except the parent dictionary checkbox,
-	   since it already has a special handler configured.) */
-	/* NOTE:
-	   Here's the Connect call used in the Event sample:
-	       Connect(Event_Dynamic, wxID_ANY, wxEVT_COMMAND_MENU_SELECTED,
-           (wxObjectEventFunction)
-           (wxEventFunction)
-           (wxCommandEventFunction)&MyFrame::OnDynamic);
-	   In practice, only the (wxObjectEventFunction) cast appears to be necessary (under GNU gcc). */
-	this->Connect(ID_chkReadings, ID_chkUseSODAs,
-		wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&PanelConfig::OnCheckboxToggle);
-	this->Connect(ID_chkDictBase, ID_chkDictBase+dictCount-1,
-		wxEVT_COMMAND_CHECKBOX_CLICKED, (wxObjectEventFunction)&PanelConfig::OnCheckboxToggle);
-
-	/* Add everything to the main panel */
-	wxBoxSizer *panelSizer = new wxBoxSizer(wxVERTICAL);
-	panelSizer->Add(chkReadings, 0, wxTOP | wxLEFT | wxRIGHT, 10);
-	panelSizer->Add(chkMeanings, 0, wxLEFT | wxRIGHT, 10);
-	panelSizer->Add(chkHighImportance, 0, wxLEFT | wxRIGHT, 10);
-	panelSizer->Add(chkDictionaries, 0, wxTOP | wxLEFT | wxRIGHT, 10);
-	panelSizer->Add(scrlDictionaries, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
-	panelSizer->Add(chkVocabCrossRef, 0, wxLEFT | wxRIGHT, 10);
-	panelSizer->Add(chkLowImportance, 0, wxLEFT | wxRIGHT, 10);
-	panelSizer->Add(chkUseSODs, 0, wxLEFT | wxRIGHT, 10);
-	panelSizer->Add(chkUseSODAs, 0, wxLEFT | wxRIGHT, 10);
-	panelSizer->Add(btnApply, 0, wxALIGN_CENTER | wxALL, 10);
-
-	changeDetected = false;
-	processingRedraw = false;
-	dictionariesEnabled =
-		Preferences::Get()->kanjidicOptions & KDO_DICTIONARIES;
-	UpdateDictionaryControls(dictionariesEnabled);
-	this->SetSizerAndFit(panelSizer);
-}
-
-PanelConfig::~PanelConfig() {
-	if(chkarrayDictionaries) delete[] chkarrayDictionaries;
-}
-
-void PanelConfig::OnApply(wxCommandEvent& event) {
-	Commit();
-}
-
-void PanelConfig::OnCheckboxToggle(wxCommandEvent& event) {
-	if(!processingRedraw) {
-		changeDetected = true;
-	}
-}
-
-void PanelConfig::OnDictionaryToggle(wxCommandEvent& event) {
-	if(!processingRedraw) {
-		bool value = chkDictionaries->GetValue();
-		if(value!=dictionariesEnabled) {
-			dictionariesEnabled = value;
-			UpdateDictionaryControls(dictionariesEnabled);
-			OnCheckboxToggle(event);
-		}
-	}
-}
-
-void PanelConfig::Commit() {
-	changeDetected = false;
-	unsigned long options=0, dictionaries=0;
-	if(chkReadings->GetValue()) options |= KDO_READINGS;
-	if(chkMeanings->GetValue()) options |= KDO_MEANINGS;
-	if(chkHighImportance->GetValue()) options |= KDO_HIGHIMPORTANCE;
-	if(chkDictionaries->GetValue()) options |= KDO_DICTIONARIES;
-	if(chkVocabCrossRef->GetValue()) options |= KDO_VOCABCROSSREF;
-	if(chkLowImportance->GetValue()) options |= KDO_LOWIMPORTANCE;
-	if(chkUseSODs->GetValue()) options |= KDO_SOD_STATIC;
-	if(chkUseSODAs->GetValue()) options |= KDO_SOD_ANIM;
-
-	int dictCount = dictionaryList.Count();
-	for(int i=0; i<dictCount; i++) {
-		if(chkarrayDictionaries[i]->GetValue()) dictionaries |= (1ul << i);
-	}
-	Preferences *prefs = Preferences::Get();
-	prefs->kanjidicOptions = options;
-	prefs->kanjidicDictionaries = dictionaries;
-}
-
-void PanelConfig::Revert() {
-	changeDetected = false;
-	/* We could have a Redraw() call here, but currently Revert is only called when changing away from this panel,
-	   and thus it's a pointless call since Redraw will be done when this panel is selected again. */
-}
-
-void PanelConfig::Redraw() {
-	processingRedraw = true;
-	Preferences *prefs = Preferences::Get();
-	int options = prefs->kanjidicOptions;
-	int dictionaries = prefs->kanjidicDictionaries;
-
-	/* Set appropriate checkboxes */
-	chkReadings->SetValue(options & KDO_READINGS);
-	chkMeanings->SetValue(options & KDO_MEANINGS);
-	chkHighImportance->SetValue(options & KDO_HIGHIMPORTANCE);
-	chkDictionaries->SetValue(options & KDO_DICTIONARIES);
-	chkVocabCrossRef->SetValue(options & KDO_VOCABCROSSREF);
-	chkLowImportance->SetValue(options & KDO_LOWIMPORTANCE);
-	chkUseSODs->SetValue(options & KDO_SOD_STATIC);
-	chkUseSODAs->SetValue(options & KDO_SOD_ANIM);
-
-	/* Enable/disable SOD/SODA checkboxes based on existance of directory */
-	string sodDir = Preferences::Get()->GetSetting("sod_dir");
-	chkUseSODs->Enable(
-		FileExists(
-			string(sodDir)
-			.append(1,DSCHAR)
-			.append("sod-utf8-hex")
-			.append(1,DSCHAR)
-			.append("README-License").c_str()));
-	chkUseSODAs->Enable(
-		FileExists(
-			string(sodDir)
-			.append(1,DSCHAR)
-			.append("soda-utf8-hex")
-			.append(1,DSCHAR)
-			.append("README-License").c_str()));
-
-	int dictCount = dictionaryList.Count();
-	for(int i=0;i<dictCount;i++) {
-		chkarrayDictionaries[i]->SetValue(dictionaries & (1ul << i));
+	/* Connect signals */
+	chkReadings.signal_toggled()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
+	chkMeanings.signal_toggled()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
+	chkHighImp.signal_toggled()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
+	chkMultiRad.signal_toggled()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
+	chkDict.signal_toggled()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnDictionaryToggle));
+	chkVocabCrossRef.signal_toggled()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
+	chkLowImp.signal_toggled()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
+	chkSodStatic.signal_toggled()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
+	chkSodAnim.signal_toggled()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
+	btnApply.signal_clicked()
+		.connect(sigc::mem_fun(*this, &PanelConfig::OnApply));
+	for(it = vChkDict.begin(); it != vChkDict.end(); it++) {
+		(**it).signal_toggled()
+			.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
 	}
 
-	scrlDictionaries->Scroll(0,0);
+	/* Layout and display */
+	set_border_width(5);
 
-	processingRedraw = false;
-	dictionariesEnabled = chkDictionaries->GetValue();
-}
+	Gtk::VBox *pvbMainOpts, *pvbDictsOuter, *pvbDictsInner, *pvbOtherOpts;
+	pvbMainOpts =   manage(new Gtk::VBox);
+	pvbDictsOuter = manage(new Gtk::VBox);
+	pvbDictsInner = manage(new Gtk::VBox);
+	pvbOtherOpts =  manage(new Gtk::VBox);
+	Gtk::HButtonBox *phbbButtons = manage(new Gtk::HButtonBox);
+	Gtk::ScrolledWindow *pswDicts = manage(new Gtk::ScrolledWindow);
+	pswDicts->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-bool PanelConfig::ChangeDetected() {return changeDetected;}
+	pack_start(*pvbMainOpts,   Gtk::PACK_SHRINK);
+	pack_start(*pvbDictsOuter, Gtk::PACK_EXPAND_WIDGET);
+	pack_start(*pvbOtherOpts,  Gtk::PACK_SHRINK);
+	pack_start(*phbbButtons,   Gtk::PACK_SHRINK);
 
-void PanelConfig::UpdateDictionaryControls(bool state) {
-	if(state) {
-		scrlDictionaries->Enable();
-	} else {
-		scrlDictionaries->Disable();
+	pvbMainOpts->pack_start(chkReadings, Gtk::PACK_SHRINK);
+	pvbMainOpts->pack_start(chkMeanings, Gtk::PACK_SHRINK);
+	pvbMainOpts->pack_start(chkHighImp,  Gtk::PACK_SHRINK);
+	pvbMainOpts->pack_start(chkMultiRad, Gtk::PACK_SHRINK);
+
+	pvbDictsOuter->pack_start(chkDict,   Gtk::PACK_SHRINK);
+	pvbDictsOuter->pack_start(*pswDicts, Gtk::PACK_EXPAND_WIDGET);
+
+	pswDicts->add(*pvbDictsInner);
+	for(it = vChkDict.begin(); it != vChkDict.end(); it++) {
+		pvbDictsInner->pack_start(**it, Gtk::PACK_SHRINK);
 	}
+
+	pvbOtherOpts->pack_start(chkVocabCrossRef, Gtk::PACK_SHRINK);
+	pvbOtherOpts->pack_start(chkLowImp, Gtk::PACK_SHRINK);
+	pvbOtherOpts->pack_start(chkSodStatic, Gtk::PACK_SHRINK);
+	pvbOtherOpts->pack_start(chkSodAnim, Gtk::PACK_SHRINK);
+
+	phbbButtons->pack_start(btnApply, Gtk::PACK_SHRINK);
+
+	show_all_children();
 }
+
+void PanelConfig::OnApply() {
+	cout << "OnApply" << endl;
+}
+
+void PanelConfig::OnDictionaryToggle() {
+	cout << "OnDictionaryToggle" << endl;
+}
+
+void PanelConfig::OnCheckboxToggle() {
+	cout << "OnCheckboxToggle" << endl;
+}
+
+void PanelConfig::Update() {}

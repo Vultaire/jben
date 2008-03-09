@@ -39,7 +39,7 @@ public:
 	wstring ToString(wchar_t separator=L'\n');
 	int Size();
 	void Clear();
-	const wstring& operator[](unsigned int index);
+	wstring operator[](unsigned int index);
 	int GetIndexByWord(const wstring& s);
 	vector<wstring>& GetVocabList();
 private:

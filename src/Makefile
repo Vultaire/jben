@@ -16,39 +16,17 @@ ifeq ($(PLATFORM),windows)
 	MAKE = mingw32-make
 	mingwbase = C:/MinGW
 	boostbase = C:/dev/boost_1_34_1
-	wxbase = C:/dev/wxMSW-2.8.7
-	wxbuildflags = -DWXUSINGDLL -DwxUSE_UNICODE
 	stlportbase = C:/dev/STLport-5.1.5
 	iconvbase = C:/dev/libiconv
 	mkdircmd  = C:/progra~1/gnuwin32/bin/mkdir -p
-#	NOTE: wxWidgets is assumed to be built with wxUSINGDLL and wxUSE_UNICODE.
-#	Also, I'm currently using a release build of wxWidgets regardless of
-#	whether a debug or release build is chosen.  I may change this later.
-
-#	The following variables probably should NOT be changed.
-	wxplatformflags = -D__GNUWIN32__ -D__WXMSW__
 #	STLPort specifies -pthreads - does -mthreads work fine for this???
-	wincxxflags = -pipe -mthreads
+	wincxxflags = -mthreads
 	winlinkflags = -mwindows
 
-	wxinclude = $(wxbase)/include
-	wxcontribinc = $(wxbase)/contrib/include
-	wxlibinc = $(wxbase)/lib/gcc_dll/mswu
-
-	wxliblink = $(wxbase)/lib/gcc_dll
 	SharedCXXFLAGS = $(wincxxflags)
-
-ifeq ($(BUILD),release)
-	winextraflags = -s
-else
-	winextraflags =
-endif
-
-	SharedCPPFLAGS = $(winextraflags) -I$(stlportbase)/stlport $(wxbuildflags) \
-		$(wxplatformflags) -I$(wxinclude) -I$(wxcontribinc) -I$(wxlibinc) \
+	SharedCPPFLAGS = $(winextraflags) -I$(stlportbase)/stlport \
 		-I$(boostbase) -I$(mingwbase)/include -I$(iconvbase)/include
-	libs = -L$(stlportbase)/lib -L$(wxliblink) -L$(mingwbase)/lib \
-		-L$(iconvbase)/lib -lwxmsw28u_html -lwxmsw28u_core -lwxbase28u \
+	libs = -L$(stlportbase)/lib -L$(mingwbase)/lib -L$(iconvbase)/lib \
 		$(winlinkflags) -liconv -lstlport.5.1.dll
 endif
 
@@ -81,17 +59,17 @@ build_bindir = ../bin/$(PLATFORM)/$(BUILD)
 # Get flags/libs for GTK builds
 ifeq ($(PLATFORM),gtk20)
 	MAKE = make
-	SharedCXXFLAGS = `wx-config --cxxflags` `pkg-config --cflags gtk+-2.0 libxml-2.0`
-	SharedCPPFLAGS = `wx-config --cppflags` -DJB_DATADIR=\"$(datadir)/jben\" \
+	SharedCXXFLAGS = `pkg-config --cflags gtk+-2.0 gtkmm-2.4 libxml-2.0`
+	SharedCPPFLAGS = -DJB_DATADIR=\"$(datadir)/jben\" \
 		-DDOCDIR=\"$(docdir)/doc\" -DLICENSEDIR=\"$(docdir)/license\"
-	libs = `wx-config --libs` `pkg-config --libs gtk+-2.0 libxml-2.0`
+	libs = `pkg-config --libs gtk+-2.0 gtkmm-2.4 libxml-2.0`
 	mkdircmd = mkdir -p
 endif
 
 # C++ options
 CXX = g++
 ifeq ($(BUILD),release)
-	CXXFLAGS = -Wall -O2 $(SharedCXXFLAGS)
+	CXXFLAGS = -Wall -s -O2 $(SharedCXXFLAGS)
 	CPPFLAGS = $(SharedCPPFLAGS)
 endif
 ifeq ($(BUILD),debug)
@@ -107,11 +85,10 @@ endif
 sources = $(shell ls -t *.cpp) # Compile most recently edited files first.
 
 # Build object configuration
+objects = $(sources:%.cpp=$(build_objdir)/%.o)
 ifeq ($(PLATFORM),windows)
-	objects = $(sources:%.cpp=$(build_objdir)/%.o) $(build_objdir)/jben.res
 	target = jben.exe
 else
-	objects = $(sources:%.cpp=$(build_objdir)/%.o)
 	target = jben
 endif
 
@@ -144,8 +121,8 @@ endif
 
 $(build_bindir)/$(target) : $(objects)
 	$(mkdircmd) $(build_bindir)
-	$(CXX) -o $(build_bindir)/$(target) $(objects) $(libs) $(CXXFLAGS)
-
+#	$(CXX) -o $(build_bindir)/$(target) $(objects) $(libs) $(CXXFLAGS)
+	$(CXX) $(CXXFLAGS) -o $(build_bindir)/$(target) $(objects) $(libs)
 
 $(build_objdir)/jben.res:
 	$(mkdircmd) $(build_objdir)
@@ -156,19 +133,19 @@ kpengine:
 
 clean:
 	cd kpengine && make clean && cd ..
-	rm -rfv bin obj jben.res
+	rm -rfv ../bin ../obj ../jben.res
 
 cleandep:
-	rm -rfv dep
+	rm -rfv ../dep
 
 cleanall : clean cleandep
 
 $(build_objdir)/%.o : %.cpp
 	$(mkdircmd) $(build_objdir)
-# Working Linux build command
+# Old command
 #	$(CXX) $(CPPFLAGS) -c -o $@ $(@F:%.o=%.cpp) $(CXXFLAGS)
-# Testing Windows build command
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $(@F:%.o=%.cpp)
+# Testing command based on GNU Make manual
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $(@F:%.o=%.cpp)
 
 # Object dependency tracking
 include $(sources:%.cpp=$(build_depdir)/%.d)

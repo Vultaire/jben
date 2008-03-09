@@ -1,86 +1,36 @@
-/*
-Project: J-Ben
-Author:  Paul Goins
-Website: http://www.vultaire.net/software/jben/
-License: GNU General Public License (GPL) version 2
-         (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
-
-File: panel_kanjidrill.h
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
-
 #ifndef panel_kanjidrill_h
 #define panel_kanjidrill_h
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
+#include "widget_updatepanel.h"
+#include <gtkmm/radiobutton.h>
+#include <gtkmm/button.h>
+#include <gtkmm/spinbutton.h>
+#include "widget_coveredtextview.h"
 
-#include "redrawablepanel.h"
-#include "wx/spinctrl.h"
-#include "coveredtextbox.h"
-#include <vector>
-using namespace std;
-
-class PanelKanjiDrill: public RedrawablePanel {
+class PanelKanjiDrill : public UpdatePanel {
 public:
-	PanelKanjiDrill(wxWindow *owner);
-	void Stop();
-	void OnStart(wxCommandEvent& ev);
-	void OnStop(wxCommandEvent& ev);
-	void Redraw();
-	bool TestInProgress();
-	void OnKanjiCountChange(wxSpinEvent& ev);
-	void OnRdoRandom(wxCommandEvent& ev);
-	void OnRdoStartIndex(wxCommandEvent& ev);
-	void OnCorrect(wxCommandEvent& ev);
-	void OnWrong(wxCommandEvent& ev);
+	PanelKanjiDrill();
+	void Update();
 private:
-	void UpdateKanjiCountSpinner();
-	void UpdateStartIndexSpinner();
-	void ShowNextKanji();
+	void OnKanjiCountChange();
+	void OnRdoRandom();
+	void OnRdoStartIndex();
+	void OnStart();
+	void OnCorrect();
+	void OnWrong();
+	void OnStop();
 
-	/* General vars */
-	bool testing;
-	bool extraPractice; /* After all kanji are tested once through, this var gets set */
-	bool lastWasCorrect;
-	int testMode;
-	unsigned int correct, totalTested, totalToTest;  /* "Final score: 56/76, 4 kanji not tested" */
-	vector<wxChar> testKanji, missedKanji;
-	wxChar currentKanji;
-	int currentKanjiIndex;
-	/* NOTE: Maybe add "list<int> correctKanji", and add option to save to a "mastered" kanji list? */
-	/* Pre-test controls */
-	wxPanel *pnlConfig;
-	wxSpinCtrl *spnKanjiCount;
-	wxRadioButton *rdoRandom, *rdoStartIndex;
-	wxSpinCtrl *spnStartIndex;
-	wxRadioButton *rdoKanjiReading, *rdoKanjiWriting;
-	wxButton *btnStart;
-	/* Test mode controls */
-	wxPanel *pnlTest;
-	CoveredTextBox *txtKanji, *txtOnyomi, *txtKunyomi, *txtEnglish;
-	wxButton *btnCorrect, *btnWrong, *btnStop;
-	wxStaticText *lblTestProgress;
+	/* Pre-test GUI */
+	Gtk::VBox vbPreTest;
+	Gtk::RadioButton rdoRandom, rdoIndex, rdoReading, rdoWriting;
+	Gtk::SpinButton spnCount, spnIndex;
+	Gtk::Button btnStart;
 
-	DECLARE_EVENT_TABLE()
+	/* Test GUI */
+	Gtk::VBox vbTest;
+	CoveredTextView ctvKanji, ctvOnyomi, ctvKunyomi, ctvMeaning;
+	Gtk::Button btnCorrect, btnWrong, btnStop;
+	Gtk::Label lblScore, lblProgress;
 };
 
 #endif

@@ -1,99 +1,49 @@
-/*
-Project: J-Ben
-Author:  Paul Goins
-Website: http://www.vultaire.net/software/jben/
-License: GNU General Public License (GPL) version 2
-         (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
-
-File: frame_maingui.h
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
-
 #ifndef frame_maingui_h
 #define frame_maingui_h
 
-/* Stock wxWidgets includes */
-#include "wx/wxprec.h"
-#ifdef __BORLANDC__
-	#pragma hdrstop
-#endif
-#ifndef WX_PRECOMP
-	#include "wx/wx.h"
-#endif
+#include <gtkmm/window.h>
+#include <gtkmm/uimanager.h>
+#include <gtkmm/actiongroup.h>
+#include <gtkmm/menu.h>
+#include <gtkmm/notebook.h>
+#include <gtkmm/box.h>
 
-#include "dialog_addkanjibygrade.h"
-#include "dialog_addkanjibyfreq.h"
-#include "panel_kanjidict.h"
 #include "panel_worddict.h"
+#include "panel_vocablisteditor.h"
+#include "panel_kanjidict.h"
 #include "panel_kanjidrill.h"
 #include "panel_kanjilisteditor.h"
-#include "panel_vocablisteditor.h"
 #include "panel_config.h"
-#include "wx/notebook.h"
+#include "dialog_addkanjibygrade.h"
+#include "dialog_addkanjibyfreq.h"
 
-/* This is defined simply to help external code enable/disable GUI menus
-   when necessary. */
-enum {
-	GUI_menuFile=0,
-	GUI_menuKanji,
-	GUI_menuHelp
-};
-
-class FrameMainGUI: public wxFrame {
+class FrameMainGUI : public Gtk::Window {
 public:
-	FrameMainGUI();
-
-	void OnClose(wxCloseEvent& event);
-
-	void OnFileQuit(wxCommandEvent& event);
-
-	void OnKanjiAddFromFile(wxCommandEvent& event);
-	void OnKanjiAddByGrade(wxCommandEvent& event);
-	void OnKanjiAddByFreq(wxCommandEvent& event);
-	void OnKanjiSaveToFile(wxCommandEvent& event);
-	void OnKanjiClearList(wxCommandEvent& event);
-	void OnKanjiSortByGrade(wxCommandEvent& event);
-	void OnKanjiSortByFreq(wxCommandEvent& event);
-#ifdef DEBUG
-	void OnKanjiDumpList(wxCommandEvent& event);
-#endif
-	void OnKanjiSearchKanjiPad(wxCommandEvent& event);
-	
-	void OnHelpAbout(wxCommandEvent& event);
-	void OnHelpLicense(wxCommandEvent& event);
-
-	void OnTabChanging(wxNotebookEvent& event);
-	void OnMajorTabChanged(wxNotebookEvent& event);
-	void OnMinorTabChanged(wxNotebookEvent& event);
-
-	void Redraw();
+	static FrameMainGUI& Get();
+	static void Destroy();
+	void Update();
+	void LockTabs();
+	void UnlockTabs();
 private:
-	bool TabChangeHandler(wxNotebookPage *page);
+	void OnSwitchPage(GtkNotebookPage* page, guint page_num);
+	void OnMenuFileQuit();
+	void OnMenuEditVocab();
+	void OnMenuEditKanji();
+	void OnMenuEditPrefs();
+	void OnMenuHelpAbout();
+	void OnMenuHelpLicense();
 
-	wxMenu *kanjiMenu;
-	wxNotebook *tabsMain, *tabsKanji, *tabsWords, *tabsConfig;
-	wxNotebookPage *tabMajor, *tabMinor;
-	PanelKanjiDict *panelKanjiDict;
-	PanelWordDict *panelWordDict;
-	PanelKanjiDrill *panelKanjiDrill;
-	PanelKanjiListEditor *panelKanjiListEditor;
-	PanelVocabListEditor *panelVocabListEditor;
-	PanelConfig *panelConfig;
-	DialogAddKanjiByGrade *dialogAddKanjiByGrade;
-	DialogAddKanjiByFreq *dialogAddKanjiByFreq;
-	DECLARE_EVENT_TABLE()
+	Glib::RefPtr<Gtk::UIManager> refUIManager;
+	Glib::RefPtr<Gtk::ActionGroup> refActionGroup;
+	Gtk::Menu kanjiMenu;
+	Gtk::VBox layoutBox;
+	Gtk::Notebook tabs;
+	PanelWordDict panelWordDict;
+	PanelKanjiDict panelKanjiDict;
+
+	FrameMainGUI();
+	~FrameMainGUI();
+	static FrameMainGUI* singleton;
 };
 
 #endif

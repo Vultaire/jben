@@ -1,152 +1,175 @@
-/*
-Project: J-Ben
-Author:  Paul Goins
-Website: http://www.vultaire.net/software/jben/
-License: GNU General Public License (GPL) version 2
-         (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
-
-File: panel_worddict.cpp
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
-
 #include "panel_worddict.h"
-#include "jutils.h"
-#include "wdict.h"
+#include <gtkmm/label.h>
+#include <gtkmm/buttonbox.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/stock.h>
+#include <glibmm/i18n.h>
+#include <boost/format.hpp>
 #include "listmanager.h"
+#include "wdict.h"
 #include "encoding_convert.h"
-#include "errorlog.h"
 
-enum {
-	ID_textSearch=1,
-	ID_btnPrev,
-	ID_btnNext,
-	ID_btnRand,
-	ID_textIndex
-};
+#include <iostream>
+#include <cstdlib>
+using namespace std;
 
-BEGIN_EVENT_TABLE(PanelWordDict, wxPanel)
-	EVT_TEXT_ENTER(ID_textSearch, PanelWordDict::OnSearch)
-	EVT_BUTTON(ID_btnPrev, PanelWordDict::OnPrevious)
-	EVT_BUTTON(ID_btnNext, PanelWordDict::OnNext)
-	EVT_BUTTON(ID_btnRand, PanelWordDict::OnRandom)
-	EVT_TEXT_ENTER(ID_textIndex, PanelWordDict::OnIndexUpdate)
-END_EVENT_TABLE()
+PanelWordDict::PanelWordDict()
+	: btnSearch(_("Search")),
+	  btnPrev(Gtk::Stock::GO_BACK),
+	  btnNext(Gtk::Stock::GO_FORWARD),
+	  btnRand(_("Random")),
+	  lblMaxIndex(_("of 0 vocab")) {
+	btnPrev.signal_clicked()
+		.connect(sigc::mem_fun(*this, &PanelWordDict::OnPrevious));
+	btnNext.signal_clicked()
+		.connect(sigc::mem_fun(*this, &PanelWordDict::OnNext));
+	btnRand.signal_clicked()
+		.connect(sigc::mem_fun(*this, &PanelWordDict::OnRandom));
+	entQuery.signal_activate()
+		.connect(sigc::mem_fun(*this, &PanelWordDict::OnQueryEnter));
+	btnSearch.signal_clicked()
+		.connect(sigc::mem_fun(*this, &PanelWordDict::OnSearch));
+	entIndex.signal_activate()
+		.connect(sigc::mem_fun(*this, &PanelWordDict::OnIndexUpdate));
+	tvResults.set_editable(false);
+	tvResults.set_wrap_mode(Gtk::WRAP_WORD_CHAR);
+	entIndex.set_width_chars(5);
+	entIndex.set_max_length(5);
+	set_border_width(5);
 
-PanelWordDict::PanelWordDict(wxWindow *owner) : RedrawablePanel(owner) {
-	/* searchBox controls */
-	wxStaticText *labelSearch = new wxStaticText(this,-1,_T("Enter word or expression:"));
-	textSearch = new wxTextCtrl(this, ID_textSearch, _T(""),
-		wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	/* Our output window */
-	htmlOutput = new wxHtmlWindow(this, -1,
-		wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER);
-	/* navBox controls */
-	wxButton *btnPrev = new wxButton(this, ID_btnPrev, _T("<< Previous"));
-	wxButton *btnNext = new wxButton(this, ID_btnNext, _T("Next >>"));
-	wxButton *btnRand = new wxButton(this, ID_btnRand, _T("Random"));
-	/*btnRand->Enable(false);*/
-	textIndex = new wxTextCtrl(this, ID_textIndex, _T("0"),
-		wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	textIndex->SetMaxLength(4);
-	lblIndex = new wxStaticText(this, wxID_ANY, _T(" of 0 vocab"));
+	Gtk::HBox* phbEntry = manage(new Gtk::HBox(false, 5));
+	Gtk::Label* plblSearch
+		= manage(new Gtk::Label(_("Enter word or expression:")));
+	Gtk::ScrolledWindow* pswResults
+		= manage(new Gtk::ScrolledWindow);
+	Gtk::HBox* phbBottomRow = manage(new Gtk::HBox(false, 5));
+	Gtk::HButtonBox* phbbButtons
+		= manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_START, 5));
 
-	/* searchBox: Add both components horizonally, vertically centered,
-	   and space of 10px between them.  No outer spacing; this'll be
-	   handled in the parent sizer. */
-	wxBoxSizer *searchBox = new wxBoxSizer(wxHORIZONTAL);
-	searchBox->Add(labelSearch, 0, wxALIGN_CENTER_VERTICAL);
-	searchBox->Add(textSearch, 1, wxEXPAND | wxALIGN_CENTER_VERTICAL
-		| wxLEFT, 10);
+	pack_start(*phbEntry, Gtk::PACK_SHRINK);
+	pack_start(*pswResults);
+	pack_start(*phbBottomRow, Gtk::PACK_SHRINK);
 
-	/* navBox:  */
-	wxBoxSizer *navBox = new wxBoxSizer(wxHORIZONTAL);
-	navBox->Add(btnPrev, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
-	navBox->Add(btnNext, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
-	navBox->Add(btnRand, 0, wxALIGN_CENTER_VERTICAL);
-	navBox->AddStretchSpacer(1);
-	navBox->Add(textIndex, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
-	navBox->Add(lblIndex, 0, wxALIGN_CENTER_VERTICAL);
+	phbEntry->pack_start(*plblSearch, Gtk::PACK_SHRINK);
+	phbEntry->pack_start(entQuery);
+	phbEntry->pack_end(btnSearch, Gtk::PACK_SHRINK);
 
-	/* windowBox: 10px around/between all controls. */
-	wxBoxSizer *windowBox = new wxBoxSizer(wxVERTICAL);
-	windowBox->Add(searchBox, 0, wxEXPAND
-		| wxLEFT | wxTOP | wxRIGHT, 10);
-	windowBox->Add(htmlOutput, 1, wxEXPAND
-		| wxALL, 10);
-	windowBox->Add(navBox, 0, wxEXPAND
-		| wxLEFT | wxBOTTOM | wxRIGHT, 10);
+	pswResults->add(tvResults);
+	pswResults->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
+	pswResults->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-	/* Other initialization */
-	currentIndex = -1; /* Currently selected vocab (none) is not in the list, so set to -1 */
-	UpdateHtmlOutput(); /* Do an initial update of the output window */
+	phbBottomRow->pack_start(*phbbButtons, Gtk::PACK_SHRINK);
+	phbBottomRow->pack_end(lblMaxIndex, Gtk::PACK_SHRINK);
+	phbBottomRow->pack_end(entIndex, Gtk::PACK_SHRINK);
 
-	/* Finally: Apply window sizer and fit window */
-	this->SetSizerAndFit(windowBox);
+	phbbButtons->pack_start(btnPrev);
+	phbbButtons->pack_start(btnNext);
+	phbbButtons->pack_start(btnRand);
 
+	show_all_children();
 }
 
-void PanelWordDict::OnSearch(wxCommandEvent& event) {
-	SetSearchString(textSearch->GetValue());
-	this->Redraw();
+void PanelWordDict::OnQueryEnter() {
+	cout << "OnQueryEnter" << endl;
+	OnSearch();
 }
 
-void PanelWordDict::SetSearchString(const wxString& searchString) {
+void PanelWordDict::OnSearch() {
+	cout << "OnSearch" << endl;
+	SetSearchString(entQuery.get_text());
+	Update();
+}
+
+void PanelWordDict::OnPrevious() {
+	cout << "OnPrevious" << endl;
+	ListManager* lm = ListManager::Get();
+	currentIndex--;
+	if(currentIndex<0) currentIndex = lm->VList()->Size()-1;
+	Update();
+}
+
+void PanelWordDict::OnNext() {
+	cout << "OnNext" << endl;
+	ListManager* lm = ListManager::Get();
+	int listSize = lm->VList()->Size();
+	currentIndex++;
+	if(currentIndex>=listSize) currentIndex=0;
+	if(listSize==0) currentIndex=-1;
+	Update();
+}
+
+void PanelWordDict::OnRandom() {
+	cout << "OnRandom" << endl;
+	ListManager* lm = ListManager::Get();
+	int listSize = lm->VList()->Size();
+	if(listSize>0) {
+		currentIndex = rand() % listSize;
+		Update();
+	}
+}
+
+void PanelWordDict::OnIndexUpdate() {
+	cout << "OnIndexUpdate" << endl;
+	ListManager* lm = ListManager::Get();
+	string s = entIndex.get_text();
+	int i = atoi(s.c_str());
+	if((i>0) && (i <= lm->VList()->Size())) {
+		currentIndex = (int)(i-1);
+		Update();
+	} else entIndex.set_text((boost::format("%d") % (currentIndex+1)).str());
+}
+
+void PanelWordDict::SetSearchString(const Glib::ustring& searchString) {
+	cout << "SetSearchString" << endl;
 	ListManager* lm = ListManager::Get();
 	currentSearchString = searchString;
-	currentIndex = lm->VList()->GetIndexByWord(searchString.c_str());
+	currentIndex =
+		lm->VList()->GetIndexByWord(utfconv_mw(searchString).c_str());
 }
 
-void PanelWordDict::Redraw() {
+void PanelWordDict::Update() {
 	/* If currentIndex has been changed, update any necessary data. */
 	ListManager* lm = ListManager::Get();
 	if(currentIndex!=-1) {
-		wxString newVocab = (*lm->VList())[currentIndex];
-		if(newVocab==_T(""))    /* The returned may be 0 if the currentIndex no longer refers to a valid character. */
-			currentIndex = -1;    /* In this case, we'll reset our index to -1. */
+		wstring ws = (*lm->VList())[currentIndex];
+		Glib::ustring newVocab;
+		if(ws.length()>0) newVocab = utfconv_wm(ws);
+		if(newVocab=="")    /* The returned may be 0 if the currentIndex
+							   no longer refers to a valid character. */
+			currentIndex = -1; /* In this case, we'll reset our index to -1. */
 		else if(currentSearchString!=newVocab)
 			SetSearchString(newVocab);
 	}
 
 	/* Update most controls */
-	textSearch->ChangeValue(currentSearchString);
+	entQuery.set_text(currentSearchString);
 	/* currentIndex is 0-based, so don't forget to adjust it. */
-	textIndex->ChangeValue(wxString::Format(_T("%d"), currentIndex+1));
-	lblIndex->SetLabel(wxString::Format(_T(" of %d vocab"), lm->VList()->Size()));
-	/* We need to tell our sizer to refresh to accomodate the resizing of the label. */
-	this->GetSizer()->Layout();
+	entIndex.set_text((boost::format("%d") % (currentIndex+1)).str());
+	lblMaxIndex.set_text(
+		(boost::format(_(" of %d vocab")) % lm->VList()->Size()).str());
 
 	/* Update our output window */
-	UpdateHtmlOutput();  /* Might want to make this conditionally called in the future for performance. */
+	UpdateOutput();  /* Might want to make this conditionally called in
+						the future for performance. */
 }
 
-void PanelWordDict::UpdateHtmlOutput() {
+void PanelWordDict::UpdateOutput() {
+	cout << "UpdateOutput" << endl;
 	list<int> resultList;
 	const WDict *wd = WDict::Get();
 
-	wxString html = _T("<html><body><font face=\"Serif\">");
+	Glib::ustring html = "<html><body><font face=\"Serif\">";
 	if(currentSearchString.length()==0) {
-		html.append(_T("No search has been entered."));
+		html.append(_("No search has been entered."));
 	} else {
 		/* Get search results string */
-		if(wd->Search(currentSearchString.c_str(), resultList)) {
+		if(wd->Search(utfconv_mw(currentSearchString).c_str(), resultList)) {
 			/* Create merged wx-compatible results string */
-			wxString resultString, temp;
+			std::wstring resultString, temp;
 			for(list<int>::iterator li = resultList.begin();
 			  li!=resultList.end();
 			  li++) {
-				if(resultString.length()!=0) resultString.append(_T('\n'));
+				if(resultString.length()!=0) resultString.append(1,L'\n');
 				temp = utfconv_mw(wd->GetEdictString(*li));
 				resultString.append(temp);
 			}
@@ -154,49 +177,12 @@ void PanelWordDict::UpdateHtmlOutput() {
 			For now: HTML
 			Later: wxWidgets Rich Text */
 			resultString = wd->ResultToHTML(resultString.c_str());
-			html.append(resultString);
+			html.append(utfconv_wm(resultString));
 		} else {
-			html.append(_T("No results were found."));
+			html.append(_("No results were found."));
 		}
 	}
-	html.append(_T("</font></body></html>"));
+	html.append("</font></body></html>");
 
-	htmlOutput->SetPage(html);
-}
-
-void PanelWordDict::OnPrevious(wxCommandEvent& event) {
-	ListManager* lm = ListManager::Get();
-	currentIndex--;
-	if(currentIndex<0) currentIndex = lm->VList()->Size()-1;
-
-	this->Redraw();
-}
-
-void PanelWordDict::OnNext(wxCommandEvent& event) {
-	ListManager* lm = ListManager::Get();
-	int listSize = lm->VList()->Size();
-	currentIndex++;
-	if(currentIndex>=listSize) currentIndex=0;
-	if(listSize==0) currentIndex=-1;
-	this->Redraw();
-}
-
-/* Very quick and dirty pseudorandom jump */
-void PanelWordDict::OnRandom(wxCommandEvent& event) {
-	ListManager* lm = ListManager::Get();
-	int listSize = lm->VList()->Size();
-	if(listSize>0) {
-		currentIndex = rand() % listSize;
-		this->Redraw();
-	}
-}
-
-void PanelWordDict::OnIndexUpdate(wxCommandEvent& event) {
-	ListManager* lm = ListManager::Get();
-	long l;
-	wxString str = textIndex->GetValue();
-	if(str.ToLong(&l) && (l>0) && (l <= lm->VList()->Size())) {
-		currentIndex = (int)(l-1);
-		this->Redraw();
-	} else textIndex->ChangeValue(wxString::Format(_T("%d"), currentIndex+1));
+	tvResults.get_buffer()->set_text(html);
 }
