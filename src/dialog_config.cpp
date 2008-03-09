@@ -1,13 +1,15 @@
-#include "panel_config.h"
+#include "dialog_config.h"
 #include <glibmm/i18n.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/buttonbox.h>
+#include <gtkmm/stock.h>
 
 #include <iostream>
 using namespace std;
 
-PanelConfig::PanelConfig()
-	: chkReadings(_("Include on-yomi, kun-yomi and nanori (name) readings")),
+DialogConfig::DialogConfig(Gtk::Window& parent)
+	: Dialog(_("Preferences Editor"), parent, true),
+	  chkReadings(_("Include on-yomi, kun-yomi and nanori (name) readings")),
 	  chkMeanings(_("Include English meanings")),
 	  chkHighImp(_("Include stroke count, Jouyou grade "
 				   "and newspaper frequency rank")),
@@ -19,7 +21,8 @@ PanelConfig::PanelConfig()
 				  "Korean and Pinyin romanization)")),
 	  chkSodStatic(_("Use KanjiCafe.com stroke order diagrams")),
 	  chkSodAnim(_("Use KanjiCafe.com animated stroke order diagrams")),
-	  btnApply(_("Apply Changes"))
+	  btnCancel(Gtk::Stock::CANCEL),
+	  btnOK(Gtk::Stock::OK)
 {
 	std::vector<Gtk::CheckButton*>::iterator it;
 
@@ -102,34 +105,14 @@ PanelConfig::PanelConfig()
 	pc = manage(new Gtk::CheckButton(_("\"Japanese Names\" by P.G. O'Neill")));
 
 	/* Connect signals */
-	chkReadings.signal_toggled()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
-	chkMeanings.signal_toggled()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
-	chkHighImp.signal_toggled()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
-	chkMultiRad.signal_toggled()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
 	chkDict.signal_toggled()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnDictionaryToggle));
-	chkVocabCrossRef.signal_toggled()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
-	chkLowImp.signal_toggled()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
-	chkSodStatic.signal_toggled()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
-	chkSodAnim.signal_toggled()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
-	btnApply.signal_clicked()
-		.connect(sigc::mem_fun(*this, &PanelConfig::OnApply));
-	for(it = vChkDict.begin(); it != vChkDict.end(); it++) {
-		(**it).signal_toggled()
-			.connect(sigc::mem_fun(*this, &PanelConfig::OnCheckboxToggle));
-	}
+		.connect(sigc::mem_fun(*this, &DialogConfig::OnDictionaryToggle));
+	btnCancel.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogConfig::OnCancel));
+	btnOK.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogConfig::OnOK));
 
 	/* Layout and display */
-	set_border_width(5);
-
 	Gtk::VBox *pvbMainOpts, *pvbDictsOuter, *pvbDictsInner, *pvbOtherOpts;
 	pvbMainOpts =   manage(new Gtk::VBox);
 	pvbDictsOuter = manage(new Gtk::VBox);
@@ -139,10 +122,12 @@ PanelConfig::PanelConfig()
 	Gtk::ScrolledWindow *pswDicts = manage(new Gtk::ScrolledWindow);
 	pswDicts->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-	pack_start(*pvbMainOpts,   Gtk::PACK_SHRINK);
-	pack_start(*pvbDictsOuter, Gtk::PACK_EXPAND_WIDGET);
-	pack_start(*pvbOtherOpts,  Gtk::PACK_SHRINK);
-	pack_start(*phbbButtons,   Gtk::PACK_SHRINK);
+	Gtk::VBox* pvb = get_vbox();
+	pvb->set_spacing(5);
+	pvb->pack_start(*pvbMainOpts,   Gtk::PACK_SHRINK);
+	pvb->pack_start(*pvbDictsOuter, Gtk::PACK_EXPAND_WIDGET);
+	pvb->pack_start(*pvbOtherOpts,  Gtk::PACK_SHRINK);
+	pvb->pack_start(*phbbButtons,   Gtk::PACK_SHRINK);
 
 	pvbMainOpts->pack_start(chkReadings, Gtk::PACK_SHRINK);
 	pvbMainOpts->pack_start(chkMeanings, Gtk::PACK_SHRINK);
@@ -162,21 +147,25 @@ PanelConfig::PanelConfig()
 	pvbOtherOpts->pack_start(chkSodStatic, Gtk::PACK_SHRINK);
 	pvbOtherOpts->pack_start(chkSodAnim, Gtk::PACK_SHRINK);
 
-	phbbButtons->pack_start(btnApply, Gtk::PACK_SHRINK);
+	Gtk::HButtonBox* phbb = get_action_area();
+	phbb->pack_start(btnCancel);
+	phbb->pack_start(btnOK);
 
 	show_all_children();
 }
 
-void PanelConfig::OnApply() {
-	cout << "OnApply" << endl;
-}
 
-void PanelConfig::OnDictionaryToggle() {
+void DialogConfig::OnDictionaryToggle() {
 	cout << "OnDictionaryToggle" << endl;
 }
 
-void PanelConfig::OnCheckboxToggle() {
-	cout << "OnCheckboxToggle" << endl;
+void DialogConfig::OnCancel() {
+	cout << "Cancel" << endl;
+	response(Gtk::RESPONSE_CANCEL);
 }
 
-void PanelConfig::Update() {}
+void DialogConfig::OnOK() {
+	cout << "OK" << endl;
+	/* DO STUFF */
+	response(Gtk::RESPONSE_OK);
+}

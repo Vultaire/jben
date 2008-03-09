@@ -1,5 +1,5 @@
-#ifndef widget_coveredtextview
-#define widget_coveredtextview
+#ifndef widget_coveredtextview_h
+#define widget_coveredtextview_h
 
 #include <gtkmm/frame.h>
 #include <gtkmm/textview.h>

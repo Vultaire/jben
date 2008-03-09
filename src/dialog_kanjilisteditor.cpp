@@ -1,4 +1,4 @@
-#include "panel_kanjilisteditor.h"
+#include "dialog_kanjilisteditor.h"
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/buttonbox.h>
 #include <gtkmm/messagedialog.h>
@@ -11,50 +11,55 @@
 #include <iostream>
 using namespace std;
 
-PanelKanjiListEditor::PanelKanjiListEditor()
-	: btnApply(Gtk::Stock::APPLY),
+DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
+	: Dialog(_("Kanji List Editor"), parent, true),
 	  btnCancel(Gtk::Stock::CANCEL),
+	  btnApply(Gtk::Stock::APPLY),
+	  btnOK(Gtk::Stock::OK),
 	  bChanged(false) {
-	btnApply.signal_clicked()
-		.connect(sigc::mem_fun(*this, &PanelKanjiListEditor::OnApply));
-	btnCancel.signal_clicked()
-		.connect(sigc::mem_fun(*this, &PanelKanjiListEditor::OnCancel));
-	tvList.get_buffer()->signal_changed()
-		.connect(sigc::mem_fun(*this, &PanelKanjiListEditor::OnTextChanged));
 	tvList.set_accepts_tab(false);
+	tvList.get_buffer()->signal_changed()
+		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnTextChanged));
+	btnCancel.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnCancel));
+	btnApply.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnApply));
+	btnOK.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnOK));
+	
+	Gtk::ScrolledWindow *pswTvList = manage(new Gtk::ScrolledWindow);
+	pswTvList->add(tvList);
+	pswTvList->set_shadow_type(Gtk::SHADOW_IN);
+	pswTvList->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-	Gtk::ScrolledWindow *pswTxtList = manage(new Gtk::ScrolledWindow);
-	Gtk::HButtonBox *phbbButtons
-		= manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_SPREAD));
+	Gtk::VBox* pvb = get_vbox();
+	pvb->set_spacing(5);
+	pvb->pack_start(*pswTvList);
 
-	pswTxtList->add(tvList);
-	pswTxtList->set_shadow_type(Gtk::SHADOW_IN);
-	pswTxtList->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	Gtk::HButtonBox* phbb = get_action_area();
+	phbb->pack_start(btnCancel);
+	phbb->pack_start(btnApply);
+	phbb->pack_start(btnOK);
 
-	phbbButtons->pack_start(btnApply, Gtk::PACK_EXPAND_PADDING);
-	phbbButtons->pack_start(btnCancel, Gtk::PACK_EXPAND_PADDING);
-
-	set_border_width(5);
-	pack_start(*pswTxtList, Gtk::PACK_EXPAND_WIDGET);
-	pack_start(*phbbButtons, Gtk::PACK_SHRINK);	
+	show_all_children();
 }
 
-void PanelKanjiListEditor::OnCancel() {
+void DialogKanjiListEditor::OnTextChanged() {
+	bChanged = true;
+}
+
+void DialogKanjiListEditor::OnCancel() {
 	cout << "Cancel" << endl;
-	bChanged = false;
-	//Redraw();
+	response(Gtk::RESPONSE_CANCEL);
 }
 
-void PanelKanjiListEditor::OnApply() {
+void DialogKanjiListEditor::OnApply() {
 	cout << "Apply" << endl;
 	bChanged = false;
 	ListManager* lm = ListManager::Get();
 	lm->KList()->Clear();
 	int result = lm->KList()->AddFromString(
 		utfconv_mw(tvList.get_buffer()->get_text()).c_str());
-
-	//FrameMainGUI::Get()->Redraw();
-	//Redraw();	/* Might be redundant now with the above Redraw() call... */
 
 	Gtk::MessageDialog md(
 		(boost::format(_("Changes Saved.\nTotal kanji in list: %d"))
@@ -63,13 +68,11 @@ void PanelKanjiListEditor::OnApply() {
 	md.run();
 }
 
-void PanelKanjiListEditor::OnTextChanged() {
-	if(!bChanged) {
-		cout << "TextChanged" << endl;
-		bChanged = true;
-	}
+void DialogKanjiListEditor::OnOK() {
+	cout << "OK" << endl;
+	if(bChanged) OnApply();
+	response(Gtk::RESPONSE_OK);
 }
 
-bool PanelKanjiListEditor::ChangeDetected() {return bChanged;}
-
-void PanelKanjiListEditor::Update() {}
+void DialogKanjiListEditor::Update() {
+}

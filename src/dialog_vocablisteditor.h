@@ -1,22 +1,22 @@
-#ifndef panel_vocablisteditor_h
-#define panel_vocablisteditor_h
+#ifndef dialog_vocablisteditor_h
+#define dialog_vocablisteditor_h
 
-#include "widget_updatepanel.h"
+#include <gtkmm/dialog.h>
 #include <gtkmm/button.h>
 #include <gtkmm/textview.h>
 
-class PanelVocabListEditor : public UpdatePanel {
+class DialogVocabListEditor : public Gtk::Dialog {
 public:
-	PanelVocabListEditor();
-	bool ChangeDetected();
+	DialogVocabListEditor(Gtk::Window& parent);
 	void Update();
 private:
+	void OnTextChanged();
 	void OnCancel();
 	void OnApply();
-	void OnTextChanged();
+	void OnOK();
 
 	Gtk::TextView tvList;
-	Gtk::Button btnApply, btnCancel;
+	Gtk::Button btnCancel, btnApply, btnOK;
 	bool bChanged;
 };
 

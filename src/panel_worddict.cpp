@@ -146,7 +146,7 @@ void PanelWordDict::Update() {
 	/* currentIndex is 0-based, so don't forget to adjust it. */
 	entIndex.set_text((boost::format("%d") % (currentIndex+1)).str());
 	lblMaxIndex.set_text(
-		(boost::format(_(" of %d vocab")) % lm->VList()->Size()).str());
+		(boost::format(_("of %d vocab")) % lm->VList()->Size()).str());
 
 	/* Update our output window */
 	UpdateOutput();  /* Might want to make this conditionally called in

@@ -1,5 +1,5 @@
-#ifndef addkanjibyfreq_h
-#define addkanjibyfreq_h
+#ifndef dialog_addkanjibyfreq_h
+#define dialog_addkanjibyfreq_h
 
 #include <gtkmm/dialog.h>
 #include <gtkmm/button.h>

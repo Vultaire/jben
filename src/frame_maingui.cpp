@@ -1,14 +1,11 @@
 #include "frame_maingui.h"
 #include "version.h"
-#include "listmanager.h"
-#include <gtkmm/stock.h>
-#include <gtkmm/messagedialog.h>
 #include "jben.xpm"
+#include <gtkmm/stock.h>
 #include <glibmm/i18n.h>
 #include <boost/format.hpp>
 
 #include <iostream>
-#include <cstdio>
 using namespace std;
 
 FrameMainGUI* FrameMainGUI::singleton = NULL;
@@ -31,6 +28,10 @@ FrameMainGUI::FrameMainGUI() {
 	Glib::RefPtr<Gdk::Pixbuf> rpIcon
 		= Gdk::Pixbuf::create_from_xpm_data(iconJben_xpm);
 	set_icon(rpIcon);
+
+	pdKanjiListEditor = NULL;
+	pdVocabListEditor = NULL;
+	pdConfig          = NULL;
 
 	/* General event handlers */
 	tabs.signal_switch_page().connect(
@@ -96,7 +97,11 @@ FrameMainGUI::FrameMainGUI() {
 	show_all_children();
 }
 
-FrameMainGUI::~FrameMainGUI() {}
+FrameMainGUI::~FrameMainGUI() {
+	if(pdKanjiListEditor) delete pdKanjiListEditor;
+	if(pdVocabListEditor) delete pdVocabListEditor;
+	if(pdConfig) delete pdConfig;
+}
 
 void FrameMainGUI::OnMenuFileQuit() {hide();}
 
@@ -146,14 +151,35 @@ void FrameMainGUI::OnKanjiAddByFreq() {
 
 void FrameMainGUI::OnMenuEditVocab() {
 	cout << "MenuEditVocab" << endl;
+	if(!pdVocabListEditor)
+		pdVocabListEditor = new DialogVocabListEditor(*this);
+	int result = pdVocabListEditor->run();
+	pdVocabListEditor->hide();
+	if(result==Gtk::RESPONSE_OK) {
+		/* DO NOTHING */
+	}
 }
 
 void FrameMainGUI::OnMenuEditKanji() {
 	cout << "MenuEditKanji" << endl;
+	if(!pdKanjiListEditor)
+		pdKanjiListEditor = new DialogKanjiListEditor(*this);
+	int result = pdKanjiListEditor->run();
+	pdKanjiListEditor->hide();
+	if(result==Gtk::RESPONSE_OK) {
+		/* DO NOTHING */
+	}
 }
 
 void FrameMainGUI::OnMenuEditPrefs() {
 	cout << "MenuEditPrefs" << endl;
+	if(!pdConfig)
+		pdConfig = new DialogConfig(*this);
+	int result = pdConfig->run();
+	pdConfig->hide();
+	if(result==Gtk::RESPONSE_OK) {
+		/* DO NOTHING */
+	}
 }
 
 void FrameMainGUI::OnMenuHelpAbout() {

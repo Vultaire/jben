@@ -1,22 +1,22 @@
-#ifndef panel_kanjilisteditor_h
-#define panel_kanjilisteditor_h
+#ifndef dialog_kanjilisteditor_h
+#define dialog_kanjilisteditor_h
 
-#include "widget_updatepanel.h"
+#include <gtkmm/dialog.h>
 #include <gtkmm/button.h>
 #include <gtkmm/textview.h>
 
-class PanelKanjiListEditor : public UpdatePanel {
+class DialogKanjiListEditor : public Gtk::Dialog {
 public:
-	PanelKanjiListEditor();
-	bool ChangeDetected();
+	DialogKanjiListEditor(Gtk::Window& parent);
 	void Update();
 private:
+	void OnTextChanged();
 	void OnCancel();
 	void OnApply();
-	void OnTextChanged();
+	void OnOK();
 
 	Gtk::TextView tvList;
-	Gtk::Button btnApply, btnCancel;
+	Gtk::Button btnCancel, btnApply, btnOK;
 	bool bChanged;
 };
 

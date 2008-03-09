@@ -5,7 +5,8 @@
 
 class UpdatePanel : public Gtk::VBox {
 public:
-	UpdatePanel(bool homogeneous=false, int spacing=5);
+	UpdatePanel(bool homogeneous = false, int spacing = 5)
+		: Gtk::VBox(homogeneous, spacing) {}
 	virtual void Update()=0;
 };
 

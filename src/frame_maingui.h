@@ -9,13 +9,13 @@
 #include <gtkmm/box.h>
 
 #include "panel_worddict.h"
-#include "panel_vocablisteditor.h"
 #include "panel_kanjidict.h"
-#include "panel_kanjidrill.h"
-#include "panel_kanjilisteditor.h"
-#include "panel_config.h"
+#include "dialog_vocablisteditor.h"
+#include "dialog_kanjilisteditor.h"
+#include "dialog_config.h"
 #include "dialog_addkanjibygrade.h"
 #include "dialog_addkanjibyfreq.h"
+#include "panel_kanjidrill.h"
 
 class FrameMainGUI : public Gtk::Window {
 public:
@@ -40,6 +40,10 @@ private:
 	Gtk::Notebook tabs;
 	PanelWordDict panelWordDict;
 	PanelKanjiDict panelKanjiDict;
+
+	DialogKanjiListEditor* pdKanjiListEditor;
+	DialogVocabListEditor* pdVocabListEditor;
+	DialogConfig* pdConfig;
 
 	FrameMainGUI();
 	~FrameMainGUI();

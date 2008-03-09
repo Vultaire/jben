@@ -13,13 +13,10 @@ using namespace std;
 
 PanelKanjiDict::PanelKanjiDict()
 	: btnSearch(_("Search")),
-/*	  btnPrev(_("<< Previous")),
-	  btnNext(_("Next >>")),*/
 	  btnPrev(Gtk::Stock::GO_BACK),
 	  btnNext(Gtk::Stock::GO_FORWARD),
 	  btnRand(_("Random")),
 	  lblMaxIndex(_("of 0 kanji")) {
-	//btnPrev.set_label(_("Previous"));
 	btnPrev.signal_clicked()
 		.connect(sigc::mem_fun(*this, &PanelKanjiDict::OnPrevious));
 	btnNext.signal_clicked()
@@ -138,7 +135,7 @@ void PanelKanjiDict::Update() {
 	entIndex.set_text(
 		(boost::format("%d") % (currentIndex+1)).str());
 	lblMaxIndex.set_text(
-		(boost::format(" of %d kanji") % lm->KList()->Size()).str());
+		(boost::format("of %d kanji") % lm->KList()->Size()).str());
 
 	/* Update our output window */
 	UpdateOutput();  /* Might want to make this conditionally called

@@ -42,8 +42,8 @@ DialogAddKanjiByFreq::DialogAddKanjiByFreq(Gtk::Window& parent)
 	pvb->pack_start(spinHighFreq);
 
 	Gtk::HButtonBox* phbb = get_action_area();
-	phbb->pack_start(btnOK);
 	phbb->pack_start(btnCancel);
+	phbb->pack_start(btnOK);
 
 	show_all_children();
 }

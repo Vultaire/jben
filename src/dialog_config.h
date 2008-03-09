@@ -1,24 +1,25 @@
-#ifndef panel_config_h
-#define panel_config_h
+#ifndef dialog_config_h
+#define dialog_config_h
 
-#include "widget_updatepanel.h"
+#include <gtkmm/dialog.h>
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/button.h>
 #include <vector>
 
-class PanelConfig : public UpdatePanel {
+class DialogConfig : public Gtk::Dialog {
 public:
-	PanelConfig();
-	void Update();
+	DialogConfig(Gtk::Window& parent);
 private:
+	void OnCancel();
 	void OnApply();
+	void OnOK();
+
 	void OnDictionaryToggle();
-	void OnCheckboxToggle();
 
 	Gtk::CheckButton chkReadings, chkMeanings, chkHighImp, chkMultiRad, chkDict,
 		chkVocabCrossRef, chkLowImp, chkSodStatic, chkSodAnim;
-	Gtk::Button btnApply;
 	std::vector<Gtk::CheckButton*> vChkDict;
+	Gtk::Button btnCancel, btnOK;
 };
 
 #endif

@@ -1,4 +1,4 @@
-#include "panel_vocablisteditor.h"
+#include "dialog_vocablisteditor.h"
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/buttonbox.h>
 #include <gtkmm/messagedialog.h>
@@ -11,40 +11,49 @@
 #include <iostream>
 using namespace std;
 
-PanelVocabListEditor::PanelVocabListEditor()
-	: btnApply(Gtk::Stock::APPLY),
+DialogVocabListEditor::DialogVocabListEditor(Gtk::Window& parent)
+	: Dialog(_("Vocab List Editor"), parent, true),
 	  btnCancel(Gtk::Stock::CANCEL),
+	  btnApply(Gtk::Stock::APPLY),
+	  btnOK(Gtk::Stock::OK),
 	  bChanged(false) {
-	btnApply.signal_clicked()
-		.connect(sigc::mem_fun(*this, &PanelVocabListEditor::OnApply));
-	btnCancel.signal_clicked()
-		.connect(sigc::mem_fun(*this, &PanelVocabListEditor::OnCancel));
-	tvList.get_buffer()->signal_changed()
-		.connect(sigc::mem_fun(*this, &PanelVocabListEditor::OnTextChanged));
 	tvList.set_accepts_tab(false);
+	tvList.get_buffer()->signal_changed()
+		.connect(sigc::mem_fun(*this, &DialogVocabListEditor::OnTextChanged));
+	btnCancel.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogVocabListEditor::OnCancel));
+	btnApply.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogVocabListEditor::OnApply));
+	btnOK.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogVocabListEditor::OnOK));
 
-	Gtk::ScrolledWindow *pswTxtList = manage(new Gtk::ScrolledWindow);
-	Gtk::HButtonBox *phbbButtons
-		= manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_SPREAD));
+	Gtk::ScrolledWindow *pswTvList = manage(new Gtk::ScrolledWindow);
+	pswTvList->add(tvList);
+	pswTvList->set_shadow_type(Gtk::SHADOW_IN);
+	pswTvList->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-	pswTxtList->add(tvList);
-	pswTxtList->set_shadow_type(Gtk::SHADOW_IN);
-	pswTxtList->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
+	Gtk::VBox* pvb = get_vbox();
+	pvb->set_spacing(5);
+	pvb->pack_start(*pswTvList);
 
-	phbbButtons->pack_start(btnApply, Gtk::PACK_EXPAND_PADDING);
-	phbbButtons->pack_start(btnCancel, Gtk::PACK_EXPAND_PADDING);
+	Gtk::HButtonBox* phbb = get_action_area();
+	phbb->pack_start(btnCancel);
+	phbb->pack_start(btnApply);
+	phbb->pack_start(btnOK);
 
-	set_border_width(5);
-	pack_start(*pswTxtList, Gtk::PACK_EXPAND_WIDGET);
-	pack_start(*phbbButtons, Gtk::PACK_SHRINK);	
+	show_all_children();
 }
 
-void PanelVocabListEditor::OnCancel() {
+void DialogVocabListEditor::OnTextChanged() {
+	bChanged = true;
+}
+
+void DialogVocabListEditor::OnCancel() {
 	cout << "Cancel" << endl;
-	bChanged = false;
+	response(Gtk::RESPONSE_CANCEL);
 }
 
-void PanelVocabListEditor::OnApply() {
+void DialogVocabListEditor::OnApply() {
 	cout << "Apply" << endl;
 	bChanged = false;
 	ListManager* lm = ListManager::Get();
@@ -53,24 +62,18 @@ void PanelVocabListEditor::OnApply() {
 		(utfconv_mw(tvList.get_buffer()->get_text()).c_str(),
 		 (void*)this);
 
-	//FrameMainGUI::Get()->Redraw();
-
-	//Redraw();	/* Might be redundant now with the above Redraw() call... */
 	Gtk::MessageDialog md(
 		(boost::format(_("Changes Saved.\nTotal vocab in list: %d"))
 		 % result).str());
 	md.set_title(_("Vocab List Editor"));
 	md.run();
-	bChanged = false;
 }
 
-void PanelVocabListEditor::OnTextChanged() {
-	if(!bChanged) {
-		cout << "TextChanged" << endl;
-		bChanged = true;
-	}
+void DialogVocabListEditor::OnOK() {
+	cout << "OK" << endl;
+	if(bChanged) OnApply();
+	response(Gtk::RESPONSE_OK);
 }
 
-bool PanelVocabListEditor::ChangeDetected() {return bChanged;}
-
-void PanelVocabListEditor::Update() {}
+void DialogVocabListEditor::Update() {
+}

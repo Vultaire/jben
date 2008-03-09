@@ -1,5 +1,5 @@
-#ifndef addkanjibygrade_h
-#define addkanjibygrade_h
+#ifndef dialog_addkanjibygrade_h
+#define dialog_addkanjibygrade_h
 
 #include <gtkmm/dialog.h>
 #include <gtkmm/button.h>
