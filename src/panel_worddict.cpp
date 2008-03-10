@@ -128,6 +128,7 @@ void PanelWordDict::SetSearchString(const Glib::ustring& searchString) {
 }
 
 void PanelWordDict::Update() {
+	cout << "Update" << endl;
 	/* If currentIndex has been changed, update any necessary data. */
 	ListManager* lm = ListManager::Get();
 	if(currentIndex!=-1) {

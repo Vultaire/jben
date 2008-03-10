@@ -9,6 +9,7 @@
 class DialogConfig : public Gtk::Dialog {
 public:
 	DialogConfig(Gtk::Window& parent);
+	void Update();
 private:
 	void OnCancel();
 	void OnApply();
@@ -19,6 +20,7 @@ private:
 	Gtk::CheckButton chkReadings, chkMeanings, chkHighImp, chkMultiRad, chkDict,
 		chkVocabCrossRef, chkLowImp, chkSodStatic, chkSodAnim;
 	std::vector<Gtk::CheckButton*> vChkDict;
+	Gtk::VBox vbDicts;
 	Gtk::Button btnCancel, btnOK;
 };
 

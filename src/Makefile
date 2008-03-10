@@ -21,10 +21,11 @@ ifeq ($(PLATFORM),windows)
 	mkdircmd  = C:/progra~1/gnuwin32/bin/mkdir -p
 #	STLPort specifies -pthreads - does -mthreads work fine for this???
 	wincxxflags = -mthreads
+	wincppflags = -D__WIN32__
 	winlinkflags = -mwindows
 
 	SharedCXXFLAGS = $(wincxxflags)
-	SharedCPPFLAGS = $(winextraflags) -I$(stlportbase)/stlport \
+	SharedCPPFLAGS = $(wincppflags) -I$(stlportbase)/stlport \
 		-I$(boostbase) -I$(mingwbase)/include -I$(iconvbase)/include
 	libs = -L$(stlportbase)/lib -L$(mingwbase)/lib -L$(iconvbase)/lib \
 		$(winlinkflags) -liconv -lstlport.5.1.dll

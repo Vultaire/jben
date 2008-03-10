@@ -13,9 +13,9 @@
 #include "dialog_vocablisteditor.h"
 #include "dialog_kanjilisteditor.h"
 #include "dialog_config.h"
-#include "dialog_addkanjibygrade.h"
-#include "dialog_addkanjibyfreq.h"
-#include "panel_kanjidrill.h"
+#include "dialog_kanjipretest.h"
+#include "dialog_kanjitest.h"
+#include "dialog_kanjiposttest.h"
 
 class FrameMainGUI : public Gtk::Window {
 public:
@@ -30,6 +30,7 @@ private:
 	void OnMenuEditVocab();
 	void OnMenuEditKanji();
 	void OnMenuEditPrefs();
+	void OnMenuPracticeKanji();
 	void OnMenuHelpAbout();
 	void OnMenuHelpLicense();
 
@@ -44,6 +45,7 @@ private:
 	DialogKanjiListEditor* pdKanjiListEditor;
 	DialogVocabListEditor* pdVocabListEditor;
 	DialogConfig* pdConfig;
+	DialogKanjiPreTest* pdKanjiPreTest;
 
 	FrameMainGUI();
 	~FrameMainGUI();

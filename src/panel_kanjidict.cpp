@@ -119,6 +119,7 @@ void PanelKanjiDict::OnIndexUpdate() {
 }
 
 void PanelKanjiDict::Update() {
+	cout << "Update" << endl;
 	/* If currentIndex has been changed, update any necessary data. */
 	ListManager* lm = ListManager::Get();
 	if(currentIndex!=-1) {
@@ -143,6 +144,7 @@ void PanelKanjiDict::Update() {
 }
 
 void PanelKanjiDict::SetSearchString(const Glib::ustring& searchString) {
+	cout << "SetSearchString" << endl;
 	ListManager* lm = ListManager::Get();
 	currentSearchString = searchString;
 	int len = currentSearchString.length();
@@ -157,6 +159,7 @@ void PanelKanjiDict::SetSearchString(const Glib::ustring& searchString) {
 }
 
 void PanelKanjiDict::UpdateOutput() {
+	cout << "UpdateOutput" << endl;
 	const KDict* kd = KDict::Get();
 	string html = "<html><body><font face=\"Serif\">";
 	wstring htmlContent;

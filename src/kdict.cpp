@@ -1009,11 +1009,11 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			result << "</li>";
 		}
 		else result << "<li>Stroke count: unspecified</li>";
-		result << "<li>Grade Level: ";
+		result << "<li>Grade level: ";
 		if(k.grade <= 6 && k.grade >= 1)
-			result << "Jouyou Grade " << k.grade;
+			result << k.grade;
 		else if(k.grade == 8)
-			result << "Jouyou (General usage)";
+			result << "General usage";
 		else if(k.grade == 9)
 			result << "Jinmeiyou (Characters for names)";
 		else if(k.grade == 0)
@@ -1022,13 +1022,17 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			result << "Unhandled grade level (Grade " << k.grade << ')';
 		result << "</li>";
 		if(k.freq==0)
-			result << "<li>Frequency Ranking: Unspecified</li>";
+			result << "<li>Frequency ranking: Unspecified</li>";
 		else
-			result << "<li>Frequency Ranking: " << k.freq << "</li>";
+			result << "<li>Frequency ranking: " << k.freq << "</li>";
 	}
 
 	if((options & KDO_MULTIRAD) != 0) {
 		/* NOT YET IMPLEMENTED */
+		if(k.kradData.length()>0) {
+			result << "<li>Component radicals: "
+				   << utfconv_wm(k.kradData) << "</li>";
+		}
 	}
 
 	/* Vocab List Cross-ref */

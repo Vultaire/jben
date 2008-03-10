@@ -2,6 +2,8 @@
 #include "version.h"
 #include "jben.xpm"
 #include <gtkmm/stock.h>
+#include <gtkmm/main.h>
+#include <gtkmm/messagedialog.h>
 #include <glibmm/i18n.h>
 #include <boost/format.hpp>
 
@@ -32,6 +34,7 @@ FrameMainGUI::FrameMainGUI() {
 	pdKanjiListEditor = NULL;
 	pdVocabListEditor = NULL;
 	pdConfig          = NULL;
+	pdKanjiPreTest    = NULL;
 
 	/* General event handlers */
 	tabs.signal_switch_page().connect(
@@ -47,14 +50,19 @@ FrameMainGUI::FrameMainGUI() {
 	/* Edit Menu */
 	refActionGroup->add(Gtk::Action::create("MenuEdit", _("_Edit")));
 	refActionGroup->add(
-		Gtk::Action::create("MenuEditVocab", _("Vocab Study List")),
+		Gtk::Action::create("MenuEditVocab", _("_Vocab Study List")),
 		sigc::mem_fun(*this, &FrameMainGUI::OnMenuEditVocab));
 	refActionGroup->add(
-		Gtk::Action::create("MenuEditKanji", _("Kanji Study List")),
+		Gtk::Action::create("MenuEditKanji", _("_Kanji Study List")),
 		sigc::mem_fun(*this, &FrameMainGUI::OnMenuEditKanji));
 	refActionGroup->add(
 		Gtk::Action::create("MenuEditPrefs", Gtk::Stock::PREFERENCES),
 		sigc::mem_fun(*this, &FrameMainGUI::OnMenuEditPrefs));
+	/* Practice Menu */
+	refActionGroup->add(Gtk::Action::create("MenuPractice", _("_Practice")));
+	refActionGroup->add(
+		Gtk::Action::create("MenuPracticeKanji", _("_Kanji")),
+		sigc::mem_fun(*this, &FrameMainGUI::OnMenuPracticeKanji));
 	/* Help Menu */
 	refActionGroup->add(Gtk::Action::create("MenuHelp", _("_Help")));
 	refActionGroup->add(
@@ -79,6 +87,9 @@ FrameMainGUI::FrameMainGUI() {
 		"      <separator/>"
 		"      <menuitem action='MenuEditPrefs'/>"
 		"    </menu>"
+		"    <menu action='MenuPractice'>"
+		"      <menuitem action='MenuPracticeKanji'/>"
+		"    </menu>"
 		"    <menu action='MenuHelp'>"
 		"      <menuitem action='MenuHelpAbout'/>"
 		"      <menuitem action='MenuHelpLicense'/>"
@@ -101,53 +112,10 @@ FrameMainGUI::~FrameMainGUI() {
 	if(pdKanjiListEditor) delete pdKanjiListEditor;
 	if(pdVocabListEditor) delete pdVocabListEditor;
 	if(pdConfig) delete pdConfig;
+	if(pdKanjiPreTest) delete pdKanjiPreTest;
 }
 
 void FrameMainGUI::OnMenuFileQuit() {hide();}
-
-#if 0
-void FrameMainGUI::OnKanjiAddByGrade() {
-	cout << "AddGrade" << endl;
-	ListManager* lm = ListManager::Get();
-	if(!pdAddKanjiByGrade)
-		pdAddKanjiByGrade = new DialogAddKanjiByGrade(*this);
-	int result = pdAddKanjiByGrade->run();
-	pdAddKanjiByGrade->hide();
-	if(result==Gtk::RESPONSE_OK) {
-		result = lm->KList()->AddByGrade(
-			pdAddKanjiByGrade->GetLowGrade(),
-			pdAddKanjiByGrade->GetHighGrade());
-		//this->Redraw();
-		Gtk::MessageDialog md(
-			(boost::format(_("Added %d kanji to the list."))
-			 % result).str());
-		md.set_title(_("Add Kanji by Jouyou Grade"));
-		md.run();
-	}
-	cout << "Result: " << result << endl;
-}
-
-void FrameMainGUI::OnKanjiAddByFreq() {
-	cout << "AddFreq" << endl;
-	ListManager* lm = ListManager::Get();
-	if(!pdAddKanjiByFreq)
-		pdAddKanjiByFreq = new DialogAddKanjiByFreq(*this);
-	int result = pdAddKanjiByFreq->run();
-	pdAddKanjiByFreq->hide();
-	if(result==Gtk::RESPONSE_OK) {
-		result = lm->KList()->AddByFrequency(
-			pdAddKanjiByFreq->GetLowFreq(),
-			pdAddKanjiByFreq->GetHighFreq());
-		//this->Redraw();
-		Gtk::MessageDialog md(
-			(boost::format(_("Added %d kanji to the list."))
-			 % result).str());
-		md.set_title(_("Add Kanji by Frequency"));
-		md.run();
-	}
-	cout << "Result: " << result << endl;
-}
-#endif
 
 void FrameMainGUI::OnMenuEditVocab() {
 	cout << "MenuEditVocab" << endl;
@@ -156,7 +124,7 @@ void FrameMainGUI::OnMenuEditVocab() {
 	int result = pdVocabListEditor->run();
 	pdVocabListEditor->hide();
 	if(result==Gtk::RESPONSE_OK) {
-		/* DO NOTHING */
+		/* DO NOTHING - handled by the dialog itself */
 	}
 }
 
@@ -167,7 +135,7 @@ void FrameMainGUI::OnMenuEditKanji() {
 	int result = pdKanjiListEditor->run();
 	pdKanjiListEditor->hide();
 	if(result==Gtk::RESPONSE_OK) {
-		/* DO NOTHING */
+		/* DO NOTHING - handled by the dialog itself */
 	}
 }
 
@@ -178,16 +146,83 @@ void FrameMainGUI::OnMenuEditPrefs() {
 	int result = pdConfig->run();
 	pdConfig->hide();
 	if(result==Gtk::RESPONSE_OK) {
-		/* DO NOTHING */
+		/* DO NOTHING - handled by the dialog itself */
+	}
+}
+
+void FrameMainGUI::OnMenuPracticeKanji() {
+	cout << "MenuPracticeKanji" << endl;
+	if(!pdKanjiPreTest)
+		pdKanjiPreTest = new DialogKanjiPreTest(*this);
+	int result = pdKanjiPreTest->run();	
+	pdKanjiPreTest->hide();
+	if(result==Gtk::RESPONSE_OK) {
+		DialogKanjiTest dkt(*this, *pdKanjiPreTest);
+		result = dkt.run();
+		dkt.hide();
+		/* Show result dialog - to do! */
+		DialogKanjiPostTest dkpt(*this, dkt);
+		dkpt.run();
 	}
 }
 
 void FrameMainGUI::OnMenuHelpAbout() {
 	cout << "MenuHelpAbout" << endl;
+	Gtk::MessageDialog md
+		(*this, (boost::format(
+			  _("%s  v%s\n"
+				"By %s\n"
+				"Copyright %s\n\n"
+
+				"Inspired in large by JWPce and JFC by Glenn Rosenthal:\n"
+				"http://www.physics.ucla.edu/~grosenth/\n\n"
+
+				"Powered by Monash University's EDICT2 and KANJIDIC:\n"
+				"http://www.csse.monash.edu.au/~jwb/edict_doc.html\n"
+				"http://www.csse.monash.edu.au/~jwb/kanjidic.html\n\n"
+
+				"Built using gtkmm: http://www.gtkmm.org/\n\n"
+
+				"Hand writing recognition is based upon code from im-ja:\n"
+				"http://im-ja.sourceforge.net/\n"
+				"Which uses code based upon KanjiPad by Owen Taylor:\n"
+				"http://fishsoup.net/software/kanjipad/\n\n"
+
+				"See \"Help->License Information...\" for important license "
+				"details."))
+		  % PROGRAM_NAME % VERSION_STR % AUTHOR_NAME % COPYRIGHT_DATE).str());
+	md.set_title((boost::format(_("About %s")) % PROGRAM_NAME).str());
+	md.run();
 }
 
 void FrameMainGUI::OnMenuHelpLicense() {
 	cout << "MenuHelpLicense" << endl;
+	string licenseMessage(
+		_("Program distributed under the GNU General Public License (GPL) "
+		  "version 2:\n"
+		  "http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt\n\n"
+		  "EDICT2 and KANJIDIC distributed under a separate license specified "
+		  "at\n"
+		  "http://www.csse.monash.edu.au/~jwb/edrdg/license.htm\n\n"
+
+		  "The SKIP (System of Kanji Indexing by Patterns) system for ordering "
+		  "kanji was developed by Jack Halpern (Kanji Dictionary Publishing "
+		  "Society at http://www.kanji.org/), and is used with his "
+		  "permission.\n\n"
+
+		  "Copies of the GNU General Public License, Monash University's "
+		  "license for the dictionary files and documentation for the "
+		  "dictionary files are contained in this program's \"license\" "
+		  "directory."));
+#ifndef __WIN32__
+	licenseMessage.append(
+		(boost::format(_("  (On this system, it should be located at:\n%s)"))
+		 % LICENSEDIR).str());
+#endif
+	
+	Gtk::MessageDialog md(*this, licenseMessage);
+	md.set_title(_("License Information"));
+	md.run();
 }
 
 void FrameMainGUI::OnSwitchPage(GtkNotebookPage* page, guint page_num) {

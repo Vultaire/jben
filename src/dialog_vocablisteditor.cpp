@@ -18,6 +18,7 @@ DialogVocabListEditor::DialogVocabListEditor(Gtk::Window& parent)
 	  btnOK(Gtk::Stock::OK),
 	  bChanged(false) {
 	tvList.set_accepts_tab(false);
+	tvList.set_wrap_mode(Gtk::WRAP_WORD_CHAR);
 	tvList.get_buffer()->signal_changed()
 		.connect(sigc::mem_fun(*this, &DialogVocabListEditor::OnTextChanged));
 	btnCancel.signal_clicked()
@@ -41,6 +42,7 @@ DialogVocabListEditor::DialogVocabListEditor(Gtk::Window& parent)
 	phbb->pack_start(btnApply);
 	phbb->pack_start(btnOK);
 
+	Update();
 	show_all_children();
 }
 
@@ -62,9 +64,11 @@ void DialogVocabListEditor::OnApply() {
 		(utfconv_mw(tvList.get_buffer()->get_text()).c_str(),
 		 (void*)this);
 
-	Gtk::MessageDialog md(
-		(boost::format(_("Changes Saved.\nTotal vocab in list: %d"))
-		 % result).str());
+	Update();
+
+	Gtk::MessageDialog md
+		(*this, (boost::format(_("Changes Saved.\nTotal vocab in list: %d"))
+				 % result).str());
 	md.set_title(_("Vocab List Editor"));
 	md.run();
 }
@@ -76,4 +80,10 @@ void DialogVocabListEditor::OnOK() {
 }
 
 void DialogVocabListEditor::Update() {
+	cout << "Update" << endl;
+	ListManager* lm = ListManager::Get();
+	wstring ws = lm->VList()->ToString();
+	string s;
+	if(ws.length()>0) s = utfconv_wm(ws);
+	tvList.get_buffer()->set_text(s);
 }

@@ -92,8 +92,8 @@ void DialogAddKanjiByFreq::OKProc() {
 	int h = GetHighFreq();
 	if(h<l) {
 		Gtk::MessageDialog md
-			(_("Your high frequency rank cannot be less "
-			   "than your low frequency rank."));
+			(*this, _("Your high frequency rank cannot be less "
+					  "than your low frequency rank."));
 		md.set_title(_("Bad frequency range"));
 		md.run();
 	} else

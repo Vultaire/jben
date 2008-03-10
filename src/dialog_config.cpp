@@ -1,4 +1,7 @@
 #include "dialog_config.h"
+#include "preferences.h"
+#include "kdict.h"
+#include "file_utils.h"
 #include <glibmm/i18n.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/buttonbox.h>
@@ -113,10 +116,9 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 		.connect(sigc::mem_fun(*this, &DialogConfig::OnOK));
 
 	/* Layout and display */
-	Gtk::VBox *pvbMainOpts, *pvbDictsOuter, *pvbDictsInner, *pvbOtherOpts;
+	Gtk::VBox *pvbMainOpts, *pvbDictsOuter, *pvbOtherOpts;
 	pvbMainOpts =   manage(new Gtk::VBox);
 	pvbDictsOuter = manage(new Gtk::VBox);
-	pvbDictsInner = manage(new Gtk::VBox);
 	pvbOtherOpts =  manage(new Gtk::VBox);
 	Gtk::HButtonBox *phbbButtons = manage(new Gtk::HButtonBox);
 	Gtk::ScrolledWindow *pswDicts = manage(new Gtk::ScrolledWindow);
@@ -137,10 +139,11 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	pvbDictsOuter->pack_start(chkDict,   Gtk::PACK_SHRINK);
 	pvbDictsOuter->pack_start(*pswDicts, Gtk::PACK_EXPAND_WIDGET);
 
-	pswDicts->add(*pvbDictsInner);
+	pswDicts->add(vbDicts);
 	for(it = vChkDict.begin(); it != vChkDict.end(); it++) {
-		pvbDictsInner->pack_start(**it, Gtk::PACK_SHRINK);
+		vbDicts.pack_start(**it, Gtk::PACK_SHRINK);
 	}
+	vbDicts.set_sensitive(false);
 
 	pvbOtherOpts->pack_start(chkVocabCrossRef, Gtk::PACK_SHRINK);
 	pvbOtherOpts->pack_start(chkLowImp, Gtk::PACK_SHRINK);
@@ -151,21 +154,86 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	phbb->pack_start(btnCancel);
 	phbb->pack_start(btnOK);
 
+	Update();
 	show_all_children();
 }
 
 
 void DialogConfig::OnDictionaryToggle() {
-	cout << "OnDictionaryToggle" << endl;
+	cout << "OnDictionaryToggle";
+	if(chkDict.get_active())
+		cout << " (Activated)"   << endl;
+	else
+		cout << " (Deactivated)" << endl;
+	vbDicts.set_sensitive(chkDict.get_active());
 }
 
 void DialogConfig::OnCancel() {
 	cout << "Cancel" << endl;
+	Update();
 	response(Gtk::RESPONSE_CANCEL);
 }
 
 void DialogConfig::OnOK() {
 	cout << "OK" << endl;
+
 	/* DO STUFF */
+	unsigned long options=0, dictionaries=0;
+	if(chkReadings     .get_active()) options |= KDO_READINGS;
+	if(chkMeanings     .get_active()) options |= KDO_MEANINGS;
+	if(chkHighImp      .get_active()) options |= KDO_HIGHIMPORTANCE;
+	if(chkMultiRad     .get_active()) options |= KDO_MULTIRAD;
+	if(chkDict         .get_active()) options |= KDO_DICTIONARIES;
+	if(chkVocabCrossRef.get_active()) options |= KDO_VOCABCROSSREF;
+	if(chkLowImp       .get_active()) options |= KDO_LOWIMPORTANCE;
+	if(chkSodStatic    .get_active()) options |= KDO_SOD_STATIC;
+	if(chkSodAnim      .get_active()) options |= KDO_SOD_ANIM;
+
+	for(size_t i=0; i<vChkDict.size(); i++) {
+		if(vChkDict[i]->get_active()) dictionaries |= (1ul << i);
+	}
+	Preferences *prefs = Preferences::Get();
+	prefs->kanjidicOptions = options;
+	prefs->kanjidicDictionaries = dictionaries;
+
+	Update();  /* Probably unnecessary, but let's be safe. */
 	response(Gtk::RESPONSE_OK);
+}
+
+void DialogConfig::Update() {
+	Preferences *prefs = Preferences::Get();
+	int options = prefs->kanjidicOptions;
+	int dictionaries = prefs->kanjidicDictionaries;
+
+	/* Set appropriate checkboxes */
+	chkReadings     .set_active(options & KDO_READINGS);
+	chkMeanings     .set_active(options & KDO_MEANINGS);
+	chkHighImp      .set_active(options & KDO_HIGHIMPORTANCE);
+	chkMultiRad     .set_active(options & KDO_MULTIRAD);
+	chkDict         .set_active(options & KDO_DICTIONARIES);
+	chkVocabCrossRef.set_active(options & KDO_VOCABCROSSREF);
+	chkLowImp       .set_active(options & KDO_LOWIMPORTANCE);
+	chkSodStatic    .set_active(options & KDO_SOD_STATIC);
+	chkSodAnim      .set_active(options & KDO_SOD_ANIM);
+
+	/* Enable/disable SOD/SODA checkboxes based on existance of directory */
+	string sodDir = Preferences::Get()->GetSetting("sod_dir");
+	chkSodStatic.set_sensitive(
+		FileExists(
+			string(sodDir)
+			.append(1,DSCHAR)
+			.append("sod-utf8-hex")
+			.append(1,DSCHAR)
+			.append("README-License").c_str()));
+	chkSodAnim.set_sensitive(
+		FileExists(
+			string(sodDir)
+			.append(1,DSCHAR)
+			.append("soda-utf8-hex")
+			.append(1,DSCHAR)
+			.append("README-License").c_str()));
+
+	for(size_t i=0;i<vChkDict.size();i++) {
+		vChkDict[i]->set_active(dictionaries & (1ul << i));
+	}
 }

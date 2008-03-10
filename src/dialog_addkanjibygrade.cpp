@@ -116,10 +116,10 @@ void DialogAddKanjiByGrade::OKProc() {
 	   as the highest grade level here. */
 	if((h<l && h!=0) || (l==0 && h!=0)) {
 		Gtk::MessageDialog md
-			(_("Your high grade level cannot be less than your low grade level."));
+			(*this, _("Your high grade level cannot be less than your low "
+					  "grade level."));
 		md.set_title(_("Bad grade range"));
 		md.run();
-		//md.hide();
 	} else
 		response(Gtk::RESPONSE_OK);
 }

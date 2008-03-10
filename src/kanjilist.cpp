@@ -157,14 +157,14 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 			el.Push(EL_Error, oss.str());
 			break;
 		}
-		if(value==-1) value=INT_MAX;
+		if(value==0) value=INT_MAX;
 		myCharIndexer->assign(*vi, value);
 	}
 
 	/* Sort our data based upon the stored key in the hash table */
-	/* This code, a merge sort, was created based upon code at:
+	/* This merged sort code was created based upon code at:
 	   http://en.wikipedia.org/wiki/Merge_sort#C.2B.2B_implementation
-	   These pages were referred to:
+	   These pages were also referred to:
 	   http://www.cppreference.com/cppalgorithm/merge.html
 	   http://www.cppreference.com/cppalgorithm/inplace_merge.html */
 	int rangeSize, rangeStart;

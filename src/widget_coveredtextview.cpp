@@ -13,9 +13,9 @@ CoveredTextView::CoveredTextView
 	SetHiddenText(hidden);
 
 	/* Set up colors */
-	/* set() seems broken, so set the color manually. */
 	cBase = tv.get_style()->get_base(Gtk::STATE_NORMAL);
-	//cAlt.set("FFFF7F");
+	/* cAlt.set("FFFF7F"); */
+	/* set() seems broken, so set the color manually. */
 	/* Color triplets for Gdk are 16 bits each, NOT 8! */
 	cAlt.set_rgb(0xFFFF,0xFFFF,0x7FFF);
 	Glib::RefPtr<Gdk::Colormap> rCM = tv.get_colormap();
