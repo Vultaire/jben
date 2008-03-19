@@ -11,7 +11,7 @@
 using namespace std;
 
 DialogConfig::DialogConfig(Gtk::Window& parent)
-	: Dialog(_("Preferences Editor"), parent, true),
+	: StoredDialog(_("Preferences Editor"), parent, "dlg.preferences.size"),
 	  chkReadings(_("Include on-yomi, kun-yomi and nanori (name) readings")),
 	  chkMeanings(_("Include English meanings")),
 	  chkHighImp(_("Include stroke count, Jouyou grade "

@@ -8,7 +8,7 @@
 using namespace std;
 
 DialogKanjiPreTest::DialogKanjiPreTest(Gtk::Window& parent)
-	: Dialog(_("Kanji Test: Settings"), parent),
+	: StoredDialog(_("Kanji Test: Settings"), parent, "dlg.kanjipretest.size"),
 	  rdoRandom(_("Choose randomly from list")),
 	  rdoIndex(_("Start at index:")),
 	  rdoReading(_("Reading kanji")),

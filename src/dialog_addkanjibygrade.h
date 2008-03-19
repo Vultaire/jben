@@ -1,11 +1,11 @@
 #ifndef dialog_addkanjibygrade_h
 #define dialog_addkanjibygrade_h
 
-#include <gtkmm/dialog.h>
+#include "widget_storeddialog.h"
 #include <gtkmm/button.h>
 #include <gtkmm/comboboxtext.h>
 
-class DialogAddKanjiByGrade : public Gtk::Dialog {
+class DialogAddKanjiByGrade : public StoredDialog {
 public:
 	DialogAddKanjiByGrade(Gtk::Window& parent);
 	int GetLowGrade();

@@ -12,23 +12,61 @@ JBEN_VERSION = 1.1.3
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
-#	CHANGE THESE 4 VARIABLES
+#	CHANGE THESE VARIABLES
 	MAKE = mingw32-make
 	mingwbase = C:/MinGW
 	boostbase = C:/dev/boost_1_34_1
 	stlportbase = C:/dev/STLport-5.1.5
-	iconvbase = C:/dev/libiconv
+#	iconvbase = C:/dev/libiconv  - obsoleted; gtk includes it
+	gtkbase   = C:/gtk
+	gtkmmbase = C:/gtkmm
+#   LEAVE THESE ALONE
 	mkdircmd  = C:/progra~1/gnuwin32/bin/mkdir -p
 #	STLPort specifies -pthreads - does -mthreads work fine for this???
-	wincxxflags = -mthreads
+#   (It appears so...)
+	gtkinc    = $(gtkbase)/include
+	gtklib    = $(gtkbase)/lib
+	gtkmminc  = $(gtkmmbase)/include
+	gtkmmlib  = $(gtkmmbase)/lib
+	gtkmmcflags = -mms-bitfields \
+		-I$(gtkinc) \
+		-I$(gtkinc)/gtk-2.0 \
+		-I$(gtkinc)/glib-2.0 \
+		-I$(gtklib)/glib-2.0/include \
+		-I$(gtklib)/gtk-2.0/include \
+		-I$(gtkinc)/pango-1.0 \
+		-I$(gtkinc)/cairo \
+		-I$(gtkinc)/libpng12 \
+		-I$(gtkinc)/atk-1.0 \
+		-I$(gtkmminc)/gtkmm-2.4 \
+		-I$(gtkmmlib)/gtkmm-2.4/include \
+		-I$(gtkmminc)/glibmm-2.4 \
+		-I$(gtkmmlib)/glibmm-2.4/include \
+		-I$(gtkmminc)/gdkmm-2.4 \
+		-I$(gtkmmlib)/gdkmm-2.4/include \
+		-I$(gtkmminc)/pangomm-1.4 \
+		-I$(gtkmminc)/atkmm-1.6 \
+		-I$(gtkmminc)/sigc++-2.0 \
+		-I$(gtkmmlib)/sigc++-2.0/include \
+		-I$(gtkmminc)/cairomm-1.0		
+	gtkmmlibs = -L$(gtklib) -L$(gtkmmlib) \
+		-lgtkmm-2.4 -lgdkmm-2.4 -latkmm-1.6 -lgtk-win32-2.0 -lpangomm-1.4 \
+		-lcairomm-1.0 -lglibmm-2.4 -lsigc-2.0 -lgdk-win32-2.0 -latk-1.0 \
+		-lgdk_pixbuf-2.0 -lpangowin32-1.0 -lpangocairo-1.0 -lpango-1.0 \
+		-lcairo -lgobject-2.0 -lgmodule-2.0 -lglib-2.0 -lintl -liconv
+	xmllibcflags = -IC:/libxml2/include/libxml2
+	xmlliblibs   = -LC:/libxml2/lib -lxml2.dll
+
+	wincxxflags = -mthreads $(gtkmmcflags) $(xmllibcflags)
 	wincppflags = -D__WIN32__
 	winlinkflags = -mwindows
 
 	SharedCXXFLAGS = $(wincxxflags)
 	SharedCPPFLAGS = $(wincppflags) -I$(stlportbase)/stlport \
-		-I$(boostbase) -I$(mingwbase)/include -I$(iconvbase)/include
-	libs = -L$(stlportbase)/lib -L$(mingwbase)/lib -L$(iconvbase)/lib \
-		$(winlinkflags) -liconv -lstlport.5.1.dll
+		-I$(boostbase) -I$(mingwbase)/include
+	libs = $(winlinkflags) \
+		-L$(stlportbase)/lib -lstlport.5.1.dll \
+		$(gtkmmlibs) $(xmlliblibs) -L$(mingwbase)/lib
 endif
 
 ##################################
@@ -70,17 +108,15 @@ endif
 # C++ options
 CXX = g++
 ifeq ($(BUILD),release)
-	CXXFLAGS = -Wall -s -O2 $(SharedCXXFLAGS)
-	CPPFLAGS = $(SharedCPPFLAGS)
+	CXXFLAGS = -Wall -s -O2
 endif
 ifeq ($(BUILD),debug)
-	CXXFLAGS = -Wall -g $(SharedCXXFLAGS)
-	CPPFLAGS = -DDEBUG $(SharedCPPFLAGS)
+	CXXFLAGS = -Wall -g
+	CPPFLAGS = -DDEBUG
 endif
 ifeq ($(BUILD),profile)
 #	Profiling mode: DEBUG flags, plus -pg, but without -DDEBUG
-	CXXFLAGS = -Wall -g $(SharedCXXFLAGS) -pg
-	CPPFLAGS = $(SharedCPPFLAGS)
+	CXXFLAGS = -Wall -g -pg
 endif
 
 sources = $(shell ls -t *.cpp) # Compile most recently edited files first.
@@ -123,7 +159,7 @@ endif
 $(build_bindir)/$(target) : $(objects)
 	$(mkdircmd) $(build_bindir)
 #	$(CXX) -o $(build_bindir)/$(target) $(objects) $(libs) $(CXXFLAGS)
-	$(CXX) $(CXXFLAGS) -o $(build_bindir)/$(target) $(objects) $(libs)
+	$(CXX) $(CXXFLAGS) $(SharedCXXFLAGS) -o $(build_bindir)/$(target) $(objects) $(libs)
 
 $(build_objdir)/jben.res:
 	$(mkdircmd) $(build_objdir)
@@ -133,7 +169,7 @@ kpengine:
 	cd kpengine && $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) && cd ..
 
 clean:
-	cd kpengine && make clean && cd ..
+	cd kpengine && $(MAKE) clean && cd ..
 	rm -rfv ../bin ../obj ../jben.res
 
 cleandep:
@@ -146,7 +182,7 @@ $(build_objdir)/%.o : %.cpp
 # Old command
 #	$(CXX) $(CPPFLAGS) -c -o $@ $(@F:%.o=%.cpp) $(CXXFLAGS)
 # Testing command based on GNU Make manual
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $(@F:%.o=%.cpp)
+	$(CXX) -c $(CPPFLAGS) $(SharedCPPFLAGS) $(CXXFLAGS) $(SharedCXXFLAGS) -o $@ $(@F:%.o=%.cpp)
 
 # Object dependency tracking
 include $(sources:%.cpp=$(build_depdir)/%.d)

@@ -8,7 +8,7 @@
 using namespace std;
 
 DialogAddKanjiByFreq::DialogAddKanjiByFreq(Gtk::Window& parent)
-	: Dialog(_("Add Kanji By Freq"), parent, true),
+	: StoredDialog(_("Add Kanji By Freq"), parent, "dlg.addkanjibyfreq.size"),
 	  btnOK(Gtk::Stock::OK),
 	  btnCancel(Gtk::Stock::CANCEL)
 {

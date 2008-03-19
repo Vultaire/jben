@@ -16,7 +16,7 @@
 using namespace std;
 
 DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
-	: Dialog(_("Kanji List Editor"), parent, true),
+	: StoredDialog(_("Kanji List Editor"), parent, "dlg.kanjilisteditor.size"),
 	  btnAddFile(  _("From File")),
 	  btnAddGrade( _("By Grade")),
 	  btnAddFreq(  _("By Frequency")),

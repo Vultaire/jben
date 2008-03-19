@@ -15,9 +15,9 @@
 #include <sstream>
 #include <map>
 
-DialogKanjiTest::DialogKanjiTest(Gtk::Window& parent,
-								 DialogKanjiPreTest& settings)
-	: Dialog(_("J-Ben: Kanji Test"), parent),
+DialogKanjiTest::DialogKanjiTest
+(Gtk::Window& parent, DialogKanjiPreTest& settings)
+	: StoredDialog(_("J-Ben: Kanji Test"), parent, "dlg.kanjitest.size"),
 	  ctvKanji(_("< Kanji >")),
 	  ctvOnyomi(_("< Onyomi >")),
 	  ctvKunyomi(_("< Kunyomi >")),
@@ -81,6 +81,8 @@ DialogKanjiTest::DialogKanjiTest(Gtk::Window& parent,
 		.connect(sigc::mem_fun(*this, &DialogKanjiTest::OnWrong));
 	btnStop.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogKanjiTest::OnStop));
+	this->signal_delete_event()
+		.connect(sigc::mem_fun(*this, &DialogKanjiTest::OnDeleteEvent));
 
 	Gtk::HBox* phbScore = manage(new Gtk::HBox(false, 15));
 	phbScore->pack_start(lblProgress, Gtk::PACK_SHRINK);
@@ -221,4 +223,10 @@ void DialogKanjiTest::OnStop() {
 		result = md.run();
 	}
 	if(result==Gtk::RESPONSE_YES) response(Gtk::RESPONSE_CANCEL);
+}
+
+bool DialogKanjiTest::OnDeleteEvent(GdkEventAny* event) {
+	cout << "DeleteEvent" << endl;
+	OnStop();
+	return true;
 }

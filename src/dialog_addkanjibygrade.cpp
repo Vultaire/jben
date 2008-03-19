@@ -21,7 +21,7 @@ Glib::ustring strs[] = {
 int strCount = 9;
 
 DialogAddKanjiByGrade::DialogAddKanjiByGrade(Gtk::Window& parent)
-	: Dialog(_("Add Kanji By Grade"), parent, true),
+	: StoredDialog(_("Add Kanji By Grade"), parent, "dlg.addkanjibyfreq.size"),
 	  btnOK(Gtk::Stock::OK),
 	  btnCancel(Gtk::Stock::CANCEL)
 {

@@ -1,11 +1,11 @@
 #ifndef dialog_kanjipretest_h
 #define dialog_kanjipretest_h
 
-#include <gtkmm/dialog.h>
+#include "widget_storeddialog.h"
 #include <gtkmm/radiobutton.h>
 #include <gtkmm/spinbutton.h>
 
-class DialogKanjiPreTest : public Gtk::Dialog {
+class DialogKanjiPreTest : public StoredDialog {
 public:
    	DialogKanjiPreTest(Gtk::Window& parent);
 	Gtk::RadioButton rdoRandom, rdoIndex, rdoReading, rdoWriting;

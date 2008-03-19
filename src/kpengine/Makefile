@@ -37,11 +37,9 @@ build_bindir = ../../bin/$(PLATFORM)/$(BUILD)/kpengine
 ifeq ($(PLATFORM),windows)
 	kpengine = jben_kpengine.exe
 	mkdircmd  = C:/progra~1/gnuwin32/bin/mkdir -p
-	rmdircmd = rmdir /s
 else
 	kpengine = jben_kpengine
 	mkdircmd = mkdir -p
-	rmdircmd = rm -rfv
 endif
 
 sources = $(shell ls -t *.c) # Compile most recently edited files first.
@@ -61,7 +59,7 @@ $(build_objdir)/%.o: %.c
 	$(CC) -c -o $@ -DFOR_PILOT_COMPAT $< $(CFLAGS)
 
 clean:
-	$(rmdircmd) bin obj
+	rm -rfv $(build_bindir) $(build_objdir)
 
 install:
 	$(INSTALL) -d $(DESTDIR)$(bindir) $(DESTDIR)$(datadir)/jben/kpengine_data

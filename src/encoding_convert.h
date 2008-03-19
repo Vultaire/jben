@@ -49,14 +49,12 @@ basic_string<tdest> ConvertString
 	size_t outputBytesLeft = sLen * 4;
 	char *buffer = new char[outputBytesLeft];
 	memset((void*)buffer, 0, outputBytesLeft);
+
 	/* The libc iconv function takes a char* source, while the libiconv iconv
 	   takes a const char* source. */
-#ifdef __WXMSW__
+	/* GTK's iconv also takes a const char* source...  libc iconv appears to be
+	   the oddball. */
 	const char *srcData = (char *)sourceData.c_str();
-#else
-	char *srcData = (char *)sourceData.c_str();
-#endif
-
 	char *destData = buffer;
 
 	/* libiconv stuff */

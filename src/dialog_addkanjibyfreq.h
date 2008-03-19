@@ -1,11 +1,11 @@
 #ifndef dialog_addkanjibyfreq_h
 #define dialog_addkanjibyfreq_h
 
-#include <gtkmm/dialog.h>
+#include "widget_storeddialog.h"
 #include <gtkmm/button.h>
 #include <gtkmm/spinbutton.h>
 
-class DialogAddKanjiByFreq : public Gtk::Dialog {
+class DialogAddKanjiByFreq : public StoredDialog {
 public:
 	DialogAddKanjiByFreq(Gtk::Window& parent);
 	int GetLowFreq();

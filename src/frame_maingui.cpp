@@ -6,9 +6,13 @@
 #include <gtkmm/messagedialog.h>
 #include <glibmm/i18n.h>
 #include <boost/format.hpp>
+#include "string_utils.h"
+#include "preferences.h"
 
 #include <iostream>
 using namespace std;
+
+#define MAINGUI_SIZE_STR "jbengui.size"
 
 FrameMainGUI* FrameMainGUI::singleton = NULL;
 
@@ -31,10 +35,26 @@ FrameMainGUI::FrameMainGUI() {
 		= Gdk::Pixbuf::create_from_xpm_data(iconJben_xpm);
 	set_icon(rpIcon);
 
+	/* Init vars */
 	pdKanjiListEditor = NULL;
 	pdVocabListEditor = NULL;
 	pdConfig          = NULL;
 	pdKanjiPreTest    = NULL;
+	pfHWPad           = NULL;
+
+	/* Logic copied from widget_storeddialog */
+	Preferences* p = Preferences::Get();
+	string& size = p->GetSetting(MAINGUI_SIZE_STR);
+	int x, y;
+	if(size.length()>0) {
+		std::list<string> ls = StrTokenize<char>(size, "x");
+		if(ls.size()>=2) {
+			x = atoi(ls.front().c_str());
+			ls.pop_front();
+			y = atoi(ls.front().c_str());
+			set_default_size(x,y);
+		}
+	}
 
 	/* General event handlers */
 	tabs.signal_switch_page().connect(
@@ -63,6 +83,12 @@ FrameMainGUI::FrameMainGUI() {
 	refActionGroup->add(
 		Gtk::Action::create("MenuPracticeKanji", _("_Kanji")),
 		sigc::mem_fun(*this, &FrameMainGUI::OnMenuPracticeKanji));
+	/* Tools Menu */
+	refActionGroup->add(Gtk::Action::create("MenuTools", _("_Tools")));
+	refActionGroup->add(
+		Gtk::Action::create("MenuToolsHand",
+							_("_Handwriting Recognition for Kanji")),
+		sigc::mem_fun(*this, &FrameMainGUI::OnMenuToolsHand));
 	/* Help Menu */
 	refActionGroup->add(Gtk::Action::create("MenuHelp", _("_Help")));
 	refActionGroup->add(
@@ -90,6 +116,9 @@ FrameMainGUI::FrameMainGUI() {
 		"    <menu action='MenuPractice'>"
 		"      <menuitem action='MenuPracticeKanji'/>"
 		"    </menu>"
+		"    <menu action='MenuTools'>"
+		"      <menuitem action='MenuToolsHand'/>"
+		"    </menu>"
 		"    <menu action='MenuHelp'>"
 		"      <menuitem action='MenuHelpAbout'/>"
 		"      <menuitem action='MenuHelpLicense'/>"
@@ -109,10 +138,18 @@ FrameMainGUI::FrameMainGUI() {
 }
 
 FrameMainGUI::~FrameMainGUI() {
+	if(pfHWPad)           delete pfHWPad;
 	if(pdKanjiListEditor) delete pdKanjiListEditor;
 	if(pdVocabListEditor) delete pdVocabListEditor;
-	if(pdConfig) delete pdConfig;
-	if(pdKanjiPreTest) delete pdKanjiPreTest;
+	if(pdConfig)          delete pdConfig;
+	if(pdKanjiPreTest)    delete pdKanjiPreTest;
+
+	/* Again, this is copied from widget_storeddialog. */
+	Preferences* p = Preferences::Get();
+	int x, y;
+	get_size(x,y);
+	string& size = p->GetSetting(MAINGUI_SIZE_STR);
+	size = (boost::format("%dx%d") % x % y).str();
 }
 
 void FrameMainGUI::OnMenuFileQuit() {hide();}
@@ -152,18 +189,28 @@ void FrameMainGUI::OnMenuEditPrefs() {
 
 void FrameMainGUI::OnMenuPracticeKanji() {
 	cout << "MenuPracticeKanji" << endl;
+	/* Test config dialog */
 	if(!pdKanjiPreTest)
 		pdKanjiPreTest = new DialogKanjiPreTest(*this);
 	int result = pdKanjiPreTest->run();	
 	pdKanjiPreTest->hide();
 	if(result==Gtk::RESPONSE_OK) {
+		/* Test dialog */
 		DialogKanjiTest dkt(*this, *pdKanjiPreTest);
 		result = dkt.run();
 		dkt.hide();
-		/* Show result dialog - to do! */
+		/* Result dialog */
 		DialogKanjiPostTest dkpt(*this, dkt);
 		dkpt.run();
+		dkpt.hide();
 	}
+}
+
+void FrameMainGUI::OnMenuToolsHand() {
+	cout << "MenuToolsHand" << endl;
+	if(!pfHWPad)
+		pfHWPad = new FrameHWPad();
+	pfHWPad->show();
 }
 
 void FrameMainGUI::OnMenuHelpAbout() {

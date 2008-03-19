@@ -10,7 +10,7 @@
 
 DialogKanjiPostTest::DialogKanjiPostTest
 (Gtk::Window& parent, DialogKanjiTest& test)
-	: Dialog(_("Kanji Test: Results"), parent)
+	: StoredDialog(_("Kanji Test: Results"), parent, "dlg.kanjiposttest.size")
 {
 	/* Create result string */
 	double score=0.0, progress=0.0;

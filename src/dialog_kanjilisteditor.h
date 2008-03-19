@@ -1,13 +1,13 @@
 #ifndef dialog_kanjilisteditor_h
 #define dialog_kanjilisteditor_h
 
-#include <gtkmm/dialog.h>
+#include "widget_storeddialog.h"
 #include <gtkmm/button.h>
 #include <gtkmm/textview.h>
 #include "dialog_addkanjibygrade.h"
 #include "dialog_addkanjibyfreq.h"
 
-class DialogKanjiListEditor : public Gtk::Dialog {
+class DialogKanjiListEditor : public StoredDialog {
 public:
 	DialogKanjiListEditor(Gtk::Window& parent);
 	~DialogKanjiListEditor();

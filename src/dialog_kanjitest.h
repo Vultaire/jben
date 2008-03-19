@@ -1,7 +1,7 @@
 #ifndef dialog_kanjitest_h
 #define dialog_kanjitest_h
 
-#include <gtkmm/window.h>
+#include "widget_storeddialog.h"
 #include <gtkmm/button.h>
 #include "dialog_kanjipretest.h"
 #include "widget_coveredtextview.h"
@@ -12,7 +12,7 @@ enum {
 	DKT_TM_Writing
 };
 
-class DialogKanjiTest : public Gtk::Dialog {
+class DialogKanjiTest : public StoredDialog {
 public:
 	DialogKanjiTest(Gtk::Window& parent, DialogKanjiPreTest& settings);
 	int testMode;
@@ -23,6 +23,7 @@ private:
 	void OnCorrect();
 	void OnWrong();
 	void OnStop();
+	bool OnDeleteEvent(GdkEventAny* event);
 
 	CoveredTextView ctvKanji, ctvOnyomi, ctvKunyomi, ctvMeaning;
 	Gtk::Button btnCorrect, btnWrong, btnStop;

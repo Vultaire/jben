@@ -12,11 +12,12 @@
 using namespace std;
 
 DialogVocabListEditor::DialogVocabListEditor(Gtk::Window& parent)
-	: Dialog(_("Vocab List Editor"), parent, true),
+	: StoredDialog(_("Vocab List Editor"), parent, "dlg.vocablisteditor.size"),
 	  btnCancel(Gtk::Stock::CANCEL),
 	  btnApply(Gtk::Stock::APPLY),
 	  btnOK(Gtk::Stock::OK),
-	  bChanged(false) {
+	  bChanged(false)
+{
 	tvList.set_accepts_tab(false);
 	tvList.set_wrap_mode(Gtk::WRAP_WORD_CHAR);
 	tvList.get_buffer()->signal_changed()
