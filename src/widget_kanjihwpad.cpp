@@ -35,7 +35,6 @@
  * check for updates on any button-release-event signal.
  */
 KanjiHWPad::KanjiHWPad() {
-	set_title("Yo");
 	set_shadow_type(Gtk::SHADOW_IN);
 	add(da);
 	da.add_events(

@@ -52,9 +52,14 @@ basic_string<tdest> ConvertString
 
 	/* The libc iconv function takes a char* source, while the libiconv iconv
 	   takes a const char* source. */
-	/* GTK's iconv also takes a const char* source...  libc iconv appears to be
-	   the oddball. */
-	const char *srcData = (char *)sourceData.c_str();
+	/* GTK's iconv in Windows also takes a const char* source...
+	   libc iconv appears to be the oddball. */
+#ifdef __WIN32__
+	const char *srcData;
+#else
+	char *srcData;
+#endif
+	srcData = (char *)sourceData.c_str();
 	char *destData = buffer;
 
 	/* libiconv stuff */
