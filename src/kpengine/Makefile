@@ -2,8 +2,8 @@
 # Makefile for kpengine executable
 
 ### User-editable options ###
-# PLATFORM: either windows or gtk20
-PLATFORM = gtk20
+# PLATFORM: either windows or linux
+PLATFORM = linux
 # BUILD: either release, debug, or profile
 BUILD = release
 
@@ -36,10 +36,10 @@ build_bindir = ../../bin/$(PLATFORM)/$(BUILD)/kpengine
 # Build object configuration
 ifeq ($(PLATFORM),windows)
 	kpengine = jben_kpengine.exe
-	mkdircmd  = C:/progra~1/gnuwin32/bin/mkdir -p
+	# We don't want a popup console window on every call...
+	kpengine_winflags = -mwindows
 else
 	kpengine = jben_kpengine
-	mkdircmd = mkdir -p
 endif
 
 sources = $(shell ls -t *.c) # Compile most recently edited files first.
@@ -50,12 +50,12 @@ objects = $(sources:%.c=$(build_objdir)/%.o)
 $(build_bindir)/$(kpengine) : $(objects)
 	echo Sources: $(objects)
 	echo Objects: $(objects)
-	$(mkdircmd) $(build_bindir)
+	mkdir -p $(build_bindir)
 	$(CC) -o $(build_bindir)/$(kpengine) $(build_objdir)/kpengine.o \
-		$(build_objdir)/scoring.o $(build_objdir)/util.o $(CFLAGS)
+		$(build_objdir)/scoring.o $(build_objdir)/util.o $(CFLAGS) $(kpengine_winflags)
 
 $(build_objdir)/%.o: %.c
-	$(mkdircmd) $(build_objdir)
+	mkdir -p $(build_objdir)
 	$(CC) -c -o $@ -DFOR_PILOT_COMPAT $< $(CFLAGS)
 
 clean:

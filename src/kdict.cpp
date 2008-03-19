@@ -36,7 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <list>
 using namespace std;
 
-#ifdef __WXMSW__
+#ifdef __WIN32__
 #	define FALLBACK_DICTDIR "dicts\\"
 #else
 #	define FALLBACK_DICTDIR "dicts/"

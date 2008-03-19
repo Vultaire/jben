@@ -1,72 +1,38 @@
 # J-Ben Makefile for Linux and Windows
-# Note: Windows builds expect MinGW, GNUWin32 CoreUtils, and NSIS
-#       binaries in your path!
+# Note: Windows builds expect MinGW WITH MSys,
+# one of the tech. preview gcc 4 compilers (for wstrings),
+# plus 7-Zip and NSIS binaries in your path for "make install".
 
 ### User-editable options ###
-# PLATFORM: either windows or gtk20
-PLATFORM = gtk20
+# PLATFORM: either windows or linux
+PLATFORM = linux
 # BUILD: either release, debug, or profile
 BUILD = release
 # JBEN_VERSION: Used for labeling release packages
-JBEN_VERSION = 1.1.3
+JBEN_VERSION = 1.1.3.3
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
 #	CHANGE THESE VARIABLES
-	MAKE = mingw32-make
+	CXX = g++-dw2
+	CC = gcc-dw2
 	mingwbase = C:/MinGW
-	boostbase = C:/dev/boost_1_34_1
-	stlportbase = C:/dev/STLport-5.1.5
+	gtkdevbase = C:/GTKDev
+	boostbase = C:/devel/boost_1_34_1
 #	iconvbase = C:/dev/libiconv  - obsoleted; gtk includes it
-	gtkbase   = C:/gtk
-	gtkmmbase = C:/gtkmm
 #   LEAVE THESE ALONE
-	mkdircmd  = C:/progra~1/gnuwin32/bin/mkdir -p
 #	STLPort specifies -pthreads - does -mthreads work fine for this???
 #   (It appears so...)
-	gtkinc    = $(gtkbase)/include
-	gtklib    = $(gtkbase)/lib
-	gtkmminc  = $(gtkmmbase)/include
-	gtkmmlib  = $(gtkmmbase)/lib
-	gtkmmcflags = -mms-bitfields \
-		-I$(gtkinc) \
-		-I$(gtkinc)/gtk-2.0 \
-		-I$(gtkinc)/glib-2.0 \
-		-I$(gtklib)/glib-2.0/include \
-		-I$(gtklib)/gtk-2.0/include \
-		-I$(gtkinc)/pango-1.0 \
-		-I$(gtkinc)/cairo \
-		-I$(gtkinc)/libpng12 \
-		-I$(gtkinc)/atk-1.0 \
-		-I$(gtkmminc)/gtkmm-2.4 \
-		-I$(gtkmmlib)/gtkmm-2.4/include \
-		-I$(gtkmminc)/glibmm-2.4 \
-		-I$(gtkmmlib)/glibmm-2.4/include \
-		-I$(gtkmminc)/gdkmm-2.4 \
-		-I$(gtkmmlib)/gdkmm-2.4/include \
-		-I$(gtkmminc)/pangomm-1.4 \
-		-I$(gtkmminc)/atkmm-1.6 \
-		-I$(gtkmminc)/sigc++-2.0 \
-		-I$(gtkmmlib)/sigc++-2.0/include \
-		-I$(gtkmminc)/cairomm-1.0		
-	gtkmmlibs = -L$(gtklib) -L$(gtkmmlib) \
-		-lgtkmm-2.4 -lgdkmm-2.4 -latkmm-1.6 -lgtk-win32-2.0 -lpangomm-1.4 \
-		-lcairomm-1.0 -lglibmm-2.4 -lsigc-2.0 -lgdk-win32-2.0 -latk-1.0 \
-		-lgdk_pixbuf-2.0 -lpangowin32-1.0 -lpangocairo-1.0 -lpango-1.0 \
-		-lcairo -lgobject-2.0 -lgmodule-2.0 -lglib-2.0 -lintl -liconv
-	xmllibcflags = -IC:/libxml2/include/libxml2
-	xmlliblibs   = -LC:/libxml2/lib -lxml2.dll
 
-	wincxxflags = -mthreads $(gtkmmcflags) $(xmllibcflags)
+	wincxxflags = -I$(gtkdevbase)/include `pkg-config --cflags gtkmm-2.4 libxml-2.0`
 	wincppflags = -D__WIN32__
+#	winlinkflags = -mwindows -mthreads
 	winlinkflags = -mwindows
+#	winlinkflags = 
 
 	SharedCXXFLAGS = $(wincxxflags)
-	SharedCPPFLAGS = $(wincppflags) -I$(stlportbase)/stlport \
-		-I$(boostbase) -I$(mingwbase)/include
-	libs = $(winlinkflags) \
-		-L$(stlportbase)/lib -lstlport.5.1.dll \
-		$(gtkmmlibs) $(xmlliblibs) -L$(mingwbase)/lib
+	SharedCPPFLAGS = $(wincppflags) -I$(boostbase)
+	libs = $(winlinkflags) `pkg-config --libs gtkmm-2.4 libxml-2.0`
 endif
 
 ##################################
@@ -95,18 +61,17 @@ build_objdir = ../obj/$(PLATFORM)/$(BUILD)
 build_bindir = ../bin/$(PLATFORM)/$(BUILD)
 
 
-# Get flags/libs for GTK builds
-ifeq ($(PLATFORM),gtk20)
-	MAKE = make
-	SharedCXXFLAGS = `pkg-config --cflags gtk+-2.0 gtkmm-2.4 libxml-2.0`
+# Get flags/libs for Linux builds
+ifeq ($(PLATFORM),linux)
+	CXX = g++
+	CC = gcc
+	SharedCXXFLAGS = `pkg-config --cflags gtkmm-2.4 libxml-2.0`
 	SharedCPPFLAGS = -DJB_DATADIR=\"$(datadir)/jben\" \
 		-DDOCDIR=\"$(docdir)/doc\" -DLICENSEDIR=\"$(docdir)/license\"
-	libs = `pkg-config --libs gtk+-2.0 gtkmm-2.4 libxml-2.0`
-	mkdircmd = mkdir -p
+	libs = `pkg-config --libs gtkmm-2.4 libxml-2.0`
 endif
 
 # C++ options
-CXX = g++
 ifeq ($(BUILD),release)
 	CXXFLAGS = -Wall -s -O2
 endif
@@ -157,12 +122,12 @@ endif
 .PHONY : kpengine clean cleandep cleanall install uninstall
 
 $(build_bindir)/$(target) : $(objects)
-	$(mkdircmd) $(build_bindir)
+	mkdir -p $(build_bindir)
 #	$(CXX) -o $(build_bindir)/$(target) $(objects) $(libs) $(CXXFLAGS)
 	$(CXX) $(CXXFLAGS) $(SharedCXXFLAGS) -o $(build_bindir)/$(target) $(objects) $(libs)
 
 $(build_objdir)/jben.res:
-	$(mkdircmd) $(build_objdir)
+	mkdir -p $(build_objdir)
 	windres.exe -i jben.rc -J rc -o $(build_objdir)/jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
 
 kpengine:
@@ -178,7 +143,7 @@ cleandep:
 cleanall : clean cleandep
 
 $(build_objdir)/%.o : %.cpp
-	$(mkdircmd) $(build_objdir)
+	mkdir -p $(build_objdir)
 # Old command
 #	$(CXX) $(CPPFLAGS) -c -o $@ $(@F:%.o=%.cpp) $(CXXFLAGS)
 # Testing command based on GNU Make manual
@@ -188,7 +153,7 @@ $(build_objdir)/%.o : %.cpp
 include $(sources:%.cpp=$(build_depdir)/%.d)
 $(build_depdir)/%.d : %.cpp
 	@echo Recreating $@...
-	@$(mkdircmd) $(build_depdir)
+	@mkdir -p $(build_depdir)
 	@$(CXX) -MM $(CPPFLAGS) $< > $@.mktmp
 ifeq ($(buildenv),windows)
 	@sed "s,\($*\)\.o[ :]*,$(build_objdir)/\1.o $@ : ,g" < $@.mktmp > $@
@@ -201,35 +166,37 @@ install:
 ifeq ($(PLATFORM),windows)
 #	On Windows, "make install" makes the J-Ben NSIS installer.
 #	Step 1: Prep the output directory
-	$(mkdircmd) ../J-Ben
-	cp "$(stlportbase)/bin/libstlport.5.1.dll" ../J-Ben
+	mkdir -p ../J-Ben
 	cp "$(mingwbase)/bin/mingwm10.dll" ../J-Ben
-	cp "$(wxliblink)/wxbase28u_gcc_vultaire.net.dll" ../J-Ben
-	cp "$(wxliblink)/wxmsw28u_core_gcc_vultaire.net.dll" ../J-Ben
-	cp "$(wxliblink)/wxmsw28u_html_gcc_vultaire.net.dll" ../J-Ben
-	cp "$(iconvbase)/bin/libcharset1.dll" ../J-Ben
-	cp "$(iconvbase)/bin/libiconv2.dll" ../J-Ben
+#	Copy GTK files... or just depend on a runtime being installed by the user (or installer)
+###	cp "$(gtkdevbase)/bin/..." ../J-Ben
 	cp ../README.txt ../J-Ben
 	cp ../CHANGELOG.txt ../J-Ben
 	cp "$(build_bindir)/$(target)" ../J-Ben
 	cp "$(build_bindir)/kpengine/jben_kpengine.exe" ../J-Ben
 	cp -R ../license ../J-Ben
-	$(mkdircmd) ../J-Ben/kpengine_data ../J-Ben/dicts ../J-Ben/sods
+	mkdir -p ../J-Ben/kpengine_data ../J-Ben/dicts ../J-Ben/sods
 	cp kpengine/*.unistrok ../J-Ben/kpengine_data
-	cp ../dicts/edict2 ../dicts/kanjidic ../dicts/radkfile \
-		../dicts/kradfile ../dicts/README.txt ../J-Ben/dicts
+	cp ../dicts/* ../J-Ben/dicts
 	cp ../sods/README.txt ../J-Ben/sods
 	@echo J-Ben distribution created in ..\J-Ben.
-#	Step 2: Run NSIS script
-	makensis /Dversion=$(JBEN_VERSION) installer.nsi
-#   Step 3: Zip the output folder into 7z and zip archives
-	$(mkdircmd) ../archives/$(JBEN_VERSION)
+#	Step 2: Zip the output folder into 7z and zip archives
+	mkdir -p ../archives/$(JBEN_VERSION)
 	7z a -tzip ../archives/$(JBEN_VERSION)/jben-$(JBEN_VERSION)-win-binary.zip \
 		../J-Ben
 	7z a -t7z ../archives/$(JBEN_VERSION)/jben-$(JBEN_VERSION)-win-binary.7z \
 		../J-Ben
-#	Step 4: Remove the output folder
-	rm -rf ../J-Ben
+#####
+# Msys has issues with programs requiring "/" switches.  So, makensis with a /D switch won't fly until I can find a workaround.
+#####
+	@echo To create an installer, open a normal command prompt, navigate to this
+	@echo directory, and type the following:
+	@echo makensis /Dversion=$(JBEN_VERSION) installer.nsi
+	@echo \(Afterwards, delete ..\J-Ben.\)
+##	Step 3: Run NSIS script
+#	makensis /Dversion=$(JBEN_VERSION) installer.nsi
+##	Step 4: Remove the output folder
+#	rm -rf ../J-Ben
 else
 	$(INSTALL) -d $(DESTDIR)$(bindir) $(DESTDIR)$(datadir)/jben/dicts \
 		$(DESTDIR)$(datadir)/jben/sods $(DESTDIR)$(docdir)/license

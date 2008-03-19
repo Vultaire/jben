@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
 	/* the below -might- help on win32 systems, but for now is unused. */
 #if 0
-#ifndef __WXMSW__
+#ifndef __WIN32__
 	setlocale(LC_ALL, "");
 #endif
 #endif

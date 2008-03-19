@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /* Include platform-specific files here */
-#ifdef __WXMSW__
+#ifdef __WIN32__
 #include <windows.h>
 #else
 #include <unistd.h>
@@ -60,7 +60,7 @@ string GetCWD() {
 
 	/* Yes, the size for the buffer used in
 	   this function is maybe overkill. */
-#ifdef __WXMSW__
+#ifdef __WIN32__
 	wchar_t *buffer = new wchar_t[0x10000];
 	GetCurrentDirectoryW(0x10000, buffer);
 	s = utfconv_wm(buffer);

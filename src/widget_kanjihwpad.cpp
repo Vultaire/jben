@@ -19,6 +19,13 @@
 	#endif
 #endif
 
+#ifdef __WIN32__
+	/* NOT clearly documented.  To use read/write/open/close/etc, include io.h.
+	   On Windows they're preceded with an underscore, but GLib adds
+	   #defines for cross-platform convenience. */
+	#include <io.h>
+#endif
+
 /**
  * A widget for accepting handwritten kanji.
  * This widget looks up kanji characters based on user input.  Updates to the
@@ -28,6 +35,7 @@
  * check for updates on any button-release-event signal.
  */
 KanjiHWPad::KanjiHWPad() {
+	set_title("Yo");
 	set_shadow_type(Gtk::SHADOW_IN);
 	add(da);
 	da.add_events(
@@ -179,9 +187,6 @@ void KanjiHWPad::LookupChars() {
 		oss << '\n';
 
 		/* Call kpengine */
-#ifdef __WIN32__
-		/* Not yet implemented */
-#else
 		GPid child_pid;
 		gint standard_in, standard_out, standard_err;
 		GError *error;
@@ -271,7 +276,6 @@ void KanjiHWPad::LookupChars() {
 			oss << ERR_PREF << "Bad call to kpengine!";
 			el.Push(EL_Error, oss.str());
 		}
-		#endif
 
 		/* cleanup */
 		for(int i=0;i<3;i++)

@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define REF_FILE_NOT_FOUND     REF_FAILURE | 0x1
 #define REF_FILE_OPEN_ERROR    REF_FAILURE | 0x2
 
-#ifdef __WXMSW__
+#ifdef __WIN32__
 #define DSCHAR   '\\'
 #define WDSCHAR L'\\'
 #define DSSTR    "\\"

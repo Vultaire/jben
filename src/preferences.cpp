@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #	define JB_DATADIR "."
 #endif
 
-#ifdef __WXMSW__
+#ifdef __WIN32__
 #	define CFGFILE "jben.cfg"
 #	define HOMEENV "APPDATA"
 #else
@@ -59,11 +59,16 @@ Preferences *Preferences::Get() {
 		prefsSingleton->SetDefaultPrefs();
 
 		/* Check for the config file in the user's home directory. */
-		string homedir = getenv(HOMEENV);
-		homedir.append(1, DSCHAR);
-		bool OK = (prefsSingleton
-				   ->LoadFile(string(homedir).append(CFGFILE).c_str())
-				   == REF_SUCCESS);
+		bool OK = true;
+		char *sz = getenv(HOMEENV);
+		OK = (sz!=NULL);
+		if(OK) {
+			string homedir = sz;
+			homedir.append(1, DSCHAR);
+			OK = (prefsSingleton
+				  ->LoadFile(string(homedir).append(CFGFILE).c_str())
+				  == REF_SUCCESS);
+		}
 
 		/* If the config file could not be loaded from the home directory,
 		   fall back and check the current directory. */
