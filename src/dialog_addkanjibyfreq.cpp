@@ -4,11 +4,8 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/messagedialog.h>
 
-#include <iostream>
-using namespace std;
-
 DialogAddKanjiByFreq::DialogAddKanjiByFreq(Gtk::Window& parent)
-	: StoredDialog(_("Add Kanji By Freq"), parent, "dlg.addkanjibyfreq.size"),
+	: StoredDialog(_("Add Kanji By Freq"), parent, "gui.dlg.addkanjibyfreq.size"),
 	  btnOK(Gtk::Stock::OK),
 	  btnCancel(Gtk::Stock::CANCEL)
 {
@@ -49,27 +46,22 @@ DialogAddKanjiByFreq::DialogAddKanjiByFreq(Gtk::Window& parent)
 }
 
 int DialogAddKanjiByFreq::GetLowFreq() {
-	cout << "GetLowFreq" << endl;
 	return (int)(spinLowFreq.get_value());
 }
 
 int DialogAddKanjiByFreq::GetHighFreq() {
-	cout << "GetHighFreq" << endl;
 	return (int)(spinHighFreq.get_value());
 }
 
 void DialogAddKanjiByFreq::OnOK() {
-	cout << "OnOK" << endl;
 	OKProc();
 }
 
 void DialogAddKanjiByFreq::OnCancel() {
-	cout << "OnCancel" << endl;
 	CancelProc();
 }
 
 void DialogAddKanjiByFreq::OnLowValChange() {
-	cout << "OnLowValChange" << endl;
 	double low, high;
 	low = spinLowFreq.get_value();
 	high = spinHighFreq.get_value();
@@ -78,7 +70,6 @@ void DialogAddKanjiByFreq::OnLowValChange() {
 }
 
 void DialogAddKanjiByFreq::OnHighValChange() {
-	cout << "OnHighValChange" << endl;
 	double low, high;
 	low = spinLowFreq.get_value();
 	high = spinHighFreq.get_value();
@@ -87,7 +78,6 @@ void DialogAddKanjiByFreq::OnHighValChange() {
 }
 
 void DialogAddKanjiByFreq::OKProc() {
-	cout << "OKProc" << endl;
 	int l = GetLowFreq();
 	int h = GetHighFreq();
 	if(h<l) {
@@ -101,6 +91,5 @@ void DialogAddKanjiByFreq::OKProc() {
 }
 
 void DialogAddKanjiByFreq::CancelProc() {
-	cout << "CancelProc" << endl;
 	response(Gtk::RESPONSE_CANCEL);
 }

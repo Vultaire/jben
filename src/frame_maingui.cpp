@@ -12,8 +12,6 @@
 #include <iostream>
 using namespace std;
 
-#define MAINGUI_SIZE_STR "jbengui.size"
-
 FrameMainGUI* FrameMainGUI::singleton = NULL;
 
 FrameMainGUI& FrameMainGUI::Get() {
@@ -30,7 +28,6 @@ void FrameMainGUI::Destroy() {
 
 FrameMainGUI::FrameMainGUI() {
 	set_title(PROGRAM_NAME " v" VERSION_STR " by " AUTHOR_NAME);
-	set_default_size(600,400);
 	Glib::RefPtr<Gdk::Pixbuf> rpIcon
 		= Gdk::Pixbuf::create_from_xpm_data(iconJben_xpm);
 	set_icon(rpIcon);
@@ -44,7 +41,7 @@ FrameMainGUI::FrameMainGUI() {
 
 	/* Logic copied from widget_storeddialog */
 	Preferences* p = Preferences::Get();
-	string& size = p->GetSetting(MAINGUI_SIZE_STR);
+	string& size = p->GetSetting("gui.main.size");
 	int x, y;
 	if(size.length()>0) {
 		std::list<string> ls = StrTokenize<char>(size, "x");
@@ -134,6 +131,7 @@ FrameMainGUI::FrameMainGUI() {
 	tabs.append_page(panelWordDict, _("Word Dictionary"));
 	tabs.append_page(panelKanjiDict, _("Kanji Dictionary"));
 
+	Update();
 	show_all_children();
 }
 
@@ -148,14 +146,18 @@ FrameMainGUI::~FrameMainGUI() {
 	Preferences* p = Preferences::Get();
 	int x, y;
 	get_size(x,y);
-	string& size = p->GetSetting(MAINGUI_SIZE_STR);
+	string& size = p->GetSetting("gui.main.size");
 	size = (boost::format("%dx%d") % x % y).str();
+}
+
+void FrameMainGUI::Update() {
+	panelWordDict.Update();
+	panelKanjiDict.Update();
 }
 
 void FrameMainGUI::OnMenuFileQuit() {hide();}
 
 void FrameMainGUI::OnMenuEditVocab() {
-	cout << "MenuEditVocab" << endl;
 	if(!pdVocabListEditor)
 		pdVocabListEditor = new DialogVocabListEditor(*this);
 	int result = pdVocabListEditor->run();
@@ -166,7 +168,6 @@ void FrameMainGUI::OnMenuEditVocab() {
 }
 
 void FrameMainGUI::OnMenuEditKanji() {
-	cout << "MenuEditKanji" << endl;
 	if(!pdKanjiListEditor)
 		pdKanjiListEditor = new DialogKanjiListEditor(*this);
 	int result = pdKanjiListEditor->run();
@@ -177,18 +178,18 @@ void FrameMainGUI::OnMenuEditKanji() {
 }
 
 void FrameMainGUI::OnMenuEditPrefs() {
-	cout << "MenuEditPrefs" << endl;
 	if(!pdConfig)
 		pdConfig = new DialogConfig(*this);
 	int result = pdConfig->run();
 	pdConfig->hide();
 	if(result==Gtk::RESPONSE_OK) {
-		/* DO NOTHING - handled by the dialog itself */
+		/* The config dialog changes the settings, but we need to refresh the
+		   GUI ourselves. */
+		Update();
 	}
 }
 
 void FrameMainGUI::OnMenuPracticeKanji() {
-	cout << "MenuPracticeKanji" << endl;
 	/* Test config dialog */
 	if(!pdKanjiPreTest)
 		pdKanjiPreTest = new DialogKanjiPreTest(*this);
@@ -207,14 +208,12 @@ void FrameMainGUI::OnMenuPracticeKanji() {
 }
 
 void FrameMainGUI::OnMenuToolsHand() {
-	cout << "MenuToolsHand" << endl;
 	if(!pfHWPad)
 		pfHWPad = new FrameHWPad();
 	pfHWPad->show();
 }
 
 void FrameMainGUI::OnMenuHelpAbout() {
-	cout << "MenuHelpAbout" << endl;
 	Gtk::MessageDialog md
 		(*this, (boost::format(
 			  _("%s  v%s\n"
@@ -243,7 +242,6 @@ void FrameMainGUI::OnMenuHelpAbout() {
 }
 
 void FrameMainGUI::OnMenuHelpLicense() {
-	cout << "MenuHelpLicense" << endl;
 	string licenseMessage(
 		_("Program distributed under the GNU General Public License (GPL) "
 		  "version 2:\n"
@@ -273,6 +271,5 @@ void FrameMainGUI::OnMenuHelpLicense() {
 }
 
 void FrameMainGUI::OnSwitchPage(GtkNotebookPage* page, guint page_num) {
-	cout << "OnSwitchPage" << endl;
 	((UpdatePanel*)tabs.get_nth_page(page_num))->Update();
 }

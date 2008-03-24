@@ -7,16 +7,12 @@
 #include <boost/format.hpp>
 #include "listmanager.h"
 #include "encoding_convert.h"
+#include "gtk_utils.h"
 
-#include <iostream>
-using namespace std;
-
-PanelKanjiDict::PanelKanjiDict()
-	: btnSearch(_("Search")),
-	  btnPrev(Gtk::Stock::GO_BACK),
-	  btnNext(Gtk::Stock::GO_FORWARD),
-	  btnRand(_("Random")),
-	  lblMaxIndex(_("of 0 kanji")) {
+PanelKanjiDict::PanelKanjiDict() {
+	lblMaxIndex.set_text(_("of 0 kanji"));
+	currentIndex = -1;  /* Initialize to a "not selected" index */
+	
 	btnPrev.signal_clicked()
 		.connect(sigc::mem_fun(*this, &PanelKanjiDict::OnPrevious));
 	btnNext.signal_clicked()
@@ -68,18 +64,15 @@ PanelKanjiDict::PanelKanjiDict()
 }
 
 void PanelKanjiDict::OnQueryEnter() {
-	cout << "OnQueryEnter" << endl;
 	OnSearch();
 }
 
 void PanelKanjiDict::OnSearch() {
-	cout << "OnSearch" << endl;
 	SetSearchString(entQuery.get_text());
 	Update();
 }
 
 void PanelKanjiDict::OnPrevious() {
-	cout << "OnPrevious" << endl;
 	ListManager* lm = ListManager::Get();
 	currentIndex--;
 	if(currentIndex<0) currentIndex = lm->KList()->Size()-1;
@@ -87,7 +80,6 @@ void PanelKanjiDict::OnPrevious() {
 }
 
 void PanelKanjiDict::OnNext() {
-	cout << "OnNext" << endl;
 	ListManager* lm = ListManager::Get();
 	int listSize = lm->KList()->Size();
 	currentIndex++;
@@ -97,7 +89,6 @@ void PanelKanjiDict::OnNext() {
 }
 
 void PanelKanjiDict::OnRandom() {
-	cout << "OnRandom" << endl;
 	ListManager* lm = ListManager::Get();
 	int listSize = lm->KList()->Size();
 	if(listSize>0) {
@@ -107,7 +98,6 @@ void PanelKanjiDict::OnRandom() {
 }
 
 void PanelKanjiDict::OnIndexUpdate() {
-	cout << "OnIndexUpdate" << endl;
 	ListManager* lm = ListManager::Get();
 	string s = entIndex.get_text();
 	int i = atoi(s.c_str());	
@@ -119,7 +109,7 @@ void PanelKanjiDict::OnIndexUpdate() {
 }
 
 void PanelKanjiDict::Update() {
-	cout << "Update" << endl;
+	DictPanel::Update();
 	/* If currentIndex has been changed, update any necessary data. */
 	ListManager* lm = ListManager::Get();
 	if(currentIndex!=-1) {
@@ -144,7 +134,6 @@ void PanelKanjiDict::Update() {
 }
 
 void PanelKanjiDict::SetSearchString(const Glib::ustring& searchString) {
-	cout << "SetSearchString" << endl;
 	ListManager* lm = ListManager::Get();
 	currentSearchString = searchString;
 	int len = currentSearchString.length();
@@ -159,25 +148,22 @@ void PanelKanjiDict::SetSearchString(const Glib::ustring& searchString) {
 }
 
 void PanelKanjiDict::UpdateOutput() {
-	cout << "UpdateOutput" << endl;
 	const KDict* kd = KDict::Get();
-	string html = "<html><body><font face=\"Serif\">";
-	wstring htmlContent;
 	const KInfo *ki;
+	string output;
 
 	wchar_t c;
 	int len = currentSearchString.length();
 	for(int i=0;i<len;i++) {
 		c = currentSearchString[i];
 		ki = kd->GetEntry(c);
-		if(ki) htmlContent.append(KDict::KInfoToHtml(*ki));
+		if(ki) {
+			if(output.length()>0) output.append(1,'\n');
+			output.append(KDict::KInfoToTextBuf(*ki));
+		}
 	}
 
-	if(htmlContent.length()>0)
-		html.append(utfconv_wm(htmlContent));
-	else
-		html.append(_("No kanji have been selected."));
-
-	html.append("</font></body></html>");
-	tvResults.get_buffer()->set_text(html);
+	if(output.length()==0)
+		output.append(_("No kanji have been selected."));
+	SetTextBuf(tvResults.get_buffer(), output);
 }

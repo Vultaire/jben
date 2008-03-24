@@ -466,6 +466,58 @@ wstring WDict::ResultToHTML(const wstring& rawResult) {
 	return htmlStr;
 }
 
+string WDict::ResultToTextBuf(const string& rawResult) {
+	string token, subToken, jStr, eStr, outStr;
+	list<string> tk = StrTokenize(rawResult, "\n");
+	size_t indexSlash, indexNextSlash, indexBreak;
+	while(tk.size()>0) {
+		if(outStr.length()>0) outStr.append(1, '\n');
+		token = tk.front();
+		tk.pop_front();
+
+		indexSlash = token.find_first_of(L'/');
+		if(indexSlash==wstring::npos) {
+			/* Fail-safe: just display the raw string */
+			outStr.append(token);
+		} else {
+			outStr.append("<b>Japanese:</b> <font ja>");
+			/*outStr.append(token.substr(0,indexSlash));*/
+			jStr = token.substr(0,indexSlash);
+
+			indexBreak = jStr.find_first_of(';');
+			while(indexBreak!=wstring::npos) {
+				/*jStr[indexBreak]=", ";*/
+				jStr.replace(indexBreak,1,", ",0,2);
+				indexBreak = jStr.find_first_of(';');
+			}
+
+			outStr.append(jStr);
+			outStr.append("</font>\n");
+
+			outStr.append("<b>English:</b> ");
+			eStr.clear();
+			while(indexSlash!=wstring::npos) {
+				indexNextSlash = token.find_first_of('/', indexSlash+1);
+				if(indexNextSlash==wstring::npos)
+					subToken = token.substr(indexSlash+1);
+				else
+					subToken = token.substr(indexSlash+1,
+											indexNextSlash-1 - indexSlash);
+				if(subToken.length()>0) {
+					if(eStr.length()>0)
+						eStr.append("; ");
+					eStr.append(subToken);
+				}
+				indexSlash = indexNextSlash;
+			}
+			outStr.append(eStr);
+		}
+		outStr.append(1, '\n');
+	}
+
+	return outStr;
+}
+
 void WDict::GetEnglish(const string& edictStr, vector<string>& dest) {
 	char *tokenizedString = new char[edictStr.length()+1];
 	char *token;

@@ -4,9 +4,6 @@
 #include <gtkmm/stock.h>
 #include <gtkmm/messagedialog.h>
 
-#include <iostream>
-using namespace std;
-
 Glib::ustring strs[] = {
 	_("Jouyou Kanji Grade 1"),
 	_("Jouyou Kanji Grade 2"),
@@ -21,7 +18,7 @@ Glib::ustring strs[] = {
 int strCount = 9;
 
 DialogAddKanjiByGrade::DialogAddKanjiByGrade(Gtk::Window& parent)
-	: StoredDialog(_("Add Kanji By Grade"), parent, "dlg.addkanjibyfreq.size"),
+	: StoredDialog(_("Add Kanji By Grade"), parent, "gui.dlg.addkanjibyfreq.size"),
 	  btnOK(Gtk::Stock::OK),
 	  btnCancel(Gtk::Stock::CANCEL)
 {
@@ -67,27 +64,22 @@ int ComboBoxToKanjidicGrade(const Gtk::ComboBoxText& c) {
 }
 
 int DialogAddKanjiByGrade::GetLowGrade() {
-	cout << "GetLowGrade" << endl;
 	return ComboBoxToKanjidicGrade(comboLowGrade);
 }
 
 int DialogAddKanjiByGrade::GetHighGrade() {
-	cout << "GetHighGrade" << endl;
 	return ComboBoxToKanjidicGrade(comboHighGrade);
 }
 
 void DialogAddKanjiByGrade::OnOK() {
-	cout << "OnOK" << endl;
 	OKProc();
 }
 
 void DialogAddKanjiByGrade::OnCancel() {
-	cout << "OnCancel" << endl;
 	CancelProc();
 }
 
 void DialogAddKanjiByGrade::OnLowValChange() {
-	cout << "OnLowValChange" << endl;
 	int low, high;
 	low = GetLowGrade();
 	high = GetHighGrade();
@@ -98,7 +90,6 @@ void DialogAddKanjiByGrade::OnLowValChange() {
 }
 
 void DialogAddKanjiByGrade::OnHighValChange() {
-	cout << "OnHighValChange" << endl;
 	int low, high;
 	low = GetLowGrade();
 	high = GetHighGrade();
@@ -109,7 +100,6 @@ void DialogAddKanjiByGrade::OnHighValChange() {
 }
 
 void DialogAddKanjiByGrade::OKProc() {
-	cout << "OKProc" << endl;
 	int l = GetLowGrade();
 	int h = GetHighGrade();
 	/* 0 is a special code for non-graded kanji and is treated
@@ -125,6 +115,5 @@ void DialogAddKanjiByGrade::OKProc() {
 }
 
 void DialogAddKanjiByGrade::CancelProc() {
-	cout << "CancelProc" << endl;
 	response(Gtk::RESPONSE_CANCEL);
 }

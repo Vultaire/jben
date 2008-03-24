@@ -58,6 +58,7 @@ public:
 				EDS_EXACT | (EDS_BEGIN << 8) |
 				(EDS_END << 16) | (EDS_ANY << 24)) const;
 	static wstring ResultToHTML(const wstring& rawResult);
+	static string ResultToTextBuf(const string& rawResult);
 
 	/* Other functions */
 	bool MainDataLoaded() const;

@@ -65,11 +65,6 @@ void CoveredTextView::SetHiddenText(const Glib::ustring& str) {
 }
 
 bool CoveredTextView::OnClick(GdkEventButton* event) {
-	if(tv.get_buffer()==ptbCover) {
-		cout << "OnClick (Uncovering control)" << endl;
-		Show();
-	} else {
-		cout << "OnClick (Already uncovered)" << endl;
-	}
+	if(tv.get_buffer()==ptbCover) Show();
 	return false;
 }

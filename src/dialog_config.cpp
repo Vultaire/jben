@@ -3,15 +3,16 @@
 #include "kdict.h"
 #include "file_utils.h"
 #include <glibmm/i18n.h>
+#include <gtkmm/notebook.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/buttonbox.h>
 #include <gtkmm/stock.h>
+#include <gtkmm/fontselection.h>
 
-#include <iostream>
-using namespace std;
+#define CHOOSE_FONT _("Change...")
 
 DialogConfig::DialogConfig(Gtk::Window& parent)
-	: StoredDialog(_("Preferences Editor"), parent, "dlg.preferences.size"),
+	: StoredDialog(_("Preferences Editor"), parent, "gui.dlg.preferences.size"),
 	  chkReadings(_("Include on-yomi, kun-yomi and nanori (name) readings")),
 	  chkMeanings(_("Include English meanings")),
 	  chkHighImp(_("Include stroke count, Jouyou grade "
@@ -24,6 +25,15 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 				  "Korean and Pinyin romanization)")),
 	  chkSodStatic(_("Use KanjiCafe.com stroke order diagrams")),
 	  chkSodAnim(_("Use KanjiCafe.com animated stroke order diagrams")),
+	  tblFonts(4, 3),
+	  lblJaNormal(_("Japanese Font, Normal")),
+	  lblJaLarge (_("Japanese Font, Large")),
+	  lblEnNormal(_("English Font, Normal")),
+	  lblEnSmall (_("English Font, Small")),
+	  btnJaNormal(CHOOSE_FONT),
+	  btnJaLarge (CHOOSE_FONT),
+	  btnEnNormal(CHOOSE_FONT),
+	  btnEnSmall (CHOOSE_FONT),
 	  btnCancel(Gtk::Stock::CANCEL),
 	  btnOK(Gtk::Stock::OK)
 {
@@ -84,10 +94,10 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 		new Gtk::CheckButton(_("SKIP codes used by Halpern dictionaries")));
 	vChkDict.push_back(pc);
 	pc = manage(
-		new Gtk::CheckButton(_("\"Kanji Dictionary\" by Spahn && Hadamitzky")));
+		new Gtk::CheckButton(_("\"Kanji Dictionary\" by Spahn & Hadamitzky")));
 	vChkDict.push_back(pc);
 	pc = manage(
-		new Gtk::CheckButton(_("\"Kanji && Kana\" by Spahn && Hadamitzky")));
+		new Gtk::CheckButton(_("\"Kanji & Kana\" by Spahn & Hadamitzky")));
 	vChkDict.push_back(pc);
 	pc = manage(
 		new Gtk::CheckButton(_("Four Corner code (various dictionaries)")));
@@ -116,20 +126,22 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 		.connect(sigc::mem_fun(*this, &DialogConfig::OnOK));
 
 	/* Layout and display */
+	Gtk::Notebook *pnb = manage(new Gtk::Notebook);
+	Gtk::VBox *pvbKanjiConfig, *pvbOutputConfig;
 	Gtk::VBox *pvbMainOpts, *pvbDictsOuter, *pvbOtherOpts;
-	pvbMainOpts =   manage(new Gtk::VBox);
+	pvbKanjiConfig  = manage(new Gtk::VBox);
+	pvbOutputConfig = manage(new Gtk::VBox);
+	pvbMainOpts   = manage(new Gtk::VBox);
 	pvbDictsOuter = manage(new Gtk::VBox);
-	pvbOtherOpts =  manage(new Gtk::VBox);
+	pvbOtherOpts  = manage(new Gtk::VBox);
 	Gtk::HButtonBox *phbbButtons = manage(new Gtk::HButtonBox);
 	Gtk::ScrolledWindow *pswDicts = manage(new Gtk::ScrolledWindow);
 	pswDicts->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-	Gtk::VBox* pvb = get_vbox();
-	pvb->set_spacing(5);
-	pvb->pack_start(*pvbMainOpts,   Gtk::PACK_SHRINK);
-	pvb->pack_start(*pvbDictsOuter, Gtk::PACK_EXPAND_WIDGET);
-	pvb->pack_start(*pvbOtherOpts,  Gtk::PACK_SHRINK);
-	pvb->pack_start(*phbbButtons,   Gtk::PACK_SHRINK);
+	pvbKanjiConfig->pack_start(*pvbMainOpts,   Gtk::PACK_SHRINK);
+	pvbKanjiConfig->pack_start(*pvbDictsOuter, Gtk::PACK_EXPAND_WIDGET);
+	pvbKanjiConfig->pack_start(*pvbOtherOpts,  Gtk::PACK_SHRINK);
+	pvbKanjiConfig->pack_start(*phbbButtons,   Gtk::PACK_SHRINK);
 
 	pvbMainOpts->pack_start(chkReadings, Gtk::PACK_SHRINK);
 	pvbMainOpts->pack_start(chkMeanings, Gtk::PACK_SHRINK);
@@ -150,6 +162,68 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	pvbOtherOpts->pack_start(chkSodStatic, Gtk::PACK_SHRINK);
 	pvbOtherOpts->pack_start(chkSodAnim, Gtk::PACK_SHRINK);
 
+	pvbOutputConfig->set_spacing(5);
+	pvbOutputConfig->pack_start(tblFonts, Gtk::PACK_SHRINK);
+
+	frJaNormal.add(tvJaNormal);
+	frJaNormal.set_shadow_type(Gtk::SHADOW_IN);
+	frJaLarge .add(tvJaLarge);
+	frJaLarge .set_shadow_type(Gtk::SHADOW_IN);
+	frEnNormal.add(tvEnNormal);
+	frEnNormal.set_shadow_type(Gtk::SHADOW_IN);
+	frEnSmall .add(tvEnSmall);
+	frEnSmall .set_shadow_type(Gtk::SHADOW_IN);
+	tvJaNormal.set_accepts_tab(false);
+	tvJaLarge .set_accepts_tab(false);
+	tvEnNormal.set_accepts_tab(false);
+	tvEnSmall .set_accepts_tab(false);
+	tvJaNormal.set_editable(false);
+	tvJaLarge .set_editable(false);
+	tvEnNormal.set_editable(false);
+	tvEnSmall .set_editable(false);
+
+	tblFonts.attach(lblJaNormal, 0, 1, 0, 1, Gtk::SHRINK,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(frJaNormal,  1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(btnJaNormal, 2, 3, 0, 1, Gtk::SHRINK,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(lblJaLarge,  0, 1, 1, 2, Gtk::SHRINK,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(frJaLarge,   1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(btnJaLarge,  2, 3, 1, 2, Gtk::SHRINK,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(lblEnNormal, 0, 1, 2, 3, Gtk::SHRINK,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(frEnNormal,  1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(btnEnNormal, 2, 3, 2, 3, Gtk::SHRINK,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(lblEnSmall,  0, 1, 3, 4, Gtk::SHRINK,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(frEnSmall,   1, 2, 3, 4, Gtk::FILL | Gtk::EXPAND,
+		Gtk::SHRINK, 5, 5);
+	tblFonts.attach(btnEnSmall,  2, 3, 3, 4, Gtk::SHRINK,
+		Gtk::SHRINK, 5, 5);
+
+	btnJaNormal.signal_clicked().connect(sigc::bind<Gtk::Button*>(
+		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnJaNormal));
+	btnJaLarge.signal_clicked() .connect(sigc::bind<Gtk::Button*>(
+		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnJaLarge));
+	btnEnNormal.signal_clicked().connect(sigc::bind<Gtk::Button*>(
+		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnEnNormal));
+	btnEnSmall.signal_clicked() .connect(sigc::bind<Gtk::Button*>(
+		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnEnSmall));
+
+	pnb->append_page(*pvbKanjiConfig);
+	pnb->append_page(*pvbOutputConfig);
+
+	set_border_width(5);
+	Gtk::VBox* pvb = get_vbox();
+	pvb->set_spacing(5);
+	pvb->pack_start(*pnb);
+
 	Gtk::HButtonBox* phbb = get_action_area();
 	phbb->pack_start(btnCancel);
 	phbb->pack_start(btnOK);
@@ -158,26 +232,16 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	show_all_children();
 }
 
-
 void DialogConfig::OnDictionaryToggle() {
-	cout << "OnDictionaryToggle";
-	if(chkDict.get_active())
-		cout << " (Activated)"   << endl;
-	else
-		cout << " (Deactivated)" << endl;
 	vbDicts.set_sensitive(chkDict.get_active());
 }
 
 void DialogConfig::OnCancel() {
-	cout << "Cancel" << endl;
 	Update();
 	response(Gtk::RESPONSE_CANCEL);
 }
 
 void DialogConfig::OnOK() {
-	cout << "OK" << endl;
-
-	/* DO STUFF */
 	unsigned long options=0, dictionaries=0;
 	if(chkReadings     .get_active()) options |= KDO_READINGS;
 	if(chkMeanings     .get_active()) options |= KDO_MEANINGS;
@@ -195,6 +259,10 @@ void DialogConfig::OnOK() {
 	Preferences *prefs = Preferences::Get();
 	prefs->kanjidicOptions = options;
 	prefs->kanjidicDictionaries = dictionaries;
+	prefs->GetSetting("font.ja")       = sFontJaNormal;
+	prefs->GetSetting("font.ja.large") = sFontJaLarge;
+	prefs->GetSetting("font.en")       = sFontEnNormal;
+	prefs->GetSetting("font.en.small") = sFontEnSmall;
 
 	Update();  /* Probably unnecessary, but let's be safe. */
 	response(Gtk::RESPONSE_OK);
@@ -235,5 +303,66 @@ void DialogConfig::Update() {
 
 	for(size_t i=0;i<vChkDict.size();i++) {
 		vChkDict[i]->set_active(dictionaries & (1ul << i));
+	}
+
+	/* Init font display */
+	sFontJaNormal = prefs->GetSetting("font.ja");
+	sFontJaLarge  = prefs->GetSetting("font.ja.large");
+	sFontEnNormal = prefs->GetSetting("font.en");
+	sFontEnSmall  = prefs->GetSetting("font.en.small");
+	UpdateFontControl(tvJaNormal, sFontJaNormal);
+	UpdateFontControl(tvJaLarge,  sFontJaLarge);
+	UpdateFontControl(tvEnNormal, sFontEnNormal);
+	UpdateFontControl(tvEnSmall,  sFontEnSmall);
+
+}
+
+void DialogConfig::UpdateFontControl(Gtk::TextView& tv, const string& font) {
+	Glib::RefPtr<Gtk::TextBuffer>   pBuf = tv.get_buffer();
+	Glib::RefPtr<Gtk::TextTagTable> pTable = pBuf->get_tag_table();
+	Glib::RefPtr<Gtk::TextTag> pTag;
+	pTag = pTable->lookup("font");
+	if(pTag!=0) {
+		pTable->remove(pTag);
+		pTag.clear();
+	}
+	pTag = Gtk::TextTag::create("font");
+	pTag->property_font() = font;
+	pTable->add(pTag);
+	pBuf->set_text("");
+	if(&tv == &tvJaNormal || &tv == &tvJaLarge) {
+		pBuf->insert_with_tag(pBuf->begin(), "日本語", pTag);
+	} else {
+		pBuf->insert_with_tag(pBuf->begin(), "English", pTag);
+	}
+}
+
+void DialogConfig::OnFontChange(Gtk::Button* src) {
+	Gtk::FontSelectionDialog fd(_("Choose Font"));
+	fd.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	fd.add_button(Gtk::Stock::OK,     Gtk::RESPONSE_OK);
+	Gtk::TextView* ptv;
+	string* ps;
+	if(src==&btnJaNormal) {
+		ptv = &tvJaNormal;
+		ps  = &sFontJaNormal;
+		fd.set_preview_text("ENGLISH english 日本語　にほんご　ニホンゴ");
+	} else if(src==&btnJaLarge) {
+		ptv = &tvJaLarge;
+		ps  = &sFontJaLarge;
+		fd.set_preview_text("ENGLISH english 日本語　にほんご　ニホンゴ");
+	} else if(src==&btnEnNormal) {
+		ptv = &tvEnNormal;
+		ps  = &sFontEnNormal;
+	} else if(src==&btnEnSmall) {
+		ptv = &tvEnSmall;
+		ps  = &sFontEnSmall;
+	} else return; /* Should not happen */
+
+	fd.set_font_name(*ps);
+	int result = fd.run();
+	if(result == Gtk::RESPONSE_OK) {
+		(*ps) = fd.get_font_name();
+		UpdateFontControl(*ptv, *ps);
 	}
 }

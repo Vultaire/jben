@@ -147,6 +147,9 @@ public:
 	static wstring KInfoToHtml(const KInfo& k);
 	static wstring KInfoToHtml(const KInfo& k,
 							   long options, long dictionaries);
+	static string KInfoToTextBuf(const KInfo& k);
+	static string KInfoToTextBuf(const KInfo& k,
+								  long options, long dictionaries);
 	const KInfo* GetEntry(const wchar_t key) const;
 	const BoostHM<wchar_t, KInfo>* GetHashTable() const;
 

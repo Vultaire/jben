@@ -11,13 +11,12 @@
 #include "string_utils.h"
 #include <boost/format.hpp>
 
-#include <iostream>
 #include <sstream>
 #include <map>
 
 DialogKanjiTest::DialogKanjiTest
 (Gtk::Window& parent, DialogKanjiPreTest& settings)
-	: StoredDialog(_("J-Ben: Kanji Test"), parent, "dlg.kanjitest.size"),
+	: StoredDialog(_("J-Ben: Kanji Test"), parent, "gui.dlg.kanjitest.size"),
 	  ctvKanji(_("< Kanji >")),
 	  ctvOnyomi(_("< Onyomi >")),
 	  ctvKunyomi(_("< Kunyomi >")),
@@ -195,7 +194,6 @@ void DialogKanjiTest::ShowNextKanji() {
 }
 
 void DialogKanjiTest::OnCorrect() {
-	cout << "Correct" << endl;
 	if(!extraPractice) {
 		totalTested++;
 		correct++;
@@ -204,7 +202,6 @@ void DialogKanjiTest::OnCorrect() {
 }
 
 void DialogKanjiTest::OnWrong() {
-	cout << "Wrong" << endl;
 	if(!extraPractice) {
 		totalTested++;
 		missedKanji.push_back(currentKanji);
@@ -213,7 +210,6 @@ void DialogKanjiTest::OnWrong() {
 }
 
 void DialogKanjiTest::OnStop() {
-	cout << "Stop" << endl;
 	/* If testing is not complete, prompt to make sure we want to quit. */
 	int result = Gtk::RESPONSE_YES;
 	if(testKanji.size()!=0) {
@@ -226,7 +222,6 @@ void DialogKanjiTest::OnStop() {
 }
 
 bool DialogKanjiTest::OnDeleteEvent(GdkEventAny* event) {
-	cout << "DeleteEvent" << endl;
 	OnStop();
 	return true;
 }

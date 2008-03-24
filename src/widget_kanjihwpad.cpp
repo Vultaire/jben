@@ -35,6 +35,9 @@
  * check for updates on any button-release-event signal.
  */
 KanjiHWPad::KanjiHWPad() {
+	/* The label line was added for Win32 builds since my dev version of GTK
+	   doesn't handle labelless frames properly. */
+	set_label(_("Draw Kanji (Right click erases)"));
 	set_shadow_type(Gtk::SHADOW_IN);
 	add(da);
 	da.add_events(

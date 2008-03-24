@@ -38,7 +38,7 @@ public:
 	static void Destroy();
 	~Preferences();
 	void SetDefaultPrefs();
-	string& GetSetting(string key);
+	string& GetSetting(string key, string defaultValue = "");
 
 	/* Options contained within config file - these may eventually go away. */
 	unsigned long kanjidicOptions;

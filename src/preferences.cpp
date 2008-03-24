@@ -273,6 +273,31 @@ string Preferences::GetPrefsStr() {
 	return prefs.str();
 }
 
-string& Preferences::GetSetting(string key) {
-	return stringOpts[ToLower(key)];
+string& Preferences::GetSetting(string key, string defaultValue) {
+	string lKey = ToLower(key);
+	map<string, string>::iterator mi = stringOpts.find(lKey);
+	if(mi!=stringOpts.end()) return mi->second;
+	/* Determine default value, if one is not specified */
+	if(defaultValue == "") {
+		if     (lKey=="gui.main.size")
+			defaultValue = "600x400";
+		else if(lKey=="gui.dlg.kanjilisteditor.size")
+			defaultValue = "450x-1";
+		else if(lKey=="gui.wnd.kanjihwpad.size")
+			defaultValue = "200x230";
+#ifdef __WIN32__
+		else if(lKey=="font.en")       defaultValue = "Arial 12";
+		else if(lKey=="font.en.small") defaultValue = "Arial 8";
+		else if(lKey=="font.ja")       defaultValue = "MS Mincho 16";
+		else if(lKey=="font.ja.large") defaultValue = "MS Mincho 32";
+#else
+		else if(lKey=="font.en")       defaultValue = "sans 12";
+		else if(lKey=="font.en.small") defaultValue = "sans 8";
+		else if(lKey=="font.ja")       defaultValue = "serif 16";
+		else if(lKey=="font.ja.large") defaultValue = "serif 32";
+#endif
+	}
+	/* Assign default value */
+	stringOpts[lKey] = defaultValue;
+	return stringOpts[lKey];
 }

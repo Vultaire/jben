@@ -4,11 +4,8 @@
 #include <glibmm/i18n.h>
 #include "listmanager.h"
 
-#include <iostream>
-using namespace std;
-
 DialogKanjiPreTest::DialogKanjiPreTest(Gtk::Window& parent)
-	: StoredDialog(_("Kanji Test: Settings"), parent, "dlg.kanjipretest.size"),
+	: StoredDialog(_("Kanji Test: Settings"), parent, "gui.dlg.kanjipretest.size"),
 	  rdoRandom(_("Choose randomly from list")),
 	  rdoIndex(_("Start at index:")),
 	  rdoReading(_("Reading kanji")),
@@ -97,7 +94,6 @@ DialogKanjiPreTest::DialogKanjiPreTest(Gtk::Window& parent)
 }
 
 void DialogKanjiPreTest::OnKanjiCountChange() {
-	cout << "KanjiCountChange" << endl;
 	int iListSize  = ListManager::Get()->KList()->Size();
 	int iCount     = spnCount.get_value_as_int();
 	bool bCanStart = btnStart.is_sensitive();
@@ -120,21 +116,17 @@ void DialogKanjiPreTest::OnKanjiCountChange() {
 }
 
 void DialogKanjiPreTest::OnRdoRandom() {
-	cout << "Random" << endl;
 	spnIndex.set_sensitive(false);
 }
 
 void DialogKanjiPreTest::OnRdoStartIndex() {
-	cout << "StartIndex" << endl;
 	spnIndex.set_sensitive(true);
 }
 
 void DialogKanjiPreTest::OnCancel() {
-	cout << "OnCancel" << endl;
 	response(Gtk::RESPONSE_CANCEL);
 }
 
 void DialogKanjiPreTest::OnStart() {
-	cout << "OnStart" << endl;
 	response(Gtk::RESPONSE_OK);
 }

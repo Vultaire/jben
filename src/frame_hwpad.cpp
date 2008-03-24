@@ -7,8 +7,6 @@
 #include <boost/format.hpp>
 #include "encoding_convert.h"
 
-#include <iostream>
-
 #define FHWPAD_SIZE_STR "wnd.kanjihwpad.size"
 
 FrameHWPad::FrameHWPad() {
@@ -29,8 +27,7 @@ FrameHWPad::FrameHWPad() {
 			y = atoi(ls.front().c_str());
 			set_default_size(x,y);
 		}
-	} else
-		set_default_size(200, 230);
+	}
 
 	Gtk::Alignment* paBox = manage(
 		new Gtk::Alignment(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 0, 0));
@@ -62,7 +59,6 @@ FrameHWPad::FrameHWPad() {
 
 FrameHWPad::~FrameHWPad() {
 	/* Again, this is copied from widget_storeddialog. */
-	std::cout << "FrameHWPad destructor called." << std::endl;
 	Preferences* p = Preferences::Get();
 	int x, y;
 	get_size(x,y);
@@ -71,8 +67,6 @@ FrameHWPad::~FrameHWPad() {
 }
 
 bool FrameHWPad::OnRelease(GdkEventButton* event) {
-	std::cout << "Signal CAUGHT by FrameHWPad::OnRelease!" << std::endl;
-
 	Update();
 	return true;
 }
@@ -85,7 +79,6 @@ void FrameHWPad::OnKanjiClicked(unsigned int index) {
 		/* Convert to utf */
 		std::string s = utfconv_wm(ws);
 		/* Copy to clipboard */
-		std::cout << "Copying \"" << s << "\" to clipboard." << std::endl;
 		Glib::RefPtr<Gtk::Clipboard> rcb = Gtk::Clipboard::get();
 		rcb->set_text(s);
 	}
@@ -94,7 +87,6 @@ void FrameHWPad::OnKanjiClicked(unsigned int index) {
 bool FrameHWPad::OnDeleteEvent(GdkEventAny* event) {
 	hide();
 	Clear();
-	std::cout << "OnDeleteEvent caught!" << std::endl;
 	return true;
 }
 
@@ -110,7 +102,6 @@ void FrameHWPad::Update() {
 	for(std::vector<wchar_t>::iterator it = vwc.begin(); it!=vwc.end(); it++) {
 		ws.append(1, *it);
 	}
-	std::cout << "Results: [" << utfconv_wm(ws) << ']' << std::endl;
 
 	std::string utf8char;
 	size_t i;

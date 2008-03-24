@@ -8,11 +8,8 @@
 #include "listmanager.h"
 #include "encoding_convert.h"
 
-#include <iostream>
-using namespace std;
-
 DialogVocabListEditor::DialogVocabListEditor(Gtk::Window& parent)
-	: StoredDialog(_("Vocab List Editor"), parent, "dlg.vocablisteditor.size"),
+	: StoredDialog(_("Vocab List Editor"), parent, "gui.dlg.vocablisteditor.size"),
 	  btnCancel(Gtk::Stock::CANCEL),
 	  btnApply(Gtk::Stock::APPLY),
 	  btnOK(Gtk::Stock::OK),
@@ -52,12 +49,10 @@ void DialogVocabListEditor::OnTextChanged() {
 }
 
 void DialogVocabListEditor::OnCancel() {
-	cout << "Cancel" << endl;
 	response(Gtk::RESPONSE_CANCEL);
 }
 
 void DialogVocabListEditor::OnApply() {
-	cout << "Apply" << endl;
 	bChanged = false;
 	ListManager* lm = ListManager::Get();
 	lm->VList()->Clear();
@@ -75,13 +70,11 @@ void DialogVocabListEditor::OnApply() {
 }
 
 void DialogVocabListEditor::OnOK() {
-	cout << "OK" << endl;
 	if(bChanged) OnApply();
 	response(Gtk::RESPONSE_OK);
 }
 
 void DialogVocabListEditor::Update() {
-	cout << "Update" << endl;
 	ListManager* lm = ListManager::Get();
 	wstring ws = lm->VList()->ToString();
 	string s;

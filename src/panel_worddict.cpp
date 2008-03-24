@@ -8,17 +8,15 @@
 #include "listmanager.h"
 #include "wdict.h"
 #include "encoding_convert.h"
+#include "gtk_utils.h"
 
-#include <iostream>
 #include <cstdlib>
 using namespace std;
 
-PanelWordDict::PanelWordDict()
-	: btnSearch(_("Search")),
-	  btnPrev(Gtk::Stock::GO_BACK),
-	  btnNext(Gtk::Stock::GO_FORWARD),
-	  btnRand(_("Random")),
-	  lblMaxIndex(_("of 0 vocab")) {
+PanelWordDict::PanelWordDict() {
+	lblMaxIndex.set_text(_("of 0 vocab"));
+	currentIndex = -1;  /* Initialize to a "not selected" index */
+
 	btnPrev.signal_clicked()
 		.connect(sigc::mem_fun(*this, &PanelWordDict::OnPrevious));
 	btnNext.signal_clicked()
@@ -70,18 +68,15 @@ PanelWordDict::PanelWordDict()
 }
 
 void PanelWordDict::OnQueryEnter() {
-	cout << "OnQueryEnter" << endl;
 	OnSearch();
 }
 
 void PanelWordDict::OnSearch() {
-	cout << "OnSearch" << endl;
 	SetSearchString(entQuery.get_text());
 	Update();
 }
 
 void PanelWordDict::OnPrevious() {
-	cout << "OnPrevious" << endl;
 	ListManager* lm = ListManager::Get();
 	currentIndex--;
 	if(currentIndex<0) currentIndex = lm->VList()->Size()-1;
@@ -89,7 +84,6 @@ void PanelWordDict::OnPrevious() {
 }
 
 void PanelWordDict::OnNext() {
-	cout << "OnNext" << endl;
 	ListManager* lm = ListManager::Get();
 	int listSize = lm->VList()->Size();
 	currentIndex++;
@@ -99,7 +93,6 @@ void PanelWordDict::OnNext() {
 }
 
 void PanelWordDict::OnRandom() {
-	cout << "OnRandom" << endl;
 	ListManager* lm = ListManager::Get();
 	int listSize = lm->VList()->Size();
 	if(listSize>0) {
@@ -109,7 +102,6 @@ void PanelWordDict::OnRandom() {
 }
 
 void PanelWordDict::OnIndexUpdate() {
-	cout << "OnIndexUpdate" << endl;
 	ListManager* lm = ListManager::Get();
 	string s = entIndex.get_text();
 	int i = atoi(s.c_str());
@@ -120,7 +112,6 @@ void PanelWordDict::OnIndexUpdate() {
 }
 
 void PanelWordDict::SetSearchString(const Glib::ustring& searchString) {
-	cout << "SetSearchString" << endl;
 	ListManager* lm = ListManager::Get();
 	currentSearchString = searchString;
 	currentIndex =
@@ -128,7 +119,7 @@ void PanelWordDict::SetSearchString(const Glib::ustring& searchString) {
 }
 
 void PanelWordDict::Update() {
-	cout << "Update" << endl;
+	DictPanel::Update();
 	/* If currentIndex has been changed, update any necessary data. */
 	ListManager* lm = ListManager::Get();
 	if(currentIndex!=-1) {
@@ -155,35 +146,30 @@ void PanelWordDict::Update() {
 }
 
 void PanelWordDict::UpdateOutput() {
-	cout << "UpdateOutput" << endl;
 	list<int> resultList;
 	const WDict *wd = WDict::Get();
 
-	Glib::ustring html = "<html><body><font face=\"Serif\">";
+	string output;
 	if(currentSearchString.length()==0) {
-		html.append(_("No search has been entered."));
+		output = _("No search has been entered.");
 	} else {
 		/* Get search results string */
 		if(wd->Search(utfconv_mw(currentSearchString).c_str(), resultList)) {
 			/* Create merged wx-compatible results string */
-			std::wstring resultString, temp;
+			string resultString, temp;
 			for(list<int>::iterator li = resultList.begin();
 			  li!=resultList.end();
 			  li++) {
-				if(resultString.length()!=0) resultString.append(1,L'\n');
-				temp = utfconv_mw(wd->GetEdictString(*li));
+				if(resultString.length()!=0) resultString.append(1, '\n');
+				temp = wd->GetEdictString(*li);
 				resultString.append(temp);
 			}
-			/* Convert search results to destination format
-			For now: HTML
-			Later: wxWidgets Rich Text */
-			resultString = wd->ResultToHTML(resultString.c_str());
-			html.append(utfconv_wm(resultString));
+			/* Convert search results to destination format */
+			output = WDict::ResultToTextBuf(resultString);
 		} else {
-			html.append(_("No results were found."));
+			output = _("No results were found.");
 		}
 	}
-	html.append("</font></body></html>");
 
-	tvResults.get_buffer()->set_text(html);
+	SetTextBuf(tvResults.get_buffer(), output);
 }

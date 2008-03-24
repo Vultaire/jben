@@ -12,11 +12,8 @@
 #include "file_utils.h"
 #include <list>
 
-#include <iostream>
-using namespace std;
-
 DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
-	: StoredDialog(_("Kanji List Editor"), parent, "dlg.kanjilisteditor.size"),
+	: StoredDialog(_("Kanji List Editor"), parent, "gui.dlg.kanjilisteditor.size"),
 	  btnAddFile(  _("From File")),
 	  btnAddGrade( _("By Grade")),
 	  btnAddFreq(  _("By Frequency")),
@@ -27,7 +24,6 @@ DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
 	  btnApply(Gtk::Stock::APPLY),
 	  btnOK(Gtk::Stock::OK),
 	  bChanged(false) {
-	set_default_size(450, -1);
 
 	pdAddByGrade = NULL;
 	pdAddByFreq  = NULL;
@@ -123,7 +119,6 @@ bool DialogKanjiListEditor::ApplyIfNeeded() {
 }
 
 void DialogKanjiListEditor::OnAddFile() {
-	cout << "OnAddFile" << endl;
 	if(ApplyIfNeeded()) {
 		ListManager* lm = ListManager::Get();
 		Gtk::FileChooserDialog fcd(_("Import from file"));
@@ -153,7 +148,6 @@ void DialogKanjiListEditor::OnAddFile() {
 }
 
 void DialogKanjiListEditor::OnAddGrade() {
-	cout << "OnAddGrade" << endl;
 	if(ApplyIfNeeded()) {
 		ListManager* lm = ListManager::Get();
 		if(!pdAddByGrade)
@@ -173,12 +167,10 @@ void DialogKanjiListEditor::OnAddGrade() {
 			md.set_title(_("Add Kanji by Grade"));
 			md.run();
 		}
-		cout << "Result: " << result << endl;
 	}
 }
 
 void DialogKanjiListEditor::OnAddFreq() {
-	cout << "OnAddFreq" << endl;
 	if(ApplyIfNeeded()) {
 		ListManager* lm = ListManager::Get();
 		if(!pdAddByFreq)
@@ -198,12 +190,10 @@ void DialogKanjiListEditor::OnAddFreq() {
 			md.set_title(_("Add Kanji by Frequency"));
 			md.run();
 		}
-		cout << "Result: " << result << endl;
 	}
 }
 
 void DialogKanjiListEditor::OnSortGrade() {
-	cout << "OnSortGrade" << endl;
 	if(ApplyIfNeeded()) {
 		ListManager* lm = ListManager::Get();
 		lm->KList()->Sort(ST_GRADE);
@@ -212,7 +202,6 @@ void DialogKanjiListEditor::OnSortGrade() {
 }
 
 void DialogKanjiListEditor::OnSortFreq() {
-	cout << "OnSortFreq" << endl;
 	if(ApplyIfNeeded()) {
 		ListManager* lm = ListManager::Get();
 		lm->KList()->Sort(ST_FREQUENCY);
@@ -221,7 +210,6 @@ void DialogKanjiListEditor::OnSortFreq() {
 }
 
 void DialogKanjiListEditor::OnSortBoth() {
-	cout << "OnSortBoth" << endl;
 	if(ApplyIfNeeded()) {
 		ListManager* lm = ListManager::Get();
 		lm->KList()->Sort(ST_FREQUENCY);
@@ -231,14 +219,12 @@ void DialogKanjiListEditor::OnSortBoth() {
 }
 
 void DialogKanjiListEditor::OnCancel() {
-	cout << "Cancel" << endl;
 	Update(); /* Since the dialog is not destroyed, prepare it
 				 for next time. */
 	response(Gtk::RESPONSE_CANCEL);
 }
 
 void DialogKanjiListEditor::OnApply() {
-	cout << "Apply" << endl;
 	bChanged = false;
 	ListManager* lm = ListManager::Get();
 	lm->KList()->Clear();
@@ -255,13 +241,11 @@ void DialogKanjiListEditor::OnApply() {
 }
 
 void DialogKanjiListEditor::OnOK() {
-	cout << "OK" << endl;
 	if(bChanged) OnApply();
 	response(Gtk::RESPONSE_OK);
 }
 
 void DialogKanjiListEditor::Update() {
-	cout << "Update" << endl;
 	bool bOldState = bChanged; /* Changing the text buffer will touch this flag,
 								  so we'll save the state. */
 	ListManager* lm = ListManager::Get();

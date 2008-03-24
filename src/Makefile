@@ -9,7 +9,7 @@ PLATFORM = linux
 # BUILD: either release, debug, or profile
 BUILD = release
 # JBEN_VERSION: Used for labeling release packages
-JBEN_VERSION = 1.1.3.3
+JBEN_VERSION = 1.1.3.4
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
@@ -119,7 +119,7 @@ else
 	@echo "program."
 endif
 
-.PHONY : kpengine clean cleandep cleanall install uninstall
+.PHONY : kpengine clean cleandep cleanall installprep install uninstall
 
 $(build_bindir)/$(target) : $(objects)
 	mkdir -p $(build_bindir)
@@ -162,10 +162,9 @@ else
 endif
 	@rm $@.mktmp
 
-install:
+installprep:
 ifeq ($(PLATFORM),windows)
-#	On Windows, "make install" makes the J-Ben NSIS installer.
-#	Step 1: Prep the output directory
+#	Make a phony output folder with all redist files
 	mkdir -p ../J-Ben
 	cp "$(mingwbase)/bin/mingwm10.dll" ../J-Ben
 #	Copy GTK files... or just depend on a runtime being installed by the user (or installer)
@@ -179,8 +178,12 @@ ifeq ($(PLATFORM),windows)
 	cp kpengine/*.unistrok ../J-Ben/kpengine_data
 	cp ../dicts/* ../J-Ben/dicts
 	cp ../sods/README.txt ../J-Ben/sods
-	@echo J-Ben distribution created in ..\J-Ben.
-#	Step 2: Zip the output folder into 7z and zip archives
+	@echo J-Ben distribution created in ..\\J-Ben.
+endif
+
+install : installprep
+ifeq ($(PLATFORM),windows)
+#	Zip the output folder into 7z and zip archives
 	mkdir -p ../archives/$(JBEN_VERSION)
 	7z a -tzip ../archives/$(JBEN_VERSION)/jben-$(JBEN_VERSION)-win-binary.zip \
 		../J-Ben
@@ -193,9 +196,9 @@ ifeq ($(PLATFORM),windows)
 	@echo directory, and type the following:
 	@echo makensis /Dversion=$(JBEN_VERSION) installer.nsi
 	@echo \(Afterwards, delete ..\J-Ben.\)
-##	Step 3: Run NSIS script
+##	Run NSIS script
 #	makensis /Dversion=$(JBEN_VERSION) installer.nsi
-##	Step 4: Remove the output folder
+##	Remove the output folder
 #	rm -rf ../J-Ben
 else
 	$(INSTALL) -d $(DESTDIR)$(bindir) $(DESTDIR)$(datadir)/jben/dicts \
