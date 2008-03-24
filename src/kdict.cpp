@@ -1320,7 +1320,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 	/* Japanese readings */
 	if((options & KDO_READINGS) != 0) {
 		if(k.onyomi.size() > 0) {
-			result << "* Onyomi Readings: <font ja>";
+			result << "• Onyomi Readings: <font ja>";
 			lsi = k.onyomi.begin();
 			result << *lsi;
 			for(lsi++; lsi!=k.onyomi.end(); lsi++) {
@@ -1329,7 +1329,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			result << "</font>\n";
 		}
 		if(k.kunyomi.size() > 0) {
-			result << "* Kunyomi Readings: <font ja>";
+			result << "• Kunyomi Readings: <font ja>";
 			lsi = k.kunyomi.begin();
 			result << *lsi;
 			for(lsi++; lsi!=k.kunyomi.end(); lsi++) {
@@ -1338,7 +1338,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			result << "</font>\n";
 		}
 		if(k.nanori.size() > 0) {
-			result << "* Nanori Readings: <font ja>";
+			result << "• Nanori Readings: <font ja>";
 			lsi = k.nanori.begin();
 			result << *lsi;
 			for(lsi++; lsi!=k.nanori.end(); lsi++) {
@@ -1347,7 +1347,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			result << "</font>\n";
 		}
 		if(k.radicalName.length() > 0) {
-			result << "* Special Radical Reading: <font ja>"
+			result << "• Special Radical Reading: <font ja>"
 				   << k.radicalName << "</font>\n";
 		}
 	}
@@ -1359,7 +1359,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 		if(mslsi != k.meaning.end()) {
 			const list<string>* pMeaning = &(mslsi->second);
 			if(pMeaning->size()>0) {
-				result << "* English Meanings: ";
+				result << "• English Meanings: ";
 				lsi = pMeaning->begin();
 				result << *lsi;
 				for(lsi++; lsi!=pMeaning->end(); lsi++) {
@@ -1375,7 +1375,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 	/* Stroke count (and miscounts), grade, freq */
 	if((options & KDO_HIGHIMPORTANCE) != 0) {
 		if(k.strokeCount>0) {
-			result << "* Stroke count: " << k.strokeCount;
+			result << "• Stroke count: " << k.strokeCount;
 			if(k.misstrokes.size()>0) {
 				result << " (commonly miscounted as ";
 				lii = k.misstrokes.begin();
@@ -1387,8 +1387,8 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			}
 			result << '\n';
 		}
-		else result << "* Stroke count: unspecified\n";
-		result << "* Grade level: ";
+		else result << "• Stroke count: unspecified\n";
+		result << "• Grade level: ";
 		if(k.grade <= 6 && k.grade >= 1)
 			result << k.grade;
 		else if(k.grade == 8)
@@ -1401,14 +1401,14 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			result << "Unhandled grade level (Grade " << k.grade << ')';
 		result << '\n';
 		if(k.freq==0)
-			result << "* Frequency ranking: Unspecified\n";
+			result << "• Frequency ranking: Unspecified\n";
 		else
-			result << "* Frequency ranking: " << k.freq << '\n';
+			result << "• Frequency ranking: " << k.freq << '\n';
 	}
 
 	if((options & KDO_MULTIRAD) != 0) {
 		if(k.kradData.length()>0) {
-			result << "* Component radicals: <font ja>"
+			result << "• Component radicals: <font ja>"
 				   << utfconv_wm(k.kradData) << "</font>\n";
 		}
 	}
@@ -1426,7 +1426,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			}
 		}
 		if(crossRefList.size()>0) {
-			result << "* This kanji is used by words in your "
+			result << "• This kanji is used by words in your "
 				"study list:\n<font ja>";
 			vIt = crossRefList.begin();
 			result << utfconv_wm(*vIt);
@@ -1446,7 +1446,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			string key = mssi->first;
 			if(key=="skip") {
 				if((dictionaries & KDD_SKIP) == 0) continue;
-				dictOut << "* SKIP code: " << mssi->second;
+				dictOut << "• SKIP code: " << mssi->second;
 				if(k.skipMisclass.size()>0) {
 					/* Display miscode info */
 					list< pair<string,string> >::const_iterator iMiscode;
@@ -1477,7 +1477,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 					el.Push(EL_Warning, oss.str());
 					displayKey = key;
 				}
-				dictOut << "* " << displayKey << ": "
+				dictOut << "• " << displayKey << ": "
 					   << mssi->second << '\n';
 			}
 		}
@@ -1550,35 +1550,35 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 				el.Push(EL_Warning, oss.str());
 				displayKey = key;
 			}
-			dictOut << "  * " << displayKey << ": "
+			dictOut << "\t• " << displayKey << ": "
 				   << mssi->second << '\n';		
 		}
 		if(dictOut.str().length()>0)
-			result << "* Dictionary Codes:\n"
+			result << "• Dictionary Codes:\n"
 				   << dictOut.str();
-		else result << "* No dictionary codes found.\n";
+		else result << "• No dictionary codes found.\n";
 	}
 
 	/* Low importance stuff */
 	if((options & KDO_LOWIMPORTANCE) != 0) {
-		result << "* Extra Information:\n";
+		result << "• Extra Information:\n";
 		/* JIS codes, UTF-8 codes */
-		result << "  * Character codes:\n";
+		result << "\t• Character codes:\n";
 		for(map<string,string>::const_iterator mssci = k.codepoint.begin();
 			mssci != k.codepoint.end(); mssci++) {
-			result << "    * "
+			result << "\t\t• "
 				   << mssci->first << ": " << mssci->second << '\n';
 		}
 		/* Classical/Nelson radicals */
 		if(k.radical!=0)
-			result << "  * KangXi Zidian radical: "
+			result << "\t• KangXi Zidian radical: "
 				   << (unsigned int)k.radical << '\n';
 		if(k.radicalNelson!=0)
-			result << "  * Nelson radical: "
+			result << "\t• Nelson radical: "
 				   << (unsigned int)k.radicalNelson << '\n';
 		/* Pinyin/Korean */
 		if(k.pinyin.size()>0) {
-			result << "  * Pinyin romanization: ";
+			result << "\t• Pinyin romanization: ";
 			lsi = k.pinyin.begin();
 			result << *lsi;
 			for(lsi++; lsi!=k.pinyin.end(); lsi++) {
@@ -1587,7 +1587,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			result << '\n';
 		}
 		if(k.korean_h.size()>0) {
-			result << "  * Korean reading: ";
+			result << "\t• Korean reading: ";
 			lsi = k.korean_h.begin();
 			result << *lsi;
 			for(lsi++; lsi!=k.korean_h.end(); lsi++) {
@@ -1596,7 +1596,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			result << '\n';
 		}
 		if(k.korean_r.size()>0) {
-			result << "  * Korean romanization: ";
+			result << "\t• Korean romanization: ";
 			lsi = k.korean_r.begin();
 			result << *lsi;
 			for(lsi++; lsi!=k.korean_r.end(); lsi++) {
@@ -1605,10 +1605,10 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			result << '\n';
 		}
 		/* Crossref codes */
-		result << "  * Cross References:\n";
+		result << "\t• Cross References:\n";
 		for(map<string,string>::const_iterator
 				mssci = k.variant.begin(); mssci != k.variant.end(); mssci++) {
-			result << "  * "
+			result << "\t\t• "
 				   << mssci->first << ": " << mssci->second << '\n';
 		}
 	}
