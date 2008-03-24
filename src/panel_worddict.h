@@ -8,9 +8,9 @@ class PanelWordDict : public DictPanel {
 public:
 	PanelWordDict();
 	void Update();
+	void SetSearchString(const Glib::ustring& searchString);
 private:
 	void UpdateOutput();
-	void SetSearchString(const Glib::ustring& searchString);
 
 	int currentIndex;
 	Glib::ustring currentSearchString;

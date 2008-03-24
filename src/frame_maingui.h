@@ -26,7 +26,6 @@ public:
 	void LockTabs();
 	void UnlockTabs();
 private:
-	void OnSwitchPage(GtkNotebookPage* page, guint page_num);
 	void OnMenuFileQuit();
 	void OnMenuEditVocab();
 	void OnMenuEditKanji();

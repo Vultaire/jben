@@ -13,7 +13,8 @@
 #include <list>
 
 DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
-	: StoredDialog(_("Kanji List Editor"), parent, "gui.dlg.kanjilisteditor.size"),
+	: StoredDialog(_("Kanji List Editor"), parent,
+				   "gui.dlg.kanjilisteditor.size"),
 	  btnAddFile(  _("From File")),
 	  btnAddGrade( _("By Grade")),
 	  btnAddFreq(  _("By Frequency")),
@@ -23,8 +24,9 @@ DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
 	  btnCancel(Gtk::Stock::CANCEL),
 	  btnApply(Gtk::Stock::APPLY),
 	  btnOK(Gtk::Stock::OK),
-	  bChanged(false) {
-
+	  bChanged(false),
+	  bChangesMade(false)
+{
 	pdAddByGrade = NULL;
 	pdAddByFreq  = NULL;
 
@@ -50,6 +52,9 @@ DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
 		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnApply));
 	btnOK.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnOK));
+	signal_delete_event()
+		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnDeleteEvent),
+			false);
 	
 	Gtk::ScrolledWindow *pswTvList = manage(new Gtk::ScrolledWindow);
 	pswTvList->add(tvList);
@@ -221,11 +226,15 @@ void DialogKanjiListEditor::OnSortBoth() {
 void DialogKanjiListEditor::OnCancel() {
 	Update(); /* Since the dialog is not destroyed, prepare it
 				 for next time. */
-	response(Gtk::RESPONSE_CANCEL);
+	if(bChangesMade) {
+		bChangesMade = false;
+		response(Gtk::RESPONSE_OK);
+	} else response(Gtk::RESPONSE_CANCEL);
 }
 
 void DialogKanjiListEditor::OnApply() {
 	bChanged = false;
+	bChangesMade = true;
 	ListManager* lm = ListManager::Get();
 	lm->KList()->Clear();
 	int result = lm->KList()->AddFromString(
@@ -242,6 +251,7 @@ void DialogKanjiListEditor::OnApply() {
 
 void DialogKanjiListEditor::OnOK() {
 	if(bChanged) OnApply();
+	bChangesMade = false;
 	response(Gtk::RESPONSE_OK);
 }
 
@@ -254,4 +264,9 @@ void DialogKanjiListEditor::Update() {
 	if(ws.length()>0) s = utfconv_wm(ws);
 	tvList.get_buffer()->set_text(s);
 	bChanged = bOldState;
+}
+
+bool DialogKanjiListEditor::OnDeleteEvent(GdkEventAny* event) {
+	OnCancel();
+	return true;
 }

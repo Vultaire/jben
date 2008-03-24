@@ -53,10 +53,6 @@ FrameMainGUI::FrameMainGUI() {
 		}
 	}
 
-	/* General event handlers */
-	tabs.signal_switch_page().connect(
-		sigc::mem_fun(*this, &FrameMainGUI::OnSwitchPage));
-
 	/* Create menu */
 	refActionGroup = Gtk::ActionGroup::create();
 	/* File menu */
@@ -162,9 +158,8 @@ void FrameMainGUI::OnMenuEditVocab() {
 		pdVocabListEditor = new DialogVocabListEditor(*this);
 	int result = pdVocabListEditor->run();
 	pdVocabListEditor->hide();
-	if(result==Gtk::RESPONSE_OK) {
-		/* DO NOTHING - handled by the dialog itself */
-	}
+	if(result==Gtk::RESPONSE_OK)
+		panelWordDict.Update();
 }
 
 void FrameMainGUI::OnMenuEditKanji() {
@@ -172,9 +167,8 @@ void FrameMainGUI::OnMenuEditKanji() {
 		pdKanjiListEditor = new DialogKanjiListEditor(*this);
 	int result = pdKanjiListEditor->run();
 	pdKanjiListEditor->hide();
-	if(result==Gtk::RESPONSE_OK) {
-		/* DO NOTHING - handled by the dialog itself */
-	}
+	if(result==Gtk::RESPONSE_OK)
+		panelKanjiDict.Update();
 }
 
 void FrameMainGUI::OnMenuEditPrefs() {
@@ -182,11 +176,8 @@ void FrameMainGUI::OnMenuEditPrefs() {
 		pdConfig = new DialogConfig(*this);
 	int result = pdConfig->run();
 	pdConfig->hide();
-	if(result==Gtk::RESPONSE_OK) {
-		/* The config dialog changes the settings, but we need to refresh the
-		   GUI ourselves. */
+	if(result==Gtk::RESPONSE_OK)
 		Update();
-	}
 }
 
 void FrameMainGUI::OnMenuPracticeKanji() {
@@ -196,6 +187,11 @@ void FrameMainGUI::OnMenuPracticeKanji() {
 	int result = pdKanjiPreTest->run();	
 	pdKanjiPreTest->hide();
 	if(result==Gtk::RESPONSE_OK) {
+		/* Blank out the dictionary panels */
+		panelKanjiDict.SetSearchString("");
+		panelWordDict .SetSearchString("");
+		panelKanjiDict.Update();
+		panelWordDict .Update();
 		/* Test dialog */
 		DialogKanjiTest dkt(*this, *pdKanjiPreTest);
 		result = dkt.run();
@@ -268,8 +264,4 @@ void FrameMainGUI::OnMenuHelpLicense() {
 	Gtk::MessageDialog md(*this, licenseMessage);
 	md.set_title(_("License Information"));
 	md.run();
-}
-
-void FrameMainGUI::OnSwitchPage(GtkNotebookPage* page, guint page_num) {
-	((UpdatePanel*)tabs.get_nth_page(page_num))->Update();
 }

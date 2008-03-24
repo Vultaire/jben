@@ -80,4 +80,16 @@ void DictPanel::Update() {
 #if 0
 	gtk_text_tag_table_foreach(pTable->gobj(), ShowTag, NULL);
 #endif
+
+#if 0
+	/* Also, let's set the entry field's font
+	   to the normal-sized Japanese font. */
+	/* - DOES NOT YET WORK, so disabled! - */
+	Pango::FontDescription *fd
+		= new Pango::FontDescription(p->GetSetting("font.en"));
+	entQuery.unset_font();
+	entQuery.modify_font(*fd);
+	entQuery.queue_resize();
+	delete fd;
+#endif
 }

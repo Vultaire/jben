@@ -10,6 +10,7 @@ public:
 	DialogVocabListEditor(Gtk::Window& parent);
 	void Update();
 private:
+	bool OnDeleteEvent(GdkEventAny* event);
 	void OnTextChanged();
 	void OnCancel();
 	void OnApply();
@@ -17,7 +18,7 @@ private:
 
 	Gtk::TextView tvList;
 	Gtk::Button btnCancel, btnApply, btnOK;
-	bool bChanged;
+	bool bChanged, bChangesMade;
 };
 
 #endif

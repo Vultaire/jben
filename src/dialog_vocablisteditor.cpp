@@ -13,7 +13,8 @@ DialogVocabListEditor::DialogVocabListEditor(Gtk::Window& parent)
 	  btnCancel(Gtk::Stock::CANCEL),
 	  btnApply(Gtk::Stock::APPLY),
 	  btnOK(Gtk::Stock::OK),
-	  bChanged(false)
+	  bChanged(false),
+	  bChangesMade(false)
 {
 	tvList.set_accepts_tab(false);
 	tvList.set_wrap_mode(Gtk::WRAP_WORD_CHAR);
@@ -25,6 +26,9 @@ DialogVocabListEditor::DialogVocabListEditor(Gtk::Window& parent)
 		.connect(sigc::mem_fun(*this, &DialogVocabListEditor::OnApply));
 	btnOK.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogVocabListEditor::OnOK));
+	signal_delete_event()
+		.connect(sigc::mem_fun(*this, &DialogVocabListEditor::OnDeleteEvent),
+			false);
 
 	Gtk::ScrolledWindow *pswTvList = manage(new Gtk::ScrolledWindow);
 	pswTvList->add(tvList);
@@ -49,11 +53,17 @@ void DialogVocabListEditor::OnTextChanged() {
 }
 
 void DialogVocabListEditor::OnCancel() {
-	response(Gtk::RESPONSE_CANCEL);
+	Update(); /* Since the dialog is not destroyed, prepare it
+				 for next time. */
+	if(bChangesMade) {
+		bChangesMade = false;
+		response(Gtk::RESPONSE_OK);
+	} else response(Gtk::RESPONSE_CANCEL);
 }
 
 void DialogVocabListEditor::OnApply() {
 	bChanged = false;
+	bChangesMade = true;
 	ListManager* lm = ListManager::Get();
 	lm->VList()->Clear();
 	int result = lm->VList()->AddList
@@ -71,13 +81,22 @@ void DialogVocabListEditor::OnApply() {
 
 void DialogVocabListEditor::OnOK() {
 	if(bChanged) OnApply();
+	bChangesMade = false;
 	response(Gtk::RESPONSE_OK);
 }
 
 void DialogVocabListEditor::Update() {
+	bool bOldState = bChanged; /* Changing the text buffer will touch this flag,
+								  so we'll save the state. */
 	ListManager* lm = ListManager::Get();
 	wstring ws = lm->VList()->ToString();
 	string s;
 	if(ws.length()>0) s = utfconv_wm(ws);
 	tvList.get_buffer()->set_text(s);
+	bChanged = bOldState;
+}
+
+bool DialogVocabListEditor::OnDeleteEvent(GdkEventAny* event) {
+	OnCancel();
+	return true;
 }

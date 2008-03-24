@@ -1,14 +1,31 @@
 #include "widget_coveredtextview.h"
+#include "preferences.h"
 
 #include <iostream>
 using namespace std;
 
 CoveredTextView::CoveredTextView
 (const Glib::ustring& cover, const Glib::ustring& hidden,
- const bool& covered) : Frame() {
-	/* Buffer initialization */
+ const bool& covered, const bool& japanese) : Frame() {
+	/* Buffer initialization - create two buffers, but share one tag table */
 	ptbCover = tv.get_buffer();
-	ptbHidden = Gtk::TextBuffer::create();
+	ptbHidden = Gtk::TextBuffer::create(ptbCover->get_tag_table());
+
+	/* Set up fonts */
+	Preferences* p = Preferences::Get();
+	Glib::RefPtr<Gtk::TextBuffer::TagTable> pTable;
+	Glib::RefPtr<Gtk::TextTag> pTag;
+	pTag = Gtk::TextTag::create("font");
+	if(japanese) {
+		pTag->property_font() = p->GetSetting("font.ja");
+	} else {
+		pTag->property_font() = p->GetSetting("font.en");
+	}
+	pTable = ptbCover->get_tag_table();
+	pTable->add(pTag);
+	pTable.clear();
+
+	/* Set initial text */
 	SetCoverText(cover);
 	SetHiddenText(hidden);
 
@@ -57,11 +74,13 @@ void CoveredTextView::Show() {
 }
 
 void CoveredTextView::SetCoverText(const Glib::ustring& str) {
-	ptbCover->set_text(str);
+	ptbCover->set_text("");
+	ptbCover->insert_with_tag(ptbCover->get_iter_at_offset(0), str, "font");
 }
 
 void CoveredTextView::SetHiddenText(const Glib::ustring& str) {
-	ptbHidden->set_text(str);
+	ptbHidden->set_text("");
+	ptbHidden->insert_with_tag(ptbHidden->get_iter_at_offset(0), str, "font");
 }
 
 bool CoveredTextView::OnClick(GdkEventButton* event) {

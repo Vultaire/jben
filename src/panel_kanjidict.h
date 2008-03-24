@@ -7,9 +7,9 @@ class PanelKanjiDict : public DictPanel {
 public:
 	PanelKanjiDict();
 	void Update();
+	void SetSearchString(const Glib::ustring& searchString);
 private:
 	void UpdateOutput();
-	void SetSearchString(const Glib::ustring& searchString);
 
 	int currentIndex;
 	wchar_t currentKanji;

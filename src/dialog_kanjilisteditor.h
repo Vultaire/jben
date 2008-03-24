@@ -13,6 +13,7 @@ public:
 	~DialogKanjiListEditor();
 	void Update();
 private:
+	bool OnDeleteEvent(GdkEventAny* event);
 	void OnTextChanged();
 	bool ApplyIfNeeded();
 	void OnAddFile();
@@ -29,7 +30,9 @@ private:
 	Gtk::Button btnAddFile, btnAddGrade, btnAddFreq;
 	Gtk::Button btnSortGrade, btnSortFreq, btnSortBoth;
 	Gtk::Button btnCancel, btnApply, btnOK;
-	bool bChanged;
+	/* bChanged tracks for whether Apply is needed,
+	   bChangesMade determines whether Cancel/Close return RESPONSE_OK. */
+	bool bChanged, bChangesMade;
 	DialogAddKanjiByGrade* pdAddByGrade;
 	DialogAddKanjiByFreq*  pdAddByFreq;
 };

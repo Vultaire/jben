@@ -10,6 +10,7 @@
 #include "encoding_convert.h"
 #include "string_utils.h"
 #include <boost/format.hpp>
+#include "preferences.h"
 
 #include <sstream>
 #include <map>
@@ -20,7 +21,7 @@ DialogKanjiTest::DialogKanjiTest
 	  ctvKanji(_("< Kanji >")),
 	  ctvOnyomi(_("< Onyomi >")),
 	  ctvKunyomi(_("< Kunyomi >")),
-	  ctvMeaning(_("< Meaning >")),
+	  ctvMeaning(_("< Meaning >"),"",true,false),
 	  btnCorrect(_("Correct")),
 	  btnWrong(_("Wrong")),
 	  btnStop(_("Stop Drill"))

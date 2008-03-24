@@ -8,7 +8,8 @@ class CoveredTextView : public Gtk::Frame {
 public:
 	CoveredTextView(const Glib::ustring& cover="",
 					const Glib::ustring& hidden="",
-					const bool& covered=true);
+					const bool& covered=true,
+					const bool& japanese=true);
 	void Cover();
 	void Show();
 	void SetCoverText(const Glib::ustring& str);
