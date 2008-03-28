@@ -1,16 +1,19 @@
 #include "frame_hwpad.h"
-#include "preferences.h"
 #include "jben.xpm"
+#include "version.h"
+#include "preferences.h"
+#include "string_utils.h"
+#include "encoding_convert.h"
 #include <glibmm/i18n.h>
 #include <gtkmm/alignment.h>
-#include "string_utils.h"
+#include <gtkmm/buttonbox.h>
 #include <boost/format.hpp>
-#include "encoding_convert.h"
 
 #define FHWPAD_SIZE_STR "wnd.kanjihwpad.size"
 
-FrameHWPad::FrameHWPad() {
-	set_title(_("Kanji Handwriting Pad"));
+FrameHWPad::FrameHWPad() : btnClear(_("Clear")) {
+	set_title(
+		(boost::format(_("%s: Kanji Handwriting Pad")) % PROGRAM_NAME).str());
 	Glib::RefPtr<Gdk::Pixbuf> rpIcon
 		= Gdk::Pixbuf::create_from_xpm_data(iconJben_xpm);
 	set_icon(rpIcon);
@@ -45,6 +48,14 @@ FrameHWPad::FrameHWPad() {
 	signal_delete_event()
 		.connect(sigc::mem_fun(*this, &FrameHWPad::OnDeleteEvent), false);
 
+	btnClear.signal_clicked()
+		.connect(sigc::mem_fun(*this, &FrameHWPad::Clear));
+/*	Gtk::Alignment* paClear = manage(
+		new Gtk::Alignment(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 0, 0));
+	paClear->add(btnClear);*/
+	Gtk::HButtonBox* pboxClear = manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_CENTER));
+	pboxClear->pack_start(btnClear, Gtk::PACK_SHRINK);
+
 	hwp.signal_button_release_event()
 		.connect(sigc::mem_fun(*this, &FrameHWPad::OnRelease));
 
@@ -52,6 +63,7 @@ FrameHWPad::FrameHWPad() {
 	pvb->set_border_width(5);
 	pvb->pack_start(hwp);
 	pvb->pack_start(*paBox, Gtk::PACK_SHRINK);
+	pvb->pack_start(*pboxClear, Gtk::PACK_SHRINK);
 	add(*pvb);
 
 	show_all_children();

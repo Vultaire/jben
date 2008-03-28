@@ -21,6 +21,7 @@ private:
 	KanjiHWPad hwp;
 	Gtk::HBox hbResults;
 	Gtk::Button buttons[5];
+	Gtk::Button btnClear;
 };
 
 #endif

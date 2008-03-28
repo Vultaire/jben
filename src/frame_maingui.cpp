@@ -27,7 +27,7 @@ void FrameMainGUI::Destroy() {
 }
 
 FrameMainGUI::FrameMainGUI() {
-	set_title(PROGRAM_NAME " v" VERSION_STR " by " AUTHOR_NAME);
+	set_title(PROGRAM_NAME);
 	Glib::RefPtr<Gdk::Pixbuf> rpIcon
 		= Gdk::Pixbuf::create_from_xpm_data(iconJben_xpm);
 	set_icon(rpIcon);
@@ -206,13 +206,15 @@ void FrameMainGUI::OnMenuPracticeKanji() {
 void FrameMainGUI::OnMenuToolsHand() {
 	if(!pfHWPad)
 		pfHWPad = new FrameHWPad();
+	else
+		pfHWPad->present();
 	pfHWPad->show();
 }
 
 void FrameMainGUI::OnMenuHelpAbout() {
 	Gtk::MessageDialog md
 		(*this, (boost::format(
-			  _("%s  v%s\n"
+			  _("%s v%s\n"
 				"By %s\n"
 				"Copyright %s\n\n"
 

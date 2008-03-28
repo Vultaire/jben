@@ -17,12 +17,9 @@ ifeq ($(PLATFORM),windows)
 	CXX = g++-dw2
 	CC = gcc-dw2
 	mingwbase = C:/MinGW
-	gtkdevbase = C:/GTKDev
+	gtkdevbase = C:/GTK
 	boostbase = C:/devel/boost_1_34_1
-#	iconvbase = C:/dev/libiconv  - obsoleted; gtk includes it
 #   LEAVE THESE ALONE
-#	STLPort specifies -pthreads - does -mthreads work fine for this???
-#   (It appears so...)
 
 	wincxxflags = -I$(gtkdevbase)/include `pkg-config --cflags gtkmm-2.4 libxml-2.0`
 	wincppflags = -D__WIN32__
@@ -32,7 +29,7 @@ ifeq ($(PLATFORM),windows)
 
 	SharedCXXFLAGS = $(wincxxflags)
 	SharedCPPFLAGS = $(wincppflags) -I$(boostbase)
-	libs = $(winlinkflags) `pkg-config --libs gtkmm-2.4 libxml-2.0`
+	libs = $(winlinkflags) `pkg-config --libs gtkmm-2.4 libxml-2.0` -liconv
 endif
 
 ##################################

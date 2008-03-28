@@ -12,6 +12,9 @@ DictPanel::DictPanel()
 	  btnRand(_("Random")) {}
 
 #if 0
+#include <iostream>
+using namespace std;
+
 static void ShowTag(GtkTextTag *tag, gpointer data) {
 	cout << "Tag!" << endl;
 	cout << "\tPriority: " << gtk_text_tag_get_priority(tag) << endl;

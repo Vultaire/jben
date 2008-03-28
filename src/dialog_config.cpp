@@ -2,14 +2,20 @@
 #include "preferences.h"
 #include "kdict.h"
 #include "file_utils.h"
+#include "jben_defines.h"
 #include <glibmm/i18n.h>
 #include <gtkmm/notebook.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/buttonbox.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/fontselection.h>
+#include <gtkmm/messagedialog.h>
+#include <boost/format.hpp>
 
 #define CHOOSE_FONT _("Change...")
+
+#include <iostream>
+using namespace std;
 
 DialogConfig::DialogConfig(Gtk::Window& parent)
 	: StoredDialog(_("Preferences Editor"), parent, "gui.dlg.preferences.size"),
@@ -34,6 +40,7 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	  btnJaLarge (CHOOSE_FONT),
 	  btnEnNormal(CHOOSE_FONT),
 	  btnEnSmall (CHOOSE_FONT),
+	  chkMobile(_("Mobile mode (settings saved to current directory)")),
 	  btnCancel(Gtk::Stock::CANCEL),
 	  btnOK(Gtk::Stock::OK)
 {
@@ -120,6 +127,8 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	/* Connect signals */
 	chkDict.signal_toggled()
 		.connect(sigc::mem_fun(*this, &DialogConfig::OnDictionaryToggle));
+	chkMobile.signal_toggled()
+		.connect(sigc::mem_fun(*this, &DialogConfig::OnMobileToggle));
 	btnCancel.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogConfig::OnCancel));
 	btnOK.signal_clicked()
@@ -127,29 +136,30 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 
 	/* Layout and display */
 	Gtk::Notebook *pnb = manage(new Gtk::Notebook);
-	Gtk::VBox *pvbKanjiConfig, *pvbOutputConfig;
-	Gtk::VBox *pvbMainOpts, *pvbDictsOuter, *pvbOtherOpts;
-	pvbKanjiConfig  = manage(new Gtk::VBox);
-	pvbOutputConfig = manage(new Gtk::VBox);
-	pvbMainOpts   = manage(new Gtk::VBox);
-	pvbDictsOuter = manage(new Gtk::VBox);
-	pvbOtherOpts  = manage(new Gtk::VBox);
+	Gtk::VBox *pvbKanjiConfig, *pvbFontConfig, *pvbOtherConfig;
+	Gtk::VBox *pvbKanjiMainOpts, *pvbKanjiDictsOuter, *pvbKanjiOtherOpts;
+	pvbKanjiConfig = manage(new Gtk::VBox);
+	pvbKanjiMainOpts   =  manage(new Gtk::VBox);
+	pvbKanjiDictsOuter =  manage(new Gtk::VBox);
+	pvbKanjiOtherOpts  =  manage(new Gtk::VBox);
+	pvbFontConfig  = manage(new Gtk::VBox);
+	pvbOtherConfig = manage(new Gtk::VBox);
 	Gtk::HButtonBox *phbbButtons = manage(new Gtk::HButtonBox);
 	Gtk::ScrolledWindow *pswDicts = manage(new Gtk::ScrolledWindow);
 	pswDicts->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
 
-	pvbKanjiConfig->pack_start(*pvbMainOpts,   Gtk::PACK_SHRINK);
-	pvbKanjiConfig->pack_start(*pvbDictsOuter, Gtk::PACK_EXPAND_WIDGET);
-	pvbKanjiConfig->pack_start(*pvbOtherOpts,  Gtk::PACK_SHRINK);
+	pvbKanjiConfig->pack_start(*pvbKanjiMainOpts,   Gtk::PACK_SHRINK);
+	pvbKanjiConfig->pack_start(*pvbKanjiDictsOuter, Gtk::PACK_EXPAND_WIDGET);
+	pvbKanjiConfig->pack_start(*pvbKanjiOtherOpts,  Gtk::PACK_SHRINK);
 	pvbKanjiConfig->pack_start(*phbbButtons,   Gtk::PACK_SHRINK);
 
-	pvbMainOpts->pack_start(chkReadings, Gtk::PACK_SHRINK);
-	pvbMainOpts->pack_start(chkMeanings, Gtk::PACK_SHRINK);
-	pvbMainOpts->pack_start(chkHighImp,  Gtk::PACK_SHRINK);
-	pvbMainOpts->pack_start(chkMultiRad, Gtk::PACK_SHRINK);
+	pvbKanjiMainOpts->pack_start(chkReadings, Gtk::PACK_SHRINK);
+	pvbKanjiMainOpts->pack_start(chkMeanings, Gtk::PACK_SHRINK);
+	pvbKanjiMainOpts->pack_start(chkHighImp,  Gtk::PACK_SHRINK);
+	pvbKanjiMainOpts->pack_start(chkMultiRad, Gtk::PACK_SHRINK);
 
-	pvbDictsOuter->pack_start(chkDict,   Gtk::PACK_SHRINK);
-	pvbDictsOuter->pack_start(*pswDicts, Gtk::PACK_EXPAND_WIDGET);
+	pvbKanjiDictsOuter->pack_start(chkDict,   Gtk::PACK_SHRINK);
+	pvbKanjiDictsOuter->pack_start(*pswDicts, Gtk::PACK_EXPAND_WIDGET);
 
 	pswDicts->add(vbDicts);
 	for(it = vChkDict.begin(); it != vChkDict.end(); it++) {
@@ -157,13 +167,13 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	}
 	vbDicts.set_sensitive(false);
 
-	pvbOtherOpts->pack_start(chkVocabCrossRef, Gtk::PACK_SHRINK);
-	pvbOtherOpts->pack_start(chkLowImp, Gtk::PACK_SHRINK);
-	pvbOtherOpts->pack_start(chkSodStatic, Gtk::PACK_SHRINK);
-	pvbOtherOpts->pack_start(chkSodAnim, Gtk::PACK_SHRINK);
+	pvbKanjiOtherOpts->pack_start(chkVocabCrossRef, Gtk::PACK_SHRINK);
+	pvbKanjiOtherOpts->pack_start(chkLowImp, Gtk::PACK_SHRINK);
+	pvbKanjiOtherOpts->pack_start(chkSodStatic, Gtk::PACK_SHRINK);
+	pvbKanjiOtherOpts->pack_start(chkSodAnim, Gtk::PACK_SHRINK);
 
-	pvbOutputConfig->set_spacing(5);
-	pvbOutputConfig->pack_start(tblFonts, Gtk::PACK_SHRINK);
+	pvbFontConfig->set_spacing(5);
+	pvbFontConfig->pack_start(tblFonts, Gtk::PACK_SHRINK);
 
 	frJaNormal.add(tvJaNormal);
 	frJaNormal.set_shadow_type(Gtk::SHADOW_IN);
@@ -216,8 +226,11 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	btnEnSmall.signal_clicked() .connect(sigc::bind<Gtk::Button*>(
 		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnEnSmall));
 
-	pnb->append_page(*pvbKanjiConfig);
-	pnb->append_page(*pvbOutputConfig);
+	pvbOtherConfig->pack_start(chkMobile, Gtk::PACK_SHRINK);
+
+	pnb->append_page(*pvbKanjiConfig, _("Kanji Dictionary"));
+	pnb->append_page(*pvbFontConfig, _("Fonts"));
+	pnb->append_page(*pvbOtherConfig, _("Other"));
 
 	set_border_width(5);
 	Gtk::VBox* pvb = get_vbox();
@@ -263,6 +276,11 @@ void DialogConfig::OnOK() {
 	prefs->GetSetting("font.ja.large") = sFontJaLarge;
 	prefs->GetSetting("font.en")       = sFontEnNormal;
 	prefs->GetSetting("font.en.small") = sFontEnSmall;
+
+	if(chkMobile.get_active())
+		prefs->GetSetting("config_save_target") = "mobile";
+	else
+		prefs->GetSetting("config_save_target") = "home";
 
 	Update();  /* Probably unnecessary, but let's be safe. */
 	response(Gtk::RESPONSE_OK);
@@ -315,6 +333,8 @@ void DialogConfig::Update() {
 	UpdateFontControl(tvEnNormal, sFontEnNormal);
 	UpdateFontControl(tvEnSmall,  sFontEnSmall);
 
+	/* Other Options */
+	chkMobile.set_active(prefs->GetSetting("config_save_target") == "mobile");
 }
 
 void DialogConfig::UpdateFontControl(Gtk::TextView& tv, const string& font) {
@@ -339,8 +359,6 @@ void DialogConfig::UpdateFontControl(Gtk::TextView& tv, const string& font) {
 
 void DialogConfig::OnFontChange(Gtk::Button* src) {
 	Gtk::FontSelectionDialog fd(_("Choose Font"));
-	fd.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-	fd.add_button(Gtk::Stock::OK,     Gtk::RESPONSE_OK);
 	Gtk::TextView* ptv;
 	string* ps;
 	if(src==&btnJaNormal) {
@@ -364,5 +382,45 @@ void DialogConfig::OnFontChange(Gtk::Button* src) {
 	if(result == Gtk::RESPONSE_OK) {
 		(*ps) = fd.get_font_name();
 		UpdateFontControl(*ptv, *ps);
+	}
+}
+
+void DialogConfig::OnMobileToggle() {
+	cout << "DialogConfig::OnMobileToggle" << endl;
+	if(chkMobile.get_active()==false) {
+		cout << "\tchkMobile.get_active(): False" << endl;
+		Preferences *p = Preferences::Get();
+		if(p->GetSetting("config_save_target")=="mobile") {
+			cout << "\tCurrent target: Mobile, switching to Standard" << endl;
+			/* The user is attempting a change from a mobile to standard
+			   install.  We need to check whether a standard install config
+			   file is already present, and if it is, we need to warn the
+			   user before they accidentally overwrite it. */
+			string sCfgPath;
+			char *sz = getenv(HOMEENV);
+			if(sz) {
+				sCfgPath = sz;
+				sCfgPath.append(1, DSCHAR);
+				sCfgPath.append(CFGFILE);
+			} else return; /* No home dir is a problem of its own, but at least
+							  the user won't lose data over the problem. */
+			if(FileExists(sCfgPath.c_str())) {
+				cout << "Existing Standard config file found!" << endl;
+				Gtk::MessageDialog md(
+					(boost::format(_(
+						"A config file was found in this system's home folder: "
+						"%s.  Turning mobile mode off will cause J-Ben to "
+						"OVERWRITE the existing file when it closes, "
+						"destroying whatever is already there.  Is this okay?"))
+						% sCfgPath).str(),
+					false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO);
+				int result = md.run();
+				if(result == Gtk::RESPONSE_NO) {
+					cout << "No was clicked." << endl;
+					chkMobile.set_active(true);
+				} else cout << "Yes was clicked." << endl;
+			}
+			else cout << "\tNo file found in home directory." << endl;
+		}
 	}
 }

@@ -48,8 +48,9 @@ private:
 	string GetPrefsStr();
 	void UpgradeConfigFile();
 
-	/* Use a map for storing all other options we may add. */
+	/* Use a map for storing most other options we may add. */
 	map<string, string> stringOpts;
+	string originalSaveTarget;
 
 	/* Singleton-related stuff */
 	Preferences();

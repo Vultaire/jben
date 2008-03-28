@@ -8,6 +8,7 @@
 #include "wdict.h"
 #include "listmanager.h"
 #include "encoding_convert.h"
+#include "dialog_setmobile.h"
 
 #include <iostream>
 using namespace std;
@@ -90,6 +91,24 @@ int main(int argc, char **argv) {
 		/* This -should- never occur now. */
 		cerr << "Could not create preferences object.  FATAL ERROR!\n" << endl;
 		return false;
+	}
+
+	string& cfgSaveTarget = prefs->GetSetting("config_save_target");
+	if(cfgSaveTarget=="unset") {
+#ifdef __WIN32__
+		/* If config save target is unset, prompt the user. */
+		DialogSetMobile dsm;
+		int result = dsm.run();
+		if(result == DSM_MOBILE)
+			cfgSaveTarget = "mobile";
+		else
+			cfgSaveTarget = "home";
+		dsm.hide();
+#else
+		/* Mobile configurations are currently unsupported on Linux;
+		   default to home-based config. */
+		cfgSaveTarget = "home";
+#endif
 	}
 
 	const KDict* kd = KDict::Get();

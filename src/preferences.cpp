@@ -25,14 +25,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #	define JB_DATADIR "."
 #endif
 
-#ifdef __WIN32__
-#	define CFGFILE "jben.cfg"
-#	define HOMEENV "APPDATA"
-#else
-#	define CFGFILE ".jben"
-#	define HOMEENV "HOME"
-#endif
-
 #define CURRENT_CONFIG_VERSION "1.1"
 
 #include "preferences.h"
@@ -42,6 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "encoding_convert.h"
 #include "string_utils.h"
 #include "errorlog.h"
+#include "jben_defines.h"
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -49,31 +42,62 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <cstdlib>
 using namespace std;
 
+#include <boost/format.hpp>
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
+
 Preferences* Preferences::prefsSingleton = NULL;
 
 Preferences *Preferences::Get() {
 	if(!prefsSingleton) {
 		prefsSingleton = new Preferences;
+
+		/* Get home directory for this environment, if possible. */
+		string sCfgPath;
+		char *sz = getenv(HOMEENV);
+		/* Create path to config file in home dir */
+		if(sz) {
+			sCfgPath = sz;
+			sCfgPath.append(1, DSCHAR);
+			sCfgPath.append(CFGFILE);
+		}
+
 		/* Load with default preferences, and overwrite with any stored
 		   preferences. */
 		prefsSingleton->SetDefaultPrefs();
 
-		/* Check for the config file in the user's home directory. */
-		bool OK = true;
-		char *sz = getenv(HOMEENV);
-		OK = (sz!=NULL);
-		if(OK) {
-			string homedir = sz;
-			homedir.append(1, DSCHAR);
-			OK = (prefsSingleton
-				  ->LoadFile(string(homedir).append(CFGFILE).c_str())
-				  == REF_SUCCESS);
+		/* Check the local directory first.  (This is intended for mobile installs.) */
+		bool OK = (prefsSingleton->LoadFile(CFGFILE) == REF_SUCCESS);
+
+		/* If it loaded, check the save target.
+		   If the target is "home", AND the home directory was found,
+		   AND a config file is present there, then reset to default settings
+		   and re-load from that file instead. */
+		if(OK && prefsSingleton->GetSetting("config_save_target")=="home") {
+			if(sCfgPath.length() > 0 && FileExists(sCfgPath.c_str())) {
+				prefsSingleton->SetDefaultPrefs();
+				OK = false;
+			} else {
+				el.Push(EL_Info,
+					"J-Ben was unable to locate a standard mode config file, "
+					"and will be falling back to mobile mode.  To change back "
+					"to standard mode, please turn mobile mode off via the "
+					"Edit->Preferences menu.");
+				prefsSingleton->GetSetting("config_save_target") = "mobile";
+			}
 		}
 
-		/* If the config file could not be loaded from the home directory,
-		   fall back and check the current directory. */
-		if(!OK)
-			prefsSingleton->LoadFile(CFGFILE);
+		/* Finally: check for the config file in the user's home directory. */
+		if(!OK) {
+			string homedir = sz;
+			homedir.append(1, DSCHAR);
+			prefsSingleton->LoadFile(sCfgPath.c_str());
+			prefsSingleton->GetSetting("config_save_target") = "home";
+		}
+
+		/* Track whether the save target has changed since the config file was loaded. */
+		prefsSingleton->originalSaveTarget
+			= prefsSingleton->GetSetting("config_save_target");
 	}
 	return prefsSingleton;
 }
@@ -93,8 +117,9 @@ void Preferences::SetDefaultPrefs() {
 	kanjidicOptions =
 		KDO_READINGS | KDO_MEANINGS | KDO_HIGHIMPORTANCE | KDO_VOCABCROSSREF;
 	kanjidicDictionaries = 0;
+	stringOpts.clear();
 	stringOpts["config_version"] = CURRENT_CONFIG_VERSION;
-	stringOpts["config_save_target"] = "home";
+	stringOpts["config_save_target"] = "unset";
 	stringOpts["kdict_kanjidic2"]
 		= JB_DATADIR DSSTR "dicts" DSSTR "kanjidic2.xml";
 	stringOpts["kdict_kanjidic"] = JB_DATADIR DSSTR "dicts" DSSTR "kanjidic";
@@ -112,11 +137,6 @@ int Preferences::LoadFile(const char *filename) {
 
 	int e = ReadEncodedFile(filename, s);
 	if(e==REF_SUCCESS) {
-		ostringstream oss;
-		oss << "Preferences file \"" << filename
-			<< "\" loaded successfully.";
-		el.Push(EL_Silent, oss.str());
-
 		/* Split into strings for each line */
 		list<wstring> tokenList = StrTokenize<wchar_t>(s, L"\n");
 		wstring token, subToken;
@@ -175,6 +195,12 @@ int Preferences::LoadFile(const char *filename) {
 				}
 			} /* if(tokenlen>0, token[0]!=# */
 		} /* while(hasmoretokens) */
+
+		ostringstream oss;
+		oss << "Preferences file \"" << filename
+			<< "\" loaded successfully.";
+		el.Push(EL_Silent, oss.str());
+
 	} /* if(file opened) */
 	else {
 		ostringstream oss;
@@ -211,31 +237,35 @@ void Preferences::UpgradeConfigFile() {
 
 Preferences::~Preferences() {
 	string prefs = GetPrefsStr();
-	ofstream ofile;
-	string filename;
+	list<string> fileNames;
+
+	/* Set output file names */
 	if(ToLower(stringOpts["config_save_target"]) == "home") {
-		filename = string(getenv(HOMEENV)).append(1, DSCHAR).append(CFGFILE);
-		ofile.open(filename.c_str(), ios::out | ios::binary);
+		fileNames.push_back(string(getenv(HOMEENV)).append(1, DSCHAR)
+							.append(CFGFILE));
+		if(originalSaveTarget == "mobile") fileNames.push_back(CFGFILE);
+	} else {
+		fileNames.push_back(CFGFILE);
+		if(originalSaveTarget == "home")
+			fileNames.push_back(string(getenv(HOMEENV))
+								.append(1, DSCHAR).append(CFGFILE));
 	}
-	if(!ofile.is_open()) {
-		filename = CFGFILE;
-		ofile.open(filename.c_str(), ios::out | ios::binary);
+	
+	ofstream ofile;
+	foreach(string& s, fileNames) {
+		ofile.open(s.c_str(), ios::out | ios::binary);
+		if(ofile.is_open()) {
+			ofile << prefs;
+			el.Push(EL_Silent,
+				(boost::format("Preferences file \"%s\" saved successfully.")
+				 % s).str());
+			ofile.close();
+		} else {
+			el.Push(EL_Error,
+				(boost::format("Unable to save preferences to file \"%s\"!")
+				 % CFGFILE).str());
+		}
 	}
-
-	ostringstream oss;
-	if(ofile.is_open()) {
-		ofile << prefs;
-		oss << "Preferences file \"" << filename
-			<< "\" saved successfully.";
-		el.Push(EL_Silent, oss.str());
-	}
-	else {
-		oss << "Unable to save preferences to file \"" << CFGFILE
-			<< "\"!";
-		el.Push(EL_Error, oss.str());
-	}
-
-	ofile.close();
 }
 
 string Preferences::GetPrefsStr() {
