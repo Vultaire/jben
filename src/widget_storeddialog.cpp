@@ -3,7 +3,6 @@
 #include "string_utils.h"
 #include <list>
 #include <boost/format.hpp>
-#include <iostream>
 
 StoredDialog::StoredDialog
 (const Glib::ustring& title, Gtk::Window& parent, const std::string& sizeKey)

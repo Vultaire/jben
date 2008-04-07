@@ -1,5 +1,10 @@
 #include "frame_hwpad.h"
-#include "jben.xpm"
+#ifndef __WIN32__
+#	include "jben.xpm"
+#	include "jben_48.xpm"
+#	include "jben_32.xpm"
+#	include "jben_16.xpm"
+#endif
 #include "version.h"
 #include "preferences.h"
 #include "string_utils.h"
@@ -14,9 +19,16 @@
 FrameHWPad::FrameHWPad() : btnClear(_("Clear")) {
 	set_title(
 		(boost::format(_("%s: Kanji Handwriting Pad")) % PROGRAM_NAME).str());
-	Glib::RefPtr<Gdk::Pixbuf> rpIcon
-		= Gdk::Pixbuf::create_from_xpm_data(iconJben_xpm);
-	set_icon(rpIcon);
+
+#ifndef __WIN32__
+	/* Load icons */
+	list< Glib::RefPtr<Gdk::Pixbuf> > lIcons;
+	lIcons.push_back(Gdk::Pixbuf::create_from_xpm_data(iconJben_xpm));
+	lIcons.push_back(Gdk::Pixbuf::create_from_xpm_data(iconJben_48_xpm));
+	lIcons.push_back(Gdk::Pixbuf::create_from_xpm_data(iconJben_32_xpm));
+	lIcons.push_back(Gdk::Pixbuf::create_from_xpm_data(iconJben_16_xpm));
+	set_icon_list(lIcons);
+#endif
 
 	/* Logic copied from widget_storeddialog */
 	Preferences* p = Preferences::Get();

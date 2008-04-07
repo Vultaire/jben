@@ -7,10 +7,8 @@
 #include "errorlog.h"
 #include <glibmm/i18n.h>
 #include <gdk/gdk.h>
+#include "jben_defines.h"
 
-#ifndef JB_DATADIR
-	#define JB_DATADIR "."
-#endif
 #ifndef KPENGINE_DATADIR
 	#ifdef __WIN32__
 		#define KPENGINE_DATADIR JB_DATADIR "\\kpengine_data"

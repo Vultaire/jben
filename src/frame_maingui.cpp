@@ -1,6 +1,11 @@
 #include "frame_maingui.h"
 #include "version.h"
-#include "jben.xpm"
+#ifndef __WIN32__
+#	include "jben.xpm"
+#	include "jben_48.xpm"
+#	include "jben_32.xpm"
+#	include "jben_16.xpm"
+#endif
 #include <gtkmm/stock.h>
 #include <gtkmm/main.h>
 #include <gtkmm/messagedialog.h>
@@ -8,9 +13,6 @@
 #include <boost/format.hpp>
 #include "string_utils.h"
 #include "preferences.h"
-
-#include <iostream>
-using namespace std;
 
 FrameMainGUI* FrameMainGUI::singleton = NULL;
 
@@ -28,9 +30,16 @@ void FrameMainGUI::Destroy() {
 
 FrameMainGUI::FrameMainGUI() {
 	set_title(PROGRAM_NAME);
-	Glib::RefPtr<Gdk::Pixbuf> rpIcon
-		= Gdk::Pixbuf::create_from_xpm_data(iconJben_xpm);
-	set_icon(rpIcon);
+
+#ifndef __WIN32__
+	/* Load icons */
+	list< Glib::RefPtr<Gdk::Pixbuf> > lIcons;
+	lIcons.push_back(Gdk::Pixbuf::create_from_xpm_data(iconJben_xpm));
+	lIcons.push_back(Gdk::Pixbuf::create_from_xpm_data(iconJben_48_xpm));
+	lIcons.push_back(Gdk::Pixbuf::create_from_xpm_data(iconJben_32_xpm));
+	lIcons.push_back(Gdk::Pixbuf::create_from_xpm_data(iconJben_16_xpm));
+	set_icon_list(lIcons);
+#endif
 
 	/* Init vars */
 	pdKanjiListEditor = NULL;

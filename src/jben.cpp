@@ -102,12 +102,13 @@ int main(int argc, char **argv) {
 #ifdef __WIN32__
 		/* If config save target is unset, prompt the user. */
 		DialogSetMobile dsm;
-		int result = dsm.run();
-		if(result == DSM_MOBILE)
-			cfgSaveTarget = "mobile";
-		else
-			cfgSaveTarget = "home";
-		dsm.hide();
+
+		Gtk::Main::run(dsm);
+		if(cfgSaveTarget != "home" && cfgSaveTarget != "mobile") {
+			jben_cleanup();
+			return 0;
+		}
+
 #else
 		/* Mobile configurations are currently unsupported on Linux;
 		   default to home-based config. */

@@ -14,9 +14,6 @@
 
 #define CHOOSE_FONT _("Change...")
 
-#include <iostream>
-using namespace std;
-
 DialogConfig::DialogConfig(Gtk::Window& parent)
 	: StoredDialog(_("Preferences Editor"), parent, "gui.dlg.preferences.size"),
 	  chkReadings(_("Include on-yomi, kun-yomi and nanori (name) readings")),
@@ -386,12 +383,9 @@ void DialogConfig::OnFontChange(Gtk::Button* src) {
 }
 
 void DialogConfig::OnMobileToggle() {
-	cout << "DialogConfig::OnMobileToggle" << endl;
 	if(chkMobile.get_active()==false) {
-		cout << "\tchkMobile.get_active(): False" << endl;
 		Preferences *p = Preferences::Get();
 		if(p->GetSetting("config_save_target")=="mobile") {
-			cout << "\tCurrent target: Mobile, switching to Standard" << endl;
 			/* The user is attempting a change from a mobile to standard
 			   install.  We need to check whether a standard install config
 			   file is already present, and if it is, we need to warn the
@@ -405,7 +399,6 @@ void DialogConfig::OnMobileToggle() {
 			} else return; /* No home dir is a problem of its own, but at least
 							  the user won't lose data over the problem. */
 			if(FileExists(sCfgPath.c_str())) {
-				cout << "Existing Standard config file found!" << endl;
 				Gtk::MessageDialog md(
 					(boost::format(_(
 						"A config file was found in this system's home folder: "
@@ -416,11 +409,9 @@ void DialogConfig::OnMobileToggle() {
 					false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO);
 				int result = md.run();
 				if(result == Gtk::RESPONSE_NO) {
-					cout << "No was clicked." << endl;
 					chkMobile.set_active(true);
-				} else cout << "Yes was clicked." << endl;
+				}
 			}
-			else cout << "\tNo file found in home directory." << endl;
 		}
 	}
 }

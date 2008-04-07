@@ -85,10 +85,11 @@ endif
 sources = $(shell ls -t *.cpp) # Compile most recently edited files first.
 
 # Build object configuration
-objects = $(sources:%.cpp=$(build_objdir)/%.o)
 ifeq ($(PLATFORM),windows)
+	objects = $(sources:%.cpp=$(build_objdir)/%.o) $(build_objdir)/jben-rc.o
 	target = jben.exe
 else
+	objects = $(sources:%.cpp=$(build_objdir)/%.o)
 	target = jben
 endif
 
@@ -121,12 +122,7 @@ endif
 
 $(build_bindir)/$(target) : $(objects)
 	mkdir -p $(build_bindir)
-#	$(CXX) -o $(build_bindir)/$(target) $(objects) $(libs) $(CXXFLAGS)
-	$(CXX) $(CXXFLAGS) $(SharedCXXFLAGS) -o $(build_bindir)/$(target) $(objects) $(libs)
-
-$(build_objdir)/jben.res:
-	mkdir -p $(build_objdir)
-	windres.exe -i jben.rc -J rc -o $(build_objdir)/jben.res -O coff -I$(wxinclude) -I$(wxlibinc) -I$(mingwbase)/include
+	$(CXX) $(CXXFLAGS) $(SharedCXXFLAGS) -o $@ $(objects) $(libs)
 
 kpengine:
 	cd kpengine && $(MAKE) BUILD=$(BUILD) PLATFORM=$(PLATFORM) && cd ..
@@ -140,12 +136,14 @@ cleandep:
 
 cleanall : clean cleandep
 
+$(build_objdir)/jben-rc.o:
+	mkdir -p $(build_objdir)
+	windres.exe -o $@ jben.rc
+
 $(build_objdir)/%.o : %.cpp
 	mkdir -p $(build_objdir)
-# Old command
-#	$(CXX) $(CPPFLAGS) -c -o $@ $(@F:%.o=%.cpp) $(CXXFLAGS)
-# Testing command based on GNU Make manual
-	$(CXX) -c $(CPPFLAGS) $(SharedCPPFLAGS) $(CXXFLAGS) $(SharedCXXFLAGS) -o $@ $(@F:%.o=%.cpp)
+	$(CXX) -c $(CPPFLAGS) $(SharedCPPFLAGS) $(CXXFLAGS) $(SharedCXXFLAGS) -o \
+		$@ $(@F:%.o=%.cpp)
 
 # Object dependency tracking
 include $(sources:%.cpp=$(build_depdir)/%.d)
@@ -163,14 +161,13 @@ endif
 installprep:
 ifeq ($(PLATFORM),windows)
 #	Make a phony output folder with all redist files
-	mkdir -p ../J-Ben
-	cp "$(mingwbase)/bin/mingwm10.dll" ../J-Ben
-#	Copy GTK files... or just depend on a runtime being installed by the user (or installer)
-###	cp "$(gtkdevbase)/bin/..." ../J-Ben
+	mkdir -p ../J-Ben/bin
+	cp "$(mingwbase)/bin/mingwm10.dll" ../J-Ben/bin
+	cp "$(build_bindir)/$(target)" ../J-Ben/bin
+	cp "$(build_bindir)/kpengine/jben_kpengine.exe" ../J-Ben/bin
+#	Copy GTK files... currently not done automatically
 	cp ../README.txt ../J-Ben
 	cp ../CHANGELOG.txt ../J-Ben
-	cp "$(build_bindir)/$(target)" ../J-Ben
-	cp "$(build_bindir)/kpengine/jben_kpengine.exe" ../J-Ben
 	cp -R ../license ../J-Ben
 	mkdir -p ../J-Ben/kpengine_data ../J-Ben/dicts ../J-Ben/sods
 	cp kpengine/*.unistrok ../J-Ben/kpengine_data

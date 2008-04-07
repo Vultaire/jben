@@ -3,6 +3,7 @@
 #include <glibmm/i18n.h>
 #include <gtkmm/stock.h>
 #include <gtkmm/messagedialog.h>
+#include "preferences.h"
 
 DialogSetMobile::DialogSetMobile()
 	: Gtk::MessageDialog(_("How do you want to use J-Ben?"), false,
@@ -10,7 +11,6 @@ DialogSetMobile::DialogSetMobile()
 	  btnStandard(_("Standard")),
 	  btnMobile  (_("Mobile"))
 {
-	set_deletable(false);
 	set_title(_("Standard or Mobile?"));
 	set_secondary_text(
 		_("If this is a normal installation, please click \"Standard\".\n"
@@ -32,9 +32,13 @@ DialogSetMobile::DialogSetMobile()
 }
 
 void DialogSetMobile::OnStandard() {
+	Preferences::Get()->GetSetting("config_save_target") = "home";
 	response(DSM_STANDARD);
+	hide();
 }
 
 void DialogSetMobile::OnMobile() {
+	Preferences::Get()->GetSetting("config_save_target") = "mobile";
 	response(DSM_MOBILE);
+	hide();
 }

@@ -31,7 +31,6 @@ void SetTextBuf(Glib::RefPtr<Gtk::TextBuffer> rpBuf, std::string& text) {
 		/* Get tag and process */
 		ei = text.find('>', si+1);
 		if(ei == string::npos) break;
-		/*cout << "Tag: [" << text.substr(si+1, ei-(si+1)) << ']' << endl;*/
 		list<string> tag = StrTokenize<char>
 			(text.substr(si+1, ei-(si+1)), " ");
 		s = tag.front();
