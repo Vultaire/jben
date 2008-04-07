@@ -137,8 +137,8 @@ void Preferences::SetDefaultPrefs() {
 	/* Default encoding is UTF-8, however most (all?) of Jim Breen's non-XML
 	   dict files are in EUC-JP.  We should allow the program to support
 	   these files. */
-	stringOpts["kdict.edict.file.encoding"] = "euc-jp";
-	stringOpts["kdict.edict2.file.encoding"] = "euc-jp";
+	stringOpts["wdict.edict.file.encoding"] = "euc-jp";
+	stringOpts["wdict.edict2.file.encoding"] = "euc-jp";
 	stringOpts["kdict.kanjidic.file.encoding"] = "euc-jp";
 	stringOpts["kdict.kanjidic.file2.encoding"] = "euc-jp";
 	stringOpts["kdict.kradfile.file.encoding"] = "euc-jp";
