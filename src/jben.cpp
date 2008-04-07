@@ -67,6 +67,17 @@ void ErrorLogDisplayFunc(ELType t, const string& message, void *srcObj) {
 	}
 }
 
+void jben_cleanup() {
+	FrameMainGUI::Destroy();
+	/* Careful about destruction order!
+	   Proper Preferences::Destroy() call depends on ListManager! */
+	Preferences::Destroy();
+	ListManager::Destroy();
+	KDict::Destroy();
+	WDict::Destroy();
+	DestroyUTFConv();
+}
+
 int main(int argc, char **argv) {
 	Gtk::Main kit(argc, argv);
 
@@ -128,14 +139,6 @@ int main(int argc, char **argv) {
 	FrameMainGUI& gui = FrameMainGUI::Get();
 	Gtk::Main::run(gui);
 
-	/* Destruction */
-	FrameMainGUI::Destroy();
-	/* Careful about destruction order!
-	   ~Preferences depends on ListManager! */
-	Preferences::Destroy();
-	ListManager::Destroy();
-	KDict::Destroy();
-	WDict::Destroy();
-	DestroyUTFConv();
+	jben_cleanup();
 	return 0;
 }

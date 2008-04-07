@@ -39,10 +39,16 @@ void DestroyUTFConv();
 #define utfconv_wm(data) ConvertString<wchar_t, char>(data, wcType.c_str(), "UTF-8")
 #define utfconv_mw(data) ConvertString<char, wchar_t>(data, "UTF-8", wcType.c_str())
 
-/* This is the core converter function. */
+/* Encoding conversion template function.  In addition to char encoding, it
+   also allows conversion to/from wstrings and strings. */
 template <class tsrc, class tdest>
 basic_string<tdest> ConvertString
-(const basic_string<tsrc>& sourceData, const iconv_t& converter)  {
+(const basic_string<tsrc>& sourceData,
+ const char* sourceEncoding,
+ const char* targetEncoding)  {
+	iconv_t converter = iconv_open(targetEncoding, sourceEncoding);
+	if(converter == (iconv_t)-1) return basic_string<tdest>();
+
 	basic_string<tdest> result;
 	int sLen = sourceData.length()+1;
 	size_t inputBytesLeft  = sLen * sizeof(tsrc);
@@ -71,8 +77,7 @@ basic_string<tdest> ConvertString
 		   conversion errors.  For now though, we'll do nothing and simply
 		   bail. */
 		ostringstream oss;
-		oss << "Converting encoding using converter 0x"
-			<< setw(8) << setfill('0') << hex << converter << dec
+		oss << "Conversion from " << sourceEncoding << " to " << targetEncoding
 			<< ": error code = " << errno;
 		el.Push(EL_Error, oss.str());
 		goto exit_now;
@@ -83,21 +88,8 @@ basic_string<tdest> ConvertString
 
 exit_now:
 	delete[] buffer;
-	return result;	
-}
 
-/* The below is for "on-the-fly" iconv conversions.  It creates a converter
-   object, and then passes everything into the core converter function. */
-template <class tsrc, class tdest>
-basic_string<tdest> ConvertString
-(const basic_string<tsrc>& sourceData,
- const char* sourceEncoding,
- const char* targetEncoding)  {
-	basic_string<tdest> result;
-	iconv_t conv = iconv_open(targetEncoding, sourceEncoding);
-	if(conv == (iconv_t)-1) return basic_string<tdest>();
-	result = ConvertString<tsrc,tdest>(sourceData, conv);
-	iconv_close(conv);
+	iconv_close(converter);
 	return result;
 }
 

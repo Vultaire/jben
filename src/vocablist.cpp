@@ -26,7 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "errorlog.h"
 #include <list>
 #include <sstream>
-#include <iostream>
 using namespace std;
 
 VocabList::VocabList() {
@@ -93,7 +92,7 @@ int VocabList::AddList(const wstring& s, void* srcObj) {
 	wstring token;
 	int count = 0;
 	int duplicates = 0;
-	while(t.size()>0) {
+	while(!t.empty()) {
 		token = t.front();
 		if(token.length()>0) {
 			if(Add(token)) count++;
