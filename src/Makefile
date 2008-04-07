@@ -65,12 +65,13 @@ ifeq ($(PLATFORM),linux)
 	SharedCXXFLAGS = `pkg-config --cflags gtkmm-2.4 libxml-2.0`
 	SharedCPPFLAGS = -DJB_DATADIR=\"$(datadir)/jben\" \
 		-DDOCDIR=\"$(docdir)/doc\" -DLICENSEDIR=\"$(docdir)/license\"
-	libs = `pkg-config --libs gtkmm-2.4 libxml-2.0`
+	libs = `pkg-config --libs gtkmm-2.4 libxml-2.0` -lboost_regex
 endif
 
 # C++ options
 ifeq ($(BUILD),release)
 	CXXFLAGS = -Wall -s -O2
+	CPPFLAGS = -DNDEBUG #Added, used by assert
 endif
 ifeq ($(BUILD),debug)
 	CXXFLAGS = -Wall -g

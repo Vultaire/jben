@@ -11,22 +11,6 @@ DictPanel::DictPanel()
 	  btnNext(Gtk::Stock::GO_FORWARD),
 	  btnRand(_("Random")) {}
 
-#if 0
-#include <iostream>
-using namespace std;
-
-static void ShowTag(GtkTextTag *tag, gpointer data) {
-	cout << "Tag!" << endl;
-	cout << "\tPriority: " << gtk_text_tag_get_priority(tag) << endl;
-	gchararray buf;
-	g_object_get(tag, "font", &buf, NULL);
-	if(buf!=NULL) {
-		cout << "\tFont name: " << buf << endl;
-		g_free(buf);
-	}
-}
-#endif
-
 void DictPanel::Update() {
 	/* Update will refresh the font tags in use by this control. */
 	Glib::RefPtr<Gtk::TextBuffer::TagTable> pTable
@@ -80,9 +64,6 @@ void DictPanel::Update() {
 		pTag->property_weight() = Pango::WEIGHT_BOLD;
 		pTable->add(pTag);
 	}
-#if 0
-	gtk_text_tag_table_foreach(pTable->gobj(), ShowTag, NULL);
-#endif
 
 #if 0
 	/* Also, let's set the entry field's font

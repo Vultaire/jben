@@ -25,7 +25,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define kanjilist_h
 
 #include "kdict.h"
-#include "boosthm.h"
 #include <string>
 #include <vector>
 using namespace std;
@@ -48,10 +47,10 @@ public:
 	vector<wchar_t>& GetVector();
 
 private:
-	void InplaceMerge(vector<wchar_t>& v, BoostHM<wchar_t, int>& indexer, int start, int middle, int end);
+	void InplaceMerge(vector<wchar_t>& v, unordered_map<wchar_t, int>& indexer, int start, int middle, int end);
 
 	vector<wchar_t> kanjiList;
-	BoostHM<wchar_t, int> *myCharIndexer;
+	unordered_map<wchar_t, int> *myCharIndexer;
 };
 
 #endif

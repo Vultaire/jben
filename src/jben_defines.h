@@ -9,4 +9,8 @@
 #	define HOMEENV "HOME"
 #endif
 
+#ifndef JB_DATADIR
+#	define JB_DATADIR ".."
+#endif
+
 #endif

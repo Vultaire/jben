@@ -146,16 +146,7 @@ void DialogKanjiTest::ShowNextKanji() {
 	ctvKanji.SetHiddenText(utfconv_wm(wstring(L"").append(1,currentKanji)));
 	ctvOnyomi.SetHiddenText(ListToString<string>(ki->onyomi, "、"));
 	ctvKunyomi.SetHiddenText(ListToString<string>(ki->kunyomi, "、"));
-	std::map<string, list<string> >::const_iterator
-		mslsi = ki->meaning.find("en");
-	if(mslsi != ki->meaning.end()) {
-		ctvMeaning.SetHiddenText(ListToString<string>(mslsi->second, "、"));
-	} else {
-		ostringstream oss;
-		oss << "Unable to find english meaning in character "
-			<< ki->literal << "!";
-		el.Push(EL_Warning, oss.str());
-	}
+	ctvMeaning.SetHiddenText(ListToString<string>(ki->meaning, "、"));
 
 	/* Update the test status label */
 	double score=0.0, progress=0.0;

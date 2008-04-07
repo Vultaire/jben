@@ -31,8 +31,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* Normal includes go here */
 #include "file_utils.h"
 #include "encoding_convert.h"
+#include "string_utils.h"
 #include <fstream>
 #include <sstream>
+#include <zlib.h>
+#include <boost/format.hpp>
 using namespace std;
 
 /* Tries to open the specified file.  If successful, it'll read in its entire
@@ -82,4 +85,60 @@ bool FileExists(const char *filename) {
 		f.close();
 	}
 	return result;
+}
+
+bool ReadFileIntoString(const string& filename,
+						string& destination, int bufSize) {
+	ifstream ifs(filename.c_str(), ios::binary | ios::in);
+	if(ifs.is_open()) {
+		char *buffer = new char[bufSize];
+		while((!ifs.fail()) && (!ifs.eof())) {
+			ifs.read(buffer, bufSize - 1);
+			buffer[ifs.gcount()] = 0;
+			destination += buffer;
+		}
+		ifs.close();
+		delete[] buffer;
+		return true;
+	}
+	return false;
+}
+
+bool ReadGzipIntoString(const string& filename,
+						string& destination, int bufSize) {
+	gzFile f = gzopen(filename.c_str(), "rb");
+	if(f) {
+		char *buffer = new char[bufSize];
+		int bytesRead = gzread(f, (void*)buffer, bufSize - 1);
+		while(bytesRead != 0) {
+			if(bytesRead == -1) {
+				el.Push(
+					EL_Error,
+					(boost::format("An error occurred: probably %s is not a "
+								   "valid gzip file.")
+					 % filename).str());
+				gzclose(f);
+				return false;
+			}
+
+			buffer[bytesRead] = 0;
+			destination += buffer;
+			bytesRead = gzread(f, (void*)buffer, bufSize - 1);
+		}
+		gzclose(f);
+		delete[] buffer;
+		return true;
+	}
+	return false;
+}
+
+void GetGzipName(const string& srcName, string& gzName, string& stdName) {
+	int len = srcName.length();
+	if(ToLower(srcName.substr(len-3)) == ".gz") {
+		gzName = srcName;
+		stdName = srcName.substr(0, len-3);
+	} else {
+		stdName = gzName = srcName;
+		gzName += ".gz";
+	}
 }

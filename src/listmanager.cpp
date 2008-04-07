@@ -75,3 +75,7 @@ VocabList* ListManager::VList() {
 	if(it==vocabList.end()) return NULL;
 	return &(it->second);
 }
+
+bool ListManager::Exists() {
+	return (singleton!=NULL);
+}

@@ -50,4 +50,12 @@ int ReadEncodedFile(const char *filename,
 string GetCWD();
 bool FileExists(const char *filename);
 
+/* These functions read the contents of a file into a string.
+   A buffer size can be optionally specified; by default 1 megabyte is used. */
+bool ReadFileIntoString(const string& filename,
+						string& destination, int bufSize = 0x100000);
+bool ReadGzipIntoString(const string& filename,
+						string& destination, int bufSize = 0x100000);
+void GetGzipName(const string& srcName, string& gzName, string& stdName);
+
 #endif

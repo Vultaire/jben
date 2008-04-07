@@ -8,6 +8,7 @@ class ListManager {
 public:
 	static ListManager* Get();
 	static void Destroy();
+	static bool Exists();
 
 	void AddKanjiList(const string& name);
 	void AddVocabList(const string& name);

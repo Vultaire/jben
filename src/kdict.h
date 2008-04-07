@@ -104,28 +104,40 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
    This is a lot of output, so it's probably for debug purposes only. */
 #define KDD_ALL    0xFFFFFFFF
 
-#include "boosthm.h"
 #include <string>
 #include <iostream>
 #include <list>
 #include <map>
+#include <tr1/unordered_map>
 using namespace std;
+using namespace tr1;
 
+/* New KInfo.  Structure is less flexible but should be faster, especially on
+   load time.  Lists remain but maps have been flattened into the class. */
 class KInfo {
 public:
 	KInfo();
 
 	string literal;
-	map<string,string> codepoint;
+	//map<string,string> codepoint;
+	string cp_j208, cp_j212, cp_j213, cp_ucs;
 	unsigned char radical, radicalNelson;
 	int grade;
 	int strokeCount;
 	list<int> misstrokes;
-	map<string,string> variant;
+	//map<string,string> variant;
+	string var_j208, var_j212, var_j213, var_ucs,
+		var_deroo, var_nelson_c, var_njecd, var_oneill, var_s_h;
 	int freq;
 	string radicalName;
-	map<string,string> dictCode;
-	map<string,string> queryCode;
+	//unordered_map<string,string> dictCode;
+	string dc_busy_people, dc_crowley, dc_gakken, dc_halpern_kkld,
+		dc_halpern_njecd, dc_heisig, dc_henshall, dc_henshall3, dc_jf_cards,
+		dc_kanji_in_context, dc_kodansha_compact, dc_moro, dc_nelson_c,
+		dc_nelson_n, dc_oneill_kk, dc_oneill_names, dc_sakade, dc_sh_kk,
+		dc_tutt_cards;
+	//map<string,string> queryCode;
+	string qc_deroo, qc_four_corner, qc_sh_desc, qc_skip;
 	list< pair<string,string> > skipMisclass;  /* Maybe this should be a
 												  std::multimap instead? */
 	list<string> pinyin, korean_r, korean_h,
@@ -133,7 +145,8 @@ public:
 	/* FOR NOW: I am ignoring onyomi and kunyomi r_status and on_type flags.
 	   In the KANJIDIC2 dated 2008-02-12, there was only one entry, "行く",
 	   which had any of these flags.  Not worth the effort. */
-	map<string, list<string> > meaning;
+	//map<string, list<string> > meaning;
+	list<string> meaning, meaning_es, meaning_pt;
 	wstring kradData;
 };
 
@@ -151,7 +164,7 @@ public:
 	static string KInfoToTextBuf(const KInfo& k,
 								  long options, long dictionaries);
 	const KInfo* GetEntry(const wchar_t key) const;
-	const BoostHM<wchar_t, KInfo>* GetHashTable() const;
+	const unordered_map<wchar_t, KInfo>* GetHashTable() const;
 
 	/* Other functions */
 	bool MainDataLoaded() const;
@@ -160,10 +173,12 @@ private:
 	KDict();
 	
 	/* Dictionary file loaders */
-	int LoadKanjidic(const char* filename, const char* jisStd="jis208");
-	int LoadKanjidic2(const char* filename);
-	int LoadRadkfile(const char* filename);
-	int LoadKradfile(const char* filename);
+	int LoadKanjidic(const string& filename,
+					 const string& jisStd="jis208",
+					 const string& encoding="utf-8");
+	int LoadKanjidic2(const string& filename);
+	int LoadRadkfile(const string& filename);
+	int LoadKradfile(const string& filename);
 
 	/* Kanjidic-specific stuff */
 	void KanjidicToKInfo(const string& kanjidicEntry, KInfo& k,
@@ -173,9 +188,9 @@ private:
 
 	/* Data */
 	static KDict *kdictSingleton;
-	BoostHM<wchar_t, KInfo> kdictData;
-	BoostHM<wchar_t, wstring> radkData;
-	BoostHM<wchar_t, int> radkDataStrokes;
+	unordered_map<wchar_t, KInfo> kdictData;
+	unordered_map<wchar_t, wstring> radkData;
+	unordered_map<wchar_t, int> radkDataStrokes;
 };
 
 #endif

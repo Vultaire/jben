@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "errorlog.h"
 #include <sstream>
 #include <algorithm>
+
 using namespace std;
 
 KanjiList::KanjiList() {}
@@ -33,9 +34,9 @@ KanjiList::KanjiList() {}
 int KanjiList::AddFromString(const wstring& s) {
 	int kanjiAdded = 0, len = s.length();
 	wchar_t c;
-	BoostHM<wchar_t,KInfo>::const_iterator it;
+	unordered_map<wchar_t,KInfo>::const_iterator it;
 
-	const BoostHM<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
+	const unordered_map<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
 
 	for(int i=0;i<len;i++) {
 		c = s[i];
@@ -54,20 +55,21 @@ int KanjiList::AddFromString(const wstring& s) {
 /* Convert the kanjilist into a wide char string,
    with lineWidth kanji per line (0 == no line breaks). */
 wstring KanjiList::ToString(int lineWidth) {
-		wstring result;
-		int lineWidthCounter=0;
-		int len = kanjiList.size();
-		for(int i=0;i<len;i++) {
-			result.append(1, kanjiList[i]);
-			if(lineWidth>0) {
-				lineWidthCounter++;
-				if(lineWidthCounter>=lineWidth) {
-					result.append(1, L'\n');
-					lineWidthCounter=0;
-				}
+	wstring result;
+	int lineWidthCounter=0;
+	size_t len = kanjiList.size();
+	if(len==0) return result;
+	for(size_t i=0;i<len;i++) {
+		result.append(1, kanjiList[i]);
+		if(lineWidth>0) {
+			lineWidthCounter++;
+			if(lineWidthCounter>=lineWidth) {
+				result.append(1, L'\n');
+				lineWidthCounter=0;
 			}
 		}
-		return result;
+	}
+	return result;
 }
 
 void KanjiList::Clear() {
@@ -78,9 +80,9 @@ int KanjiList::AddByGrade(int lowGrade, int highGrade) {
 	wstring kanjiStr;
 	int grade;
 
-	const BoostHM<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
+	const unordered_map<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
 
-	for(BoostHM<wchar_t,KInfo>::const_iterator
+	for(unordered_map<wchar_t,KInfo>::const_iterator
 			ki=ht->begin(); ki!=ht->end(); ki++) {
 		grade = ki->second.grade;
 		if(grade>=lowGrade &&
@@ -95,9 +97,9 @@ int KanjiList::AddByFrequency(int lowFreq, int highFreq) {
 	wstring kanjiStr;
 	int freq;
 
-	const BoostHM<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
+	const unordered_map<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
 
-	for(BoostHM<wchar_t,KInfo>::const_iterator ki=ht->begin(); ki!=ht->end(); ki++) {
+	for(unordered_map<wchar_t,KInfo>::const_iterator ki=ht->begin(); ki!=ht->end(); ki++) {
 		freq = ki->second.freq;
 		if(freq>=lowFreq && freq<=highFreq)
 			kanjiStr.append(1, ki->first);
@@ -108,7 +110,7 @@ int KanjiList::AddByFrequency(int lowFreq, int highFreq) {
 
 int KanjiList::Size() {return kanjiList.size();}
 
-void KanjiList::InplaceMerge(vector<wchar_t>& v, BoostHM<wchar_t,int>& indexer, int start, int middle, int end) {
+void KanjiList::InplaceMerge(vector<wchar_t>& v, unordered_map<wchar_t,int>& indexer, int start, int middle, int end) {
 	/* Merge is implemented as a bubble sort started at halfway
 	   (since we know the first whole half is already sorted) */
 	int i, highIndex;
@@ -137,7 +139,7 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 	int totalSize = kanjiList.size();
 	if(totalSize<=1) return;  /* Size 0 or 1 list is already sorted */
 
-	myCharIndexer = new BoostHM<wchar_t,int>;
+	myCharIndexer = new unordered_map<wchar_t,int>;
 	myCharIndexer->clear();
 	vector<wchar_t>::iterator vi;
 
@@ -158,7 +160,7 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 			break;
 		}
 		if(value==0) value=INT_MAX;
-		myCharIndexer->assign(*vi, value);
+		(*myCharIndexer)[*vi] = value;
 	}
 
 	/* Sort our data based upon the stored key in the hash table */

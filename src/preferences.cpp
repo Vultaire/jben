@@ -21,10 +21,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef JB_DATADIR
-#	define JB_DATADIR "."
-#endif
-
 #define CURRENT_CONFIG_VERSION "1.1"
 
 #include "preferences.h"
@@ -37,7 +33,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "jben_defines.h"
 #include <sstream>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
 #include <cstdlib>
 using namespace std;
@@ -66,8 +61,8 @@ Preferences *Preferences::Get() {
 		   preferences. */
 		prefsSingleton->SetDefaultPrefs();
 
-		/* Check the local directory first.  (This is intended for mobile installs.) */
-		bool OK = (prefsSingleton->LoadFile(CFGFILE) == REF_SUCCESS);
+		/* Check the parent directory first.  (This is intended for mobile installs.) */
+		bool OK = (prefsSingleton->LoadFile(".." DSSTR CFGFILE) == REF_SUCCESS);
 
 		/* If it loaded, check the save target.
 		   If the target is "home", AND the home directory was found,
@@ -91,8 +86,8 @@ Preferences *Preferences::Get() {
 		if(!OK) {
 			string homedir = sz;
 			homedir.append(1, DSCHAR);
-			prefsSingleton->LoadFile(sCfgPath.c_str());
-			prefsSingleton->GetSetting("config_save_target") = "home";
+			OK = (prefsSingleton->LoadFile(sCfgPath.c_str()) == REF_SUCCESS);
+			if(OK) prefsSingleton->GetSetting("config_save_target") = "home";
 		}
 
 		/* Track whether the save target has changed since the config file was loaded. */
@@ -120,14 +115,39 @@ void Preferences::SetDefaultPrefs() {
 	stringOpts.clear();
 	stringOpts["config_version"] = CURRENT_CONFIG_VERSION;
 	stringOpts["config_save_target"] = "unset";
-	stringOpts["kdict_kanjidic2"]
+	/* Define default paths to supported (and future supported) dicts.
+	   J-Ben will automatically append ".gz" and load compressed dictionaries
+	   if found. */
+	/* Identifiers are of the form "jben_obj.dict_type.file[#]".  Dicts with the
+	   same format should share the same dict_type and add a file number. */
+	stringOpts["kdict.kanjidic2.file"]
 		= JB_DATADIR DSSTR "dicts" DSSTR "kanjidic2.xml";
-	stringOpts["kdict_kanjidic"] = JB_DATADIR DSSTR "dicts" DSSTR "kanjidic";
-	stringOpts["kdict_kanjd212"] = JB_DATADIR DSSTR "dicts" DSSTR "kanjd212";
-	stringOpts["kdict_kradfile"] = JB_DATADIR DSSTR "dicts" DSSTR "kradfile";
-	stringOpts["kdict_radkfile"] = JB_DATADIR DSSTR "dicts" DSSTR "radkfile";
-	stringOpts["wdict_edict2"]   = JB_DATADIR DSSTR "dicts" DSSTR "edict2";
-	stringOpts["sod_dir"]        = JB_DATADIR DSSTR "sods";
+	stringOpts["kdict.kanjidic.file"]
+		= JB_DATADIR DSSTR "dicts" DSSTR "kanjidic";
+	stringOpts["kdict.kanjidic.file2"]
+		= JB_DATADIR DSSTR "dicts" DSSTR "kanjd212";
+	stringOpts["kdict.kradfile.file"]
+		= JB_DATADIR DSSTR "dicts" DSSTR "kradfile";
+	stringOpts["kdict.radkfile.file"]
+		= JB_DATADIR DSSTR "dicts" DSSTR "radkfile";
+	stringOpts["wdict.edict.file"]
+		= JB_DATADIR DSSTR "dicts" DSSTR "edict";
+	stringOpts["wdict.edict2.file"]
+		= JB_DATADIR DSSTR "dicts" DSSTR "edict2";
+	/* Default encoding is UTF-8, however most (all?) of Jim Breen's non-XML
+	   dict files are in EUC-JP.  We should allow the program to support
+	   these files. */
+	stringOpts["kdict.edict.file.encoding"] = "euc-jp";
+	stringOpts["kdict.edict2.file.encoding"] = "euc-jp";
+	stringOpts["kdict.kanjidic.file.encoding"] = "euc-jp";
+	stringOpts["kdict.kanjidic.file2.encoding"] = "euc-jp";
+	stringOpts["kdict.kradfile.file.encoding"] = "euc-jp";
+	stringOpts["kdict.radkfile.file.encoding"] = "euc-jp";
+	/* Specify JIS encoding for kanjidic files (jis-208 or jis-212) */
+	/* stringOpts["kdict.kanjidic.file.jispage"]; */
+	stringOpts["kdict.kanjidic.file2.jispage"] = "jis212";
+
+	stringOpts["sod_dir"] = JB_DATADIR DSSTR "sods";
 }
 
 int Preferences::LoadFile(const char *filename) {
@@ -141,7 +161,7 @@ int Preferences::LoadFile(const char *filename) {
 		list<wstring> tokenList = StrTokenize<wchar_t>(s, L"\n");
 		wstring token, subToken;
 		size_t index;
-		while(tokenList.size()>0) {
+		while(!tokenList.empty()) {
 			token = tokenList.front();
 			tokenList.pop_front();
 			if( (token.length()>0) && (token[0]!=L'#') ) {
@@ -171,7 +191,7 @@ int Preferences::LoadFile(const char *filename) {
 						subToken = Trim(subToken);
 						list<wstring> tSub
 							= StrTokenize<wchar_t>(subToken, L";");
-						while(tSub.size()>0) {
+						while(!tSub.empty()) {
 							subToken = tSub.front();
 							tSub.pop_front();
 							if(subToken.length()>0) {
@@ -205,7 +225,7 @@ int Preferences::LoadFile(const char *filename) {
 	else {
 		ostringstream oss;
 		oss << "Preferences file \"" << filename
-			<< "\" could NOT be loaded." << endl;
+			<< "\" could NOT be loaded.";
 		el.Push(EL_Silent, oss.str());
 	}
 
@@ -236,34 +256,40 @@ void Preferences::UpgradeConfigFile() {
 }
 
 Preferences::~Preferences() {
-	string prefs = GetPrefsStr();
-	list<string> fileNames;
+	/* If the listmanager wasn't allowed to load (rare), we don't want to
+	   potentially overwrite a good config file with a bad one. */
+	if(ListManager::Exists()) {
+		string prefs = GetPrefsStr();
+		list<string> fileNames;
 
-	/* Set output file names */
-	if(ToLower(stringOpts["config_save_target"]) == "home") {
-		fileNames.push_back(string(getenv(HOMEENV)).append(1, DSCHAR)
-							.append(CFGFILE));
-		if(originalSaveTarget == "mobile") fileNames.push_back(CFGFILE);
-	} else {
-		fileNames.push_back(CFGFILE);
-		if(originalSaveTarget == "home")
-			fileNames.push_back(string(getenv(HOMEENV))
-								.append(1, DSCHAR).append(CFGFILE));
-	}
-	
-	ofstream ofile;
-	foreach(string& s, fileNames) {
-		ofile.open(s.c_str(), ios::out | ios::binary);
-		if(ofile.is_open()) {
-			ofile << prefs;
-			el.Push(EL_Silent,
-				(boost::format("Preferences file \"%s\" saved successfully.")
-				 % s).str());
-			ofile.close();
+		/* Set output file names */
+		if(ToLower(stringOpts["config_save_target"]) == "home") {
+			fileNames.push_back(string(getenv(HOMEENV)).append(1, DSCHAR)
+								.append(CFGFILE));
+			if(originalSaveTarget == "mobile")
+				fileNames.push_back(".." DSSTR CFGFILE);
 		} else {
-			el.Push(EL_Error,
-				(boost::format("Unable to save preferences to file \"%s\"!")
-				 % CFGFILE).str());
+			fileNames.push_back(".." DSSTR CFGFILE);
+			if(originalSaveTarget == "home")
+				fileNames.push_back(string(getenv(HOMEENV))
+									.append(1, DSCHAR).append(CFGFILE));
+		}
+		
+		ofstream ofile;
+		foreach(string& s, fileNames) {
+			ofile.open(s.c_str(), ios::out | ios::binary);
+			if(ofile.is_open()) {
+				ofile << prefs;
+				el.Push(EL_Silent,
+						(boost::format
+						 ("Preferences file \"%s\" saved successfully.")
+						 % s).str());
+				ofile.close();
+			} else {
+				el.Push(EL_Error,
+					(boost::format("Unable to save preferences to file \"%s\"!")
+					 % CFGFILE).str());
+			}
 		}
 	}
 }
@@ -277,18 +303,22 @@ string Preferences::GetPrefsStr() {
 
 	/* Get kanji and vocab lists in UTF-8 encoded strings */
 	/* Currently we only save one list, "master", the currently selected one. */
-	ListManager* lm = ListManager::Get();
-	kanjiList = utfconv_wm(lm->KList()->ToString());
-	vocabList = utfconv_wm(lm->VList()->ToString(';'));
+	if(ListManager::Exists()) {
+		ListManager* lm = ListManager::Get();
+		KanjiList* kl = lm->KList();
+		VocabList* vl = lm->VList();
+		if(kl) kanjiList = utfconv_wm(kl->ToString());
+		if(vl) vocabList = utfconv_wm(vl->ToString(';'));
 
-	prefs << "KanjidicOptionMask\t0x"
-		  << uppercase << hex << setw(8) << setfill('0')
-		  << kanjidicOptions << '\n';
-	prefs << "KanjidicDictionaryMask\t0x"
-		  << uppercase << hex << setw(8) << setfill('0')
-		  << kanjidicDictionaries << '\n';
-	prefs << "KanjiList\t" << kanjiList << '\n';
-	prefs << "VocabList\t" << vocabList << '\n';
+		prefs << "KanjidicOptionMask\t0x"
+			  << uppercase << hex << setw(8) << setfill('0')
+			  << kanjidicOptions << '\n';
+		prefs << "KanjidicDictionaryMask\t0x"
+			  << uppercase << hex << setw(8) << setfill('0')
+			  << kanjidicDictionaries << '\n';
+		prefs << "KanjiList\t" << kanjiList << '\n';
+		prefs << "VocabList\t" << vocabList << '\n';
+	}
 
 	/* Append any other variables stored */
 	for(map<string, string>::iterator mi = stringOpts.begin();
@@ -316,8 +346,14 @@ string& Preferences::GetSetting(string key, string defaultValue) {
 		else if(lKey=="gui.wnd.kanjihwpad.size")
 			defaultValue = "200x230";
 #ifdef __WIN32__
-		else if(lKey=="font.en")       defaultValue = "Arial 12";
-		else if(lKey=="font.en.small") defaultValue = "Arial 8";
+		/* GTK does not support bold text under Windows very well.  It might be
+		   due to the rendering engine it use, but I'm unsure.  Italic and
+		   normal text work fine, but MANY Windows fonts cannot be selected as
+		   bold under GTK+. */
+		/* Tahoma seems to show Japanese characters and bold English text okay.
+		   It's a tolerable compromise to -proper- GTK font support. */
+		else if(lKey=="font.en")       defaultValue = "Tahoma 12";
+		else if(lKey=="font.en.small") defaultValue = "Tahoma 8";
 		else if(lKey=="font.ja")       defaultValue = "MS Mincho 16";
 		else if(lKey=="font.ja.large") defaultValue = "MS Mincho 32";
 #else
@@ -330,4 +366,31 @@ string& Preferences::GetSetting(string key, string defaultValue) {
 	/* Assign default value */
 	stringOpts[lKey] = defaultValue;
 	return stringOpts[lKey];
+}
+
+#include <iostream>
+list<string> Preferences::GetKeyList(string searchKey) {
+	list<string> l;
+	map<string,string>::iterator it, lb, ub;
+	/* Lower bound is easy to find */
+	lb = stringOpts.lower_bound(searchKey);
+	/* Upper bound must be manually tested */
+	for(ub=lb; ub!=stringOpts.end(); ub++) {
+		if(ub->first.compare
+		   (0, min(ub->first.length(), searchKey.length()), searchKey) != 0)
+			break;
+	}
+
+	for(it=lb; it!=ub; it++)
+		l.push_back(it->first);
+	return l;
+}
+
+typedef std::pair<string,string> pair_str;
+list<string> Preferences::GetKeyList(boost::regex exp) {
+	list<string> l;
+	foreach(const pair_str& p, stringOpts) {
+		if(regex_match(p.first, exp)) l.push_back(p.first);
+	}
+	return l;
 }

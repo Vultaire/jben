@@ -35,7 +35,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <boost/foreach.hpp>
 using namespace std;
+
+#define foreach BOOST_FOREACH
 
 #ifdef __WIN32__
 #	define FALLBACK_DICTDIR "dicts\\"
@@ -62,8 +65,26 @@ const WDict *WDict::Get() {
 
 WDict::WDict() {
 	Preferences *p = Preferences::Get();
-	if(LoadEdict2(p->GetSetting("wdict_edict2").c_str())!=ED_SUCCESS)
-		LoadEdict2(FALLBACK_DICTDIR "edict2");
+	list<string> files;
+	int result;
+	bool success;
+
+	boost::regex e(".*file[\\d]*$");
+
+	/* Load JMDict, if present. */
+	/* -PLACEHOLDER- */
+
+	/* Load EDICT2, if present. */
+	files = p->GetKeyList(boost::regex("^wdict.edict2.file[\\d]*$"));
+	success = false;
+	foreach(string& s, files) {
+		result = LoadEdict2(p->GetSetting(s).c_str());
+		if(result == WD_SUCCESS) success = true;
+	}
+	files.clear();
+
+	/* Load EDICT-format dicts, if present. */
+	/* -PLACEHOLDER- */
 }
 
 void WDict::Destroy() {
@@ -73,35 +94,44 @@ void WDict::Destroy() {
 	}
 }
 
-int WDict::LoadEdict2(const char *filename) {
-	char *rawData = NULL;
-	unsigned int size;
-	int returnCode = 0xDEADBEEF;
+int WDict::LoadEdict2(const string& filename, const string& encoding) {
+	int returnCode = WD_FAILURE;
 
-	ifstream ifile(filename, ios::ate); /* "at end" to get our file size */
-	if(ifile) {
-		size = ifile.tellg();
-		ifile.seekg(0);
-		rawData = new char[size+1];
-		rawData[size] = '\0';
-		ifile.read(rawData, size);
-#ifdef DEBUG
-		if(strlen(rawData)!=size) {
-			ostringstream os;
-			os << "edict file size: " << strlen(rawData) << ", read-in string: " << size;
-			el.Push(EL_Warning, os.str());
-		}
-#endif
+	/* Get file names */
+	string gzfn, fn;
+	GetGzipName(filename, gzfn, fn);	
 
-		/* Create the kanjidic object with our string data. */
-		this->Edict2Parser(rawData);
+	/* Load file */
+	string data;
+	string *pFnOpened = NULL;
+	if(ReadGzipIntoString(gzfn, data)) pFnOpened = &gzfn;
+	else if(ReadFileIntoString(fn, data)) pFnOpened = &fn;
+	if(!pFnOpened) return returnCode;
 
-		returnCode = ED_SUCCESS;
+	/* Set the raw data pointer to point towards the a copy of the data
+	   just read, or towards a converted version. */
+	char* rawData = NULL;
+	if(ToLower(encoding)!="utf-8") {
+		string convertedData = ConvertString<char, char>(
+			data, encoding.c_str(), "UTF-8");
+		rawData = new char[convertedData.length()+1];
+		strcpy(rawData, convertedData.c_str());
+	} else {
+		rawData = new char[data.length()+1];
+		strcpy(rawData, data.c_str());
 	}
-	else
-		returnCode = ED_FAILURE;
 
-	if(rawData) delete[] rawData;
+	/* Create the kanjidic object with our string data. */
+	this->Edict2Parser(rawData);
+
+	delete[] rawData;
+
+	returnCode = WD_SUCCESS;
+
+	returnCode = WD_SUCCESS;
+	el.Push(EL_Silent, string("Word dictionary file \"")
+			.append(*pFnOpened).append("\" loaded successfully."));
+
 	return returnCode;
 }
 
@@ -410,7 +440,7 @@ bool WDict::Search(const wstring& query, list<int>& results,
 #ifdef DEBUG
 	printf("Search result count: %d\n", results.size());
 #endif
-	if(results.size()>0) return true;
+	if(!results.empty()) return true;
 	return false;
 }
 
@@ -418,7 +448,7 @@ wstring WDict::ResultToHTML(const wstring& rawResult) {
 	wstring token, subToken, jStr, eStr, htmlStr;
 	list<wstring> tk = StrTokenize(rawResult, L"\n");
 	size_t indexSlash, indexNextSlash, indexBreak;
-	while(tk.size()>0) {
+	while(!tk.empty()) {
 		token = tk.front();
 		tk.pop_front();
 		htmlStr.append(L"<p>");
@@ -470,7 +500,7 @@ string WDict::ResultToTextBuf(const string& rawResult) {
 	string token, subToken, jStr, eStr, outStr;
 	list<string> tk = StrTokenize(rawResult, "\n");
 	size_t indexSlash, indexNextSlash, indexBreak;
-	while(tk.size()>0) {
+	while(!tk.empty()) {
 		if(outStr.length()>0) outStr.append(1, '\n');
 		token = tk.front();
 		tk.pop_front();
@@ -600,6 +630,6 @@ void WDict::GetJapanese(const string& edictStr, vector<string>& dest) {
 string WDict::GetEdictString(int i) const { return edictData[i]; }
 
 bool WDict::MainDataLoaded() const {
-	if(edictData.size()>0) return true;
+	if(!edictData.empty()) return true;
 	return false;
 }

@@ -34,7 +34,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <fstream>
 #include <sstream>
 #include <list>
+#include <cstring>
+#include <boost/foreach.hpp>
 using namespace std;
+
+#define foreach BOOST_FOREACH
 
 #ifdef __WIN32__
 #	define FALLBACK_DICTDIR "dicts\\"
@@ -57,26 +61,48 @@ const KDict* KDict::Get() {
 
 KDict::KDict() {
 	Preferences* p = Preferences::Get();
+	list<string> files;
 	int result;
+	bool success;
+
 	/* Load KANJIDIC2, if present. */
-	result = LoadKanjidic2(p->GetSetting("kdict_kanjidic2").c_str());
-	if(result!=KD_SUCCESS)
-		result = LoadKanjidic2(FALLBACK_DICTDIR "kanjidic2.xml");
+	files = p->GetKeyList(boost::regex("^kdict.kanjidic2.file[\\d]*$"));
+	success = false;
+	foreach(string& s, files) {
+		result = LoadKanjidic2(p->GetSetting(s));
+		if(result == KD_SUCCESS) success = true;
+	}
+	files.clear();
 
 	/* If KANJIDIC2 is not present, load KANJIDIC and/or KANJD212 */
-	if(result!=KD_SUCCESS) {
-		result = LoadKanjidic(p->GetSetting("kdict_kanjidic").c_str());
-		if(result!=KD_SUCCESS) LoadKanjidic(FALLBACK_DICTDIR "kanjidic");
-		result =
-			LoadKanjidic(p->GetSetting("kdict_kanjd212").c_str(), "jis212");
-		if(result!=KD_SUCCESS)
-			LoadKanjidic(FALLBACK_DICTDIR "kanjd212", "jis212");
+	if(!success) {
+		files = p->GetKeyList(boost::regex("^kdict.kanjidic.file[\\d]*$"));
+		success = false;
+		foreach(string& s, files) {
+			string encoding = p->GetSetting(string(s).append(".encoding"));
+			string jispage = p->GetSetting(string(s).append(".jispage"));
+			if(jispage.length()==0) jispage = "jis208";
+			/* Need to add encoding option to loader */
+			result = LoadKanjidic(p->GetSetting(s), jispage);
+			if(result == KD_SUCCESS) success = true;
+		}
+	}
+
+	/* If we STILL don't have anything loaded, check for dictionaries in the
+	   ./dicts directory. */
+	if(!success) {
+		result = (LoadKanjidic2(FALLBACK_DICTDIR "kanjidic2.xml"));
+		if(result == KD_SUCCESS) success = true;
+	}
+	if(!success) {
+		LoadKanjidic(FALLBACK_DICTDIR "kanjidic");
+		LoadKanjidic(FALLBACK_DICTDIR "kanjd212", "jis212");
 	}
 
 	/* Load supplemental dictionary files */
-	result = LoadKradfile(p->GetSetting("kdict_kradfile").c_str());
+	result = LoadKradfile(p->GetSetting("kdict.kradfile.file"));
 	if(result!=KD_SUCCESS) LoadKradfile(FALLBACK_DICTDIR "kradfile");
-	result = LoadRadkfile(p->GetSetting("kdict_radkfile").c_str());
+	result = LoadRadkfile(p->GetSetting("kdict.radkfile.file"));
 	if(result!=KD_SUCCESS) LoadRadkfile(FALLBACK_DICTDIR "radkfile");
 }
 
@@ -87,60 +113,82 @@ void KDict::Destroy() {
 	}
 }
 
-int KDict::LoadKanjidic(const char* filename, const char* jisStd) {
-	char* rawData = NULL;
-	unsigned int size;
+int KDict::LoadKanjidic(const string& filename, const string& jisStd,
+						const string& encoding) {
 	int returnCode=KD_FAILURE;
 
-	ifstream ifile(filename, ios::ate); /* "at end" to get our file size */
-	if(ifile) {
-		size = ifile.tellg();
-		ifile.seekg(0);
-		rawData = new char[size+1];
-		rawData[size] = '\0';
-		ifile.read(rawData, size);
-		if(strlen(rawData)!=size) {
-			ostringstream oss;
-			oss << ERR_PREF
-				<< "kanjidic file size: "
-				<< strlen(rawData)
-				<< ", read-in string: "
-				<< size;
-			el.Push(EL_Warning, oss.str());
-		}
+	/* Get file names */
+	string gzfn, fn;
+	GetGzipName(filename, gzfn, fn);	
 
-		/* Create the kanjidic object with our string data. */
-		this->KanjidicParser(rawData, jisStd);
+	/* Load file */
+	string data;
+	string *pFnOpened = NULL;
+	if(ReadGzipIntoString(gzfn, data)) pFnOpened = &gzfn;
+	else if(ReadFileIntoString(fn, data)) pFnOpened = &fn;
+	if(!pFnOpened) return returnCode;
 
-		returnCode = KD_SUCCESS;
-		el.Push(EL_Silent, string("Kanji dictionary file \"")
-				.append(filename).append("\" loaded successfully."));
+	/* Set the raw data pointer to point towards the a copy of the data
+	   just read, or towards a converted version. */
+	char* rawData = NULL;
+	if(ToLower(encoding)!="utf-8") {
+		string convertedData = ConvertString<char, char>(
+			data, encoding.c_str(), "UTF-8");
+		rawData = new char[convertedData.length()+1];
+		strcpy(rawData, convertedData.c_str());
+	} else {
+		rawData = new char[data.length()+1];
+		strcpy(rawData, data.c_str());
 	}
-	else
-		returnCode = KD_FAILURE;
 
-	if(rawData) delete[] rawData;
+	/* Create the kanjidic object with our string data. */
+	this->KanjidicParser(rawData, jisStd.c_str());
+
+	delete[] rawData;
+
+	returnCode = KD_SUCCESS;
+	el.Push(EL_Silent, string("Kanji dictionary file \"")
+			.append(*pFnOpened).append("\" loaded successfully."));
+
 	return returnCode;
 }
 
-int KDict::LoadKanjidic2(const char* filename) {
+/* Optimized based on occurance of fields in kanjidic2,
+   db ver 2006-512, date 2008-02-12 */
+int KDict::LoadKanjidic2(const string& filename) {
 	int returnCode = KD_FAILURE;
+
 	xmlTextReaderPtr reader;
 	xmlChar* ptr;
 	int ret;
 
 	/* Vars for navigating through the data */
 	string element, d1element;
-	map<string, string> attributes;
-	map<string, string>::iterator mssi;
 	int nodeType;
 	bool isAttribute=false;
+	string attr_cp_type, attr_dr_type, attr_m_lang, attr_m_page, attr_m_vol,
+		attr_qc_type, attr_rad_type, attr_r_type, attr_skip_misclass,
+		attr_var_type, attr_on_type, attr_r_status;
+	
 	/* Var for storing values of the entries */
 	string sValue;
 	/* GP vars */
 	string temp;
 
-	reader = xmlNewTextReaderFilename(filename);
+	/* Get file names */
+	string gzfn, fn;
+	GetGzipName(filename, gzfn, fn);	
+
+	/* Load file */
+	string data;
+	string *pFnOpened = NULL;
+	if(ReadGzipIntoString(gzfn, data)) pFnOpened = &gzfn;
+	else if(ReadFileIntoString(fn, data)) pFnOpened = &fn;
+	if(!pFnOpened) return returnCode;
+
+	/* Get reader object */
+	reader = xmlReaderForMemory(data.c_str(), data.length(), NULL, NULL, 0);
+
 	KInfo* k=NULL;
 	if(reader) {
 		ret = xmlTextReaderRead(reader);
@@ -156,28 +204,43 @@ int KDict::LoadKanjidic2(const char* filename) {
 					if(k) delete k;
 					k = new KInfo;
 				}
-				attributes.clear();
+				attr_cp_type = attr_dr_type = attr_m_lang = attr_m_page
+					= attr_m_vol = attr_qc_type = attr_rad_type = attr_r_type
+					= attr_skip_misclass = attr_var_type = "";
 				break;
 			case XML_READER_TYPE_END_ELEMENT:
 				element = (char*)xmlTextReaderName(reader);
 				if(element=="character") {
 					wchar_t wc = utfconv_mw(k->literal)[0];
 					/* End of character entry: append to data list */
-					if(!kdictData.assign(wc, *k)) {
-						ostringstream oss;
-						oss << ERR_PREF
-							<< "Error assigning kanjidic2 entry to hash table!";
-						el.Push(EL_Error, oss.str());
-					}
+					kdictData[wc] = *k;
 					delete k;
 					k = NULL;
 				}
-				attributes.clear();
+				attr_cp_type = attr_dr_type = attr_m_lang = attr_m_page
+					= attr_m_vol = attr_qc_type = attr_rad_type = attr_r_type
+					= attr_skip_misclass = attr_var_type = "";
 				break;
 			case XML_READER_TYPE_ATTRIBUTE:
 				temp = (char*)xmlTextReaderName(reader);
 				ptr = xmlTextReaderValue(reader);
-				attributes[temp] = (char*)ptr;
+				if(temp == "r_type") attr_r_type = (char*)ptr;
+				else if(temp == "dr_type") attr_dr_type = (char*)ptr;
+				else if(temp == "cp_type") attr_cp_type = (char*)ptr;
+				else if(temp == "qc_type") attr_qc_type = (char*)ptr;
+				else if(temp == "m_lang") attr_m_lang = (char*)ptr;
+				else if(temp == "rad_type") attr_rad_type = (char*)ptr;
+				else if(temp == "m_page") attr_m_page = (char*)ptr;
+				else if(temp == "m_vol") attr_m_vol = (char*)ptr;
+				else if(temp == "var_type") attr_var_type = (char*)ptr;
+				else if(temp == "skip_misclass")
+					attr_skip_misclass = (char*)ptr;
+				/* These vars are currently unused by J-Ben, but they are
+				   valid kanjidic2 fields */
+				else if(temp == "on_type") attr_on_type = (char*)ptr;
+				else if(temp == "r_status") attr_r_status = (char*)ptr;
+				/* Bail if something unexpected shows */
+				else assert(0 && "attribute error");
 				xmlFree(ptr);
 				break;
 			case XML_READER_TYPE_TEXT:
@@ -204,9 +267,14 @@ int KDict::LoadKanjidic2(const char* filename) {
 					} else if(element=="literal") {
 						k->literal = sValue;
 					} else if(element=="cp_value") {
-						k->codepoint[attributes["cp_type"]] = sValue;
+						string &s = attr_cp_type;
+						if(s == "jis208") k->cp_j208 = sValue;
+						else if(s == "jis212") k->cp_j212 = sValue;
+						else if(s == "jis213") k->cp_j213 = sValue;
+						else if(s == "ucs") k->cp_j213 = sValue;
+						else assert(0 && "Shouldn't happen!");
 					} else if(element=="rad_value") {
-						temp = attributes["rad_type"];
+						temp = attr_rad_type;
 						if(temp == "classical")
 							k->radical
 								= (unsigned char)atoi(sValue.c_str());
@@ -227,33 +295,91 @@ int KDict::LoadKanjidic2(const char* filename) {
 					} else if(element=="stroke_count") {
 						k->strokeCount = (unsigned char)atoi(sValue.c_str());
 					} else if(element=="variant") {
-						k->variant[attributes["var_type"]] = sValue;
+						string& s = attr_var_type;
+						if(s == "jis208") k->var_j208 = sValue;
+						else if(s == "jis212") k->var_j212 = sValue;
+						else if(s == "nelson_c") k->var_nelson_c = sValue;
+						else if(s == "ucs") k->var_ucs = sValue;
+						else if(s == "deroo") k->var_deroo = sValue;
+						else if(s == "njecd") k->var_njecd = sValue;
+						else if(s == "oneill") k->var_oneill = sValue;
+						else if(s == "jis213") k->var_j213 = sValue;
+						else if(s == "s_h") k->var_s_h = sValue;
+						else assert(0 && "vartype error");
 					} else if(element=="freq") {
 						k->freq = atoi(sValue.c_str());
 					} else if(element=="rad_name") {
 						k->radicalName = sValue;
 					} else if(element=="dic_ref") {
-						k->dictCode[attributes["dr_type"]] = sValue;
-						if(attributes["dr_type"]=="moro"
-						   && attributes["m_vol"].length()>0) {
-							temp = "V";
-							temp.append(attributes["m_vol"]);
-							temp.append(1, 'P');
-							temp.append(attributes["m_page"]);
-							k->dictCode["moro"].append(temp);
+						string& s = attr_dr_type;
+						if(s == "moro") {
+							k->dc_moro = sValue;
+							if(attr_m_vol.length()>0) {
+								temp = "V";
+								temp += attr_m_vol;
+								temp += 'P';
+								temp += attr_m_page;
+								k->dc_moro.append(temp);
+							}
 						}
+						else if(s == "nelson_n")
+							k->dc_nelson_n = sValue;
+						else if(s == "nelson_c")
+							k->dc_nelson_c = sValue;
+						else if(s == "heisig")
+							k->dc_heisig = sValue;
+						else if(s == "halpern_njecd")
+							k->dc_halpern_njecd = sValue;
+						else if(s == "oneill_names")
+							k->dc_oneill_names = sValue;
+						else if(s == "halpern_kkld")
+							k->dc_halpern_kkld = sValue;
+						else if(s == "sh_kk")
+							k->dc_sh_kk = sValue;
+						else if(s == "gakken")
+							k->dc_gakken = sValue;
+						else if(s == "oneill_kk")
+							k->dc_oneill_kk = sValue;
+						else if(s == "kanji_in_context")
+							k->dc_kanji_in_context = sValue;
+						else if(s == "henshall")
+							k->dc_henshall = sValue;
+						else if(s == "kodansha_compact")
+							k->dc_kodansha_compact = sValue;
+						else if(s == "jf_cards")
+							k->dc_jf_cards = sValue;
+						else if(s == "henshall3")
+							k->dc_henshall3 = sValue;
+						else if(s == "tutt_cards")
+							k->dc_tutt_cards = sValue;
+						else if(s == "sakade")
+							k->dc_sakade = sValue;
+						else if(s == "crowley")
+							k->dc_crowley = sValue;
+						else if(s == "busy_people")
+							k->dc_busy_people = sValue;
+						else assert(0 && "dict error");
 					} else if(element=="q_code") {
-						if(attributes["qc_type"]=="skip"
-						   && attributes["skip_misclass"].length()>0) {
+						string& s = attr_qc_type;
+						if(s == "skip"
+						   && attr_skip_misclass.length()>0) {
 							k->skipMisclass.push_back(
 								pair<string,string>(
-									attributes["skip_misclass"],
+									attr_skip_misclass,
 									sValue));
 						} else {
-							k->queryCode[attributes["qc_type"]] = sValue;
+							if(s=="skip")
+								k->qc_skip = sValue;
+							else if(s=="four_corner")
+								k->qc_four_corner = sValue;
+							else if(s=="sh_desc")
+								k->qc_sh_desc = sValue;
+							else if(s=="deroo")
+								k->qc_deroo = sValue;
+							else assert(0 && "qc code error");
 						}
 					} else if(element=="reading") {
-						temp = attributes["r_type"];
+						temp = attr_r_type;
 						if(temp=="pinyin") {
 							k->pinyin.push_back(sValue);
 						} else if(temp=="korean_r") {
@@ -283,9 +409,14 @@ int KDict::LoadKanjidic2(const char* filename) {
 						}
 						/* This section is "to-do" */
 					} else if(element=="meaning") {
-						temp = attributes["m_lang"];
-						if(temp.length()==0) temp = "en";
-						k->meaning[temp].push_back(sValue);;
+						temp = attr_m_lang;
+						if(temp.length()==0)
+							k->meaning.push_back(sValue);
+						else if(temp == "es")
+							k->meaning_es.push_back(sValue);
+						else if(temp == "pt")
+							k->meaning_pt.push_back(sValue);
+						else assert(0 && "unsupported language");
 					} else if(element=="nanori") {
 						k->nanori.push_back(
 							utfconv_wm(
@@ -336,7 +467,7 @@ int KDict::LoadKanjidic2(const char* filename) {
 
 		returnCode = KD_SUCCESS;
 		el.Push(EL_Silent, string("Kanji dictionary file \"")
-				.append(filename).append("\" loaded successfully."));
+				.append(*pFnOpened).append("\" loaded successfully."));
 	} else return returnCode;
 
 	if(k) {
@@ -350,123 +481,107 @@ int KDict::LoadKanjidic2(const char* filename) {
 	return returnCode;
 }
 
-int KDict::LoadKradfile(const char* filename) {
+int KDict::LoadKradfile(const string& filename) {
 	int returnCode = KD_FAILURE;
-	stringbuf sb;
-	ifstream f(filename, ios::in|ios::binary);
-	if(f.is_open()) {
-		f >> &sb;
-		f.close();
 
-		list<wstring> data =
-			StrTokenize<wchar_t>(utfconv_mw(sb.str()), L"\n");
-		while(data.size()>0) {
-			wstring token = data.front();
-			data.pop_front();
-			if(token.length()>0 && token[0]!=L'#') {
-				/* KRADFILE-specific stuff here */
-				/* Get rid of the spaces in the string */
-				token = TextReplace<wchar_t>(token, L" ", L"");
+	/* Get file names */
+	string gzfn, fn;
+	GetGzipName(filename, gzfn, fn);	
 
-				bool isOK=true;
-				BoostHM<wchar_t, KInfo>::iterator i = kdictData.find(token[0]);
-				isOK = i!=kdictData.end();
-				if(isOK) {
-					KInfo k = i->second;
-					k.kradData = token.substr(2);
-					isOK = kdictData.assign(token[0], k);
-				}
-				if(!isOK) {
-					ostringstream oss;
-					oss << ERR_PREF << "KRADFILE: Error assigning ("
-						<< utfconv_wm(token.substr(0,1)) << ", "
-						<< utfconv_wm(token.substr(2)) << ") to hash table!";
-					el.Push(EL_Error, oss.str());
-				}
-			}
+	/* Load file */
+	string dataStr;
+	string *pFnOpened = NULL;
+	if(ReadGzipIntoString(gzfn, dataStr)) pFnOpened = &gzfn;
+	else if(ReadFileIntoString(fn, dataStr)) pFnOpened = &fn;
+	if(!pFnOpened) return returnCode;
+
+	list<wstring> data =
+		StrTokenize<wchar_t>(utfconv_mw(dataStr), L"\n");
+	while(!data.empty()) {
+		wstring token = data.front();
+		data.pop_front();
+		if(token.length()>0 && token[0]!=L'#') {
+			/* Get rid of the spaces in the string */
+			token = TextReplace<wchar_t>(token, L" ", L"");
+			kdictData[token[0]].kradData = token.substr(2);
 		}
-
-		returnCode = KD_SUCCESS;
-		el.Push(EL_Silent, string("Kanji dictionary file \"")
-				.append(filename).append("\" loaded successfully."));
 	}
+
+	returnCode = KD_SUCCESS;
+	el.Push(EL_Silent, string("Kanji dictionary file \"")
+			.append(*pFnOpened).append("\" loaded successfully."));
+
 	return returnCode;
 }
 
-int KDict::LoadRadkfile(const char* filename) {
+int KDict::LoadRadkfile(const string& filename) {
 	int returnCode = KD_FAILURE;
-	stringbuf sb;
-	ifstream f(filename, ios::in|ios::binary);
-	if(f.is_open()) {
-		f >> &sb;
-		f.close();
 
-		/* RADKFILE entries all start with $.
-		   Split on $, and discard the first entry since it is the explanation
-		   preceding the first entry. */
-		list<wstring> data =
-			StrTokenize<wchar_t>(utfconv_mw(sb.str()), L"$");
+	/* Get file names */
+	string gzfn, fn;
+	GetGzipName(filename, gzfn, fn);	
+
+	/* Load file */
+	string dataStr;
+	string *pFnOpened = NULL;
+	if(ReadGzipIntoString(gzfn, dataStr)) pFnOpened = &gzfn;
+	else if(ReadFileIntoString(fn, dataStr)) pFnOpened = &fn;
+	if(!pFnOpened) return returnCode;
+
+	/* RADKFILE entries all start with $.
+	   Split on $, and discard the first entry since it is the explanation
+	   preceding the first entry. */
+	list<wstring> data =
+		StrTokenize<wchar_t>(utfconv_mw(dataStr), L"$");
+	data.pop_front();
+
+	while(!data.empty()) {
+		wstring entry = data.front();
 		data.pop_front();
+		if(entry.length()>0 && entry[0]!=L'#') {
+			/* RADKFILE-specific stuff here */
+			list<wstring> entryData =
+				StrTokenize<wchar_t>(entry, L"\n", false, 2);
+			if(entryData.size()!=2) {
+				ostringstream oss;
+				oss << ERR_PREF
+					<< "Error: entryData.size() == " << entryData.size()
+					<< " for entry \"" << utfconv_wm(entry) << "!!";
+				el.Push(EL_Error, oss.str());
+			} else {
+				wchar_t key;
+				int strokeCount;
+				wstring value;
+				/* entryData.front() contains our key.
+				   It's a space delimited string,
+				   first token is our kanji, second is the stroke count.
+				   A third token may be present, but is irrelevant. */
+				list<wstring> keyData =
+					StrTokenize<wchar_t>(entryData.front(), L" ");
+				wistringstream wiss;
+				wiss.str(keyData.front());
+				wiss >> key;
+				keyData.pop_front();
+				wiss.str(keyData.front());
+				wiss >> strokeCount;
 
-		while(data.size()>0) {
-			wstring entry = data.front();
-			data.pop_front();
-			if(entry.length()>0 && entry[0]!=L'#') {
-				/* RADKFILE-specific stuff here */
-				list<wstring> entryData =
-					StrTokenize<wchar_t>(entry, L"\n", false, 2);
-				if(entryData.size()!=2) {
-					ostringstream oss;
-					oss << ERR_PREF
-						<< "Error: entryData.size() == " << entryData.size()
-						<< " for entry \"" << utfconv_wm(entry) << "!!";
-					el.Push(EL_Error, oss.str());
-				} else {
-					wchar_t key;
-					int strokeCount;
-					wstring value;
-					/* entryData.front() contains our key.
-					   It's a space delimited string,
-					   first token is our kanji, second is the stroke count.
-					   A third token may be present, but is irrelevant. */
-					list<wstring> keyData =
-						StrTokenize<wchar_t>(entryData.front(), L" ");
-					wistringstream wiss;
-					wiss.str(keyData.front());
-					wiss >> key;
-					keyData.pop_front();
-					wiss.str(keyData.front());
-					wiss >> strokeCount;
+				/* entryData.back() contains the characters our key
+				   maps to. */
+				/* Get rid of the spaces in the string */
+				value = entryData.back();
+				value = TextReplace<wchar_t>(value, L"\n", L"");
+				value = TextReplace<wchar_t>(value, L" ", L"");				
 
-					/* entryData.back() contains the characters our key
-					   maps to. */
-					/* Get rid of the spaces in the string */
-					value = entryData.back();
-					value = TextReplace<wchar_t>(value, L"\n", L"");
-					value = TextReplace<wchar_t>(value, L" ", L"");				
-
-					if(!radkData.assign(key, value)) {
-						ostringstream oss;
-						oss << ERR_PREF << "RADKFILE: Error assigning ("
-							<< utfconv_wm(wstring().append(1,key)) << ", "
-							<< utfconv_wm(value) << ") to hash table!";
-						el.Push(EL_Error, oss.str());
-					}
-					if(!radkDataStrokes.assign(key, strokeCount)) {
-						ostringstream oss;
-						oss << ERR_PREF << "RADKFILE: Error assigning ("
-							<< utfconv_wm(wstring().append(1,key))
-							<< ", " << strokeCount << ") to hash table!";
-						el.Push(EL_Error, oss.str());
-					}
-				}
+				radkData[key] = value;
+				radkDataStrokes[key] = strokeCount;
 			}
 		}
-
-		returnCode = KD_SUCCESS;
-		el.Push(EL_Silent, string("Kanji dictionary file \"")
-				.append(filename).append("\" loaded successfully."));
 	}
+
+	returnCode = KD_SUCCESS;
+	el.Push(EL_Silent, string("Kanji dictionary file \"")
+			.append(filename).append("\" loaded successfully."));
+
 	return returnCode;
 }
 
@@ -496,11 +611,17 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 	k.literal = tl.front(); tl.pop_front();
 	/* JIS code needs to be converted to ku-ten
 	   format to coincide with KANJIDIC2. */
-	k.codepoint[jisStd] = JisHexToKuten(tl.front()); tl.pop_front();
+	if(strcmp(jisStd, "jis208")==0) {
+		k.cp_j208 = JisHexToKuten(tl.front()); tl.pop_front();
+	} else if(strcmp(jisStd, "jis212")==0) {
+		k.cp_j212 = JisHexToKuten(tl.front()); tl.pop_front();
+	} else if(strcmp(jisStd, "jis213")==0) {
+		k.cp_j213 = JisHexToKuten(tl.front()); tl.pop_front();		
+	} else assert(0 && "invalid jis page");
 
 	/* Now, just loop through the remaining entries in the list. */
 	string* ps;
-	while(tl.size()>0) {
+	while(!tl.empty()) {
 		ps = &(tl.front());
 		switch ((*ps)[0]) {
 		case 'T':  /* Change "t mode" */
@@ -525,113 +646,113 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 				k.misstrokes.push_back(atoi(ps->substr(1).c_str()));
 			break;
 		case 'U':  /* Unicode value */
-			k.codepoint["ucs"] = ps->substr(1);
+			k.cp_ucs = ps->substr(1);
 			break;
 		/* Dictionary codes for most of the following */
 		case 'H':
 			/* New Japanese-English Character Dictionary (Halpern) */
-			k.dictCode["halpern_njecd"] = ps->substr(1);
+			k.dc_halpern_njecd = ps->substr(1);
 			break;
 		case 'N':
 			/* Modern Reader's Japanese-English Character Dictionary (Nelson) */
-			k.dictCode["nelson_c"] = ps->substr(1);
+			k.dc_nelson_c = ps->substr(1);
 			break;
 		case 'V':
 			/* The New Nelson's Japanese-English Character Dictionary */
-			k.dictCode["nelson_n"] = ps->substr(1);
+			k.dc_nelson_n = ps->substr(1);
 			break;
 		case 'P':
 			/* SKIP codes. */
 			/* Thanks to changes in permissible SKIP code usage (change to
 			   Creative Commons licensing in January 2008), we can now use
 			   this without problems. */
-			k.queryCode["skip"] = ps->substr(1);
+			k.qc_skip = ps->substr(1);
 			break;
 		case 'I':  /* Spahn/Hadamitzky dictionaries */
 			if((*ps)[1]=='N') {
 				/* Kanji & Kana (Spahn, Hadamitzky) */
-				k.dictCode["sh_kk"] = ps->substr(2);
+				k.dc_sh_kk = ps->substr(2);
 			} else {
 				/* Query Code: Kanji Dictionary (Spahn, Hadamitzky) */
-				k.queryCode["sh_desc"] = ps->substr(1);
+				k.qc_sh_desc = ps->substr(1);
 			}
 			break;
 		case 'Q':
 			/* Four Corner code */
-			k.queryCode["four_corner"] = ps->substr(1);
+			k.qc_four_corner = ps->substr(1);
 			break;
 		case 'M':
 			if((*ps)[1]=='N') {
 				/* Morohashi Daikanwajiten Index */
-				k.dictCode["moro"].insert(0, ps->substr(2));
+				k.dc_moro.insert(0, ps->substr(2));
 			} else if((*ps)[1]=='P') {
 				/* Morohashi Daikanwajiten Volume/Page */
-				k.dictCode["moro"]
+				k.dc_moro
 					.append(1, '/')
 					.append(ps->substr(2));
 			}
 			break;
 		case 'E':
 			/* A Guide to Remembering Japanese Characters (Henshall) */
-			k.dictCode["henshall"] = ps->substr(1);
+			k.dc_henshall = ps->substr(1);
 			break;
 		case 'K':
 			/* Gakken Kanji Dictionary ("A New Dictionary of Kanji Usage") */
-			k.dictCode["gakken"] = ps->substr(1);
+			k.dc_gakken = ps->substr(1);
 			break;
 		case 'L':
 			/* Remembering the Kanji (Heisig) */
-			k.dictCode["heisig"] = ps->substr(1);
+			k.dc_heisig = ps->substr(1);
 			break;
 		case 'O':
 			/* Japanese Names (O'Neill) */
-			k.dictCode["oneill_names"] = ps->substr(1);
+			k.dc_oneill_names = ps->substr(1);
 			break;
 		case 'D':
 			switch((*ps)[1]) {
 			case 'B':
 				/* Japanese for Busy People (AJLT) */
-				k.dictCode["busy_people"] = ps->substr(1);
+				k.dc_busy_people = ps->substr(1);
 				break;
 			case 'C':
 				/* The Kanji Way to Japanese Language Power (Crowley) */
-				k.dictCode["crowley"] = ps->substr(1);
+				k.dc_crowley = ps->substr(1);
 				break;
 			case 'F':
 				/* Japanese Kanji Flashcards (White Rabbit Press) */
-				k.dictCode["jf_cards"] = ps->substr(1);
+				k.dc_jf_cards = ps->substr(1);
 				break;
 			case 'G':
 				/* Kodansha Compact Kanji Guide */
-				k.dictCode["kodansha_compact"] = ps->substr(1);
+				k.dc_kodansha_compact = ps->substr(1);
 				break;
 			case 'H':
 				/* A Guide To Reading and Writing Japanese (Henshall) */
-				k.dictCode["henshall3"] = ps->substr(1);
+				k.dc_henshall3 = ps->substr(1);
 				break;
 			case 'J':
 				/* Kanji in Context (Nishiguchi and Kono) */
-				k.dictCode["kanji_in_context"] = ps->substr(1);
+				k.dc_kanji_in_context = ps->substr(1);
 				break;
 			case 'K':
 				/* Kodansha Kanji Learner's Dictionary (Halpern) */
-				k.dictCode["halpern_kkld"] = ps->substr(1);
+				k.dc_halpern_kkld = ps->substr(1);
 				break;
 			case 'O':
 				/* Essential Kanji (O'Neill) */
-				k.dictCode["oneill_kk"] = ps->substr(1);
+				k.dc_oneill_kk = ps->substr(1);
 				break;
 			case 'R':
 				/* Query Code: 2001 Kanji (De Roo) */
-				k.queryCode["deroo"] = ps->substr(1);
+				k.qc_deroo = ps->substr(1);
 				break;
 			case 'S':
 				/* A Guide to Reading and Writing Japanese (Sakade) */
-				k.dictCode["sakade"] = ps->substr(1);
+				k.dc_sakade = ps->substr(1);
 				break;
 			case 'T':
 				/* Tuttle Kanji Cards (Kask) */
-				k.dictCode["tutt_cards"] = ps->substr(1);
+				k.dc_tutt_cards = ps->substr(1);
 				break;
 			default:
 				{
@@ -647,37 +768,37 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 			switch((*ps)[1]) {
 			case 'D':
 				/* De Roo code */
-				k.variant["deroo"]=ps->substr(2);
+				k.var_deroo=ps->substr(2);
 				break;	
 			case 'H':
 				/* NJECD code */
-				k.variant["njecd"]=ps->substr(2);
+				k.var_njecd=ps->substr(2);
 				break;
 			case 'I':
 				/* S_H code */
-				k.variant["s_h"]=ps->substr(2);
+				k.var_s_h=ps->substr(2);
 				break;
 			case 'J':
 				/* XJ# = JIS hex code: 0=jis208, 1=jis212, 2=jis213 */
 				switch((*ps)[2]) {
 				case '0':
-					k.variant["jis208"]=JisHexToKuten(ps->substr(3));
+					k.var_j208=JisHexToKuten(ps->substr(3));
 					break;
 				case '1':
-					k.variant["jis212"]=JisHexToKuten(ps->substr(3));
+					k.var_j212=JisHexToKuten(ps->substr(3));
 					break;
 				case '2':
-					k.variant["jis213"]=JisHexToKuten(ps->substr(3));
+					k.var_j213=JisHexToKuten(ps->substr(3));
 					break;
 				}
 				break;
 			case 'N':
 				/* nelson_c code */
-				k.variant["nelson_c"]=ps->substr(2);
+				k.var_nelson_c=ps->substr(2);
 				break;
 			case 'O':
 				/* oneill code */
-				k.variant["oneill"]=ps->substr(2);
+				k.var_oneill=ps->substr(2);
 				break;
 			default:
 				{
@@ -721,7 +842,7 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 			   append if necessary. */
 			while(*(sTemp.rbegin()) != '}') {
 				tl.pop_front();
-				if(tl.size()==0) break;
+				if(tl.empty()) break;
 				sTemp.append(1, ' ');
 				sTemp.append(tl.front());
 			}
@@ -737,7 +858,7 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 				/* Strip {} from around the string. */
 				sTemp = sTemp.substr(1, sTemp.length()-2);				
 			}
-			k.meaning["en"].push_back(sTemp);
+			k.meaning.push_back(sTemp);
 			break;
 		default:
 			switch(tmode) {
@@ -793,23 +914,9 @@ void KDict::KanjidicParser(char* kanjidicRawData, const char* jisStd) {
 			wToken = utfconv_mw(token);
 			/* Convert token to proper format */
 			wToken = ConvertKanjidicEntry(wToken);
-			/* Create new KInfo object.
-			   If one already exists for this character, copy over the
-			   information. */
-			KInfo k;
-			BoostHM<wchar_t, KInfo>::iterator it = kdictData.find(wToken[0]);
-			if(it!=kdictData.end()) k = it->second;
-			/* Fill the KInfo structure */
+			/* Get and fill the relevant entry. */
+			KInfo& k = kdictData[wToken[0]];
 			KanjidicToKInfo(utfconv_wm(wToken), k, jisStd);
-
-			/* Add to hash table */
-			if(!kdictData.assign(wToken[0], k)) {
-				ostringstream oss;
-				string temp = utfconv_wm(wToken);
-				oss << ERR_PREF << "Error assigning (" << temp[0]<< ", "
-					<< temp << ") to hash table!";
-				el.Push(EL_Error, oss.str());
-			}
 		}
 		token = strtok(NULL, "\n");
 	}
@@ -878,7 +985,7 @@ string GetSODHtml(const KInfo& k, long options) {
 	ostringstream filename, sod;
 	Preferences* p = Preferences::Get();
 	string sodDir = p->GetSetting("sod_dir");
-	if(sodDir.length()==0) sodDir = "sods";
+	if(sodDir.length()==0) sodDir = JB_DATADIR DSSTR "sods";
 
 	/* Load static SOD, if present */
 	if((options & KDO_SOD_STATIC) != 0) {
@@ -940,7 +1047,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 	result << "<ul>";
 	/* Japanese readings */
 	if((options & KDO_READINGS) != 0) {
-		if(k.onyomi.size() > 0) {
+		if(!k.onyomi.empty()) {
 			result << "<li>Onyomi Readings: ";
 			lsi = k.onyomi.begin();
 			result << *lsi;
@@ -949,7 +1056,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			}
 			result << "</li>";
 		}
-		if(k.kunyomi.size() > 0) {
+		if(!k.kunyomi.empty()) {
 			result << "<li>Kunyomi Readings: ";
 			lsi = k.kunyomi.begin();
 			result << *lsi;
@@ -958,7 +1065,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			}
 			result << "</li>";
 		}
-		if(k.nanori.size() > 0) {
+		if(!k.nanori.empty()) {
 			result << "<li>Nanori Readings: ";
 			lsi = k.nanori.begin();
 			result << *lsi;
@@ -975,19 +1082,14 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 
 	if((options & KDO_MEANINGS) != 0) {
 		/* Meanings (English) */
-		map<string, list<string> >::const_iterator mslsi
-			= k.meaning.find("en");
-		if(mslsi != k.meaning.end()) {
-			const list<string>* pMeaning = &(mslsi->second);
-			if(pMeaning->size()>0) {
-				result << "<li>English Meanings: ";
-				lsi = pMeaning->begin();
-				result << *lsi;
-				for(lsi++; lsi!=pMeaning->end(); lsi++) {
-					result << "; " << *lsi;
-				}
-				result << "</li>";
+		if(!k.meaning.empty()) {
+			result << "<li>English Meanings: ";
+			lsi = k.meaning.begin();
+			result << *lsi;
+			for(lsi++; lsi!=k.meaning.end(); lsi++) {
+				result << "; " << *lsi;
 			}
+			result << "</li>";
 		}
 		/* Meanings (Other languages) */
 		/* -- NOT YET IMPLEMENTED -- */
@@ -997,7 +1099,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 	if((options & KDO_HIGHIMPORTANCE) != 0) {
 		if(k.strokeCount>0) {
 			result << "<li>Stroke count: " << k.strokeCount;
-			if(k.misstrokes.size()>0) {
+			if(!k.misstrokes.empty()) {
 				result << " (commonly miscounted as ";
 				lii = k.misstrokes.begin();
 				result << *lii;
@@ -1047,7 +1149,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 				crossRefList.push_back(*vIt);
 			}
 		}
-		if(crossRefList.size()>0) {
+		if(!crossRefList.empty()) {
 			result << "<li>This kanji is used by words in your "
 				"study list:<br><font size=\"7\">";
 			vIt = crossRefList.begin();
@@ -1062,119 +1164,133 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 	if((options & KDO_DICTIONARIES) != 0) {
 		ostringstream dictOut;
 		/* Dict/Query codes - ADD SKIP mis-codes! */
-		map<string, string>::const_iterator mssi;
 		/* Show Query codes first, followed by dict codes */
-		for(mssi = k.queryCode.begin(); mssi != k.queryCode.end(); mssi++) {
-			string key = mssi->first;
-			if(key=="skip") {
-				if((dictionaries & KDD_SKIP) == 0) continue;
-				dictOut << "<li>SKIP code: " << mssi->second;
-				if(k.skipMisclass.size()>0) {
-					/* Display miscode info */
-					list< pair<string,string> >::const_iterator iMiscode;
-					for(iMiscode = k.skipMisclass.begin();
-						iMiscode != k.skipMisclass.end(); iMiscode++) {
-						dictOut << "<br />Miscode (" << iMiscode->first
-								<< "): " << iMiscode->second;
-					}
-				}
-				dictOut << "</li>";
-			} else {
-				string displayKey;
-				/* Query Code: Kanji Dictionary (Spahn, Hadamitzky) */
-				if(key=="sh_desc") {
-					if((dictionaries & KDD_KD) == 0) continue;
-					displayKey = "Spahn/Hadamitzky Kanji Dictionary code";
-				} else if(key=="four_corner") {
-					if((dictionaries & KDD_FC) == 0) continue;
-					displayKey = "Four Corner code";
-				} else if(key=="deroo") {
-					if((dictionaries & KDD_DR) == 0) continue;
-					displayKey = "De Roo code";
-				} else {
-					ostringstream oss;
-					oss << ERR_PREF
-						<< "Unexpected query code \"" << key
-						<< "\" encountered.";
-					el.Push(EL_Warning, oss.str());
-					displayKey = key;
-				}
-				dictOut << "<li>" << displayKey << ": "
-					   << mssi->second << "</li>";
-			}
+		if(k.qc_deroo.length() < 0) {
+			if((dictionaries & KDD_DR) != 0)
+				dictOut << "<li>De Roo code: "
+						<< k.qc_deroo << "</li>";
 		}
-		for(mssi = k.dictCode.begin(); mssi != k.dictCode.end(); mssi++) {
-			string key = mssi->first;
-			string displayKey;
-			if(key=="busy_people") {
-				if((dictionaries & KDD_JBP) == 0) continue;
-				displayKey = "Japanese For Busy People (AJLT)";
-			} else if(key=="crowley") {
-				if((dictionaries & KDD_KWJLP) == 0) continue;
-				displayKey = "The Kanji Way to Japanese Language Power (Crowley)";
-			} else if(key=="gakken") {
-				if((dictionaries & KDD_GKD) == 0) continue;
-				displayKey = "A New Dictionary of Kanji Usage (Gakken)";
-			} else if(key=="halpern_kkld") {
-				if((dictionaries & KDD_KLD) == 0) continue;
-				displayKey = "Kodansha Kanji Learners Dictionary (Halpern)";
-			} else if(key=="halpern_njecd") {
-				if((dictionaries & KDD_NJECD) == 0) continue;
-				displayKey = "New Japanese-English Character Dictionary (Halpern)";
-			} else if(key=="heisig") {
-				if((dictionaries & KDD_RTK) == 0) continue;
-				displayKey = "Remembering the Kanji (Heisig)";
-			} else if(key=="henshall") {
-				if((dictionaries & KDD_GRJC) == 0) continue;
-				displayKey = "A Guide To Remembering Japanese Characters (Henshall)";
-			} else if(key=="henshall3") {
-				if((dictionaries & KDD_GTRWJH) == 0) continue;
-				displayKey = "A Guide To Reading and Writing Japanese (Henshall)";
-			} else if(key=="jf_cards") {
-				if((dictionaries & KDD_JKF) == 0) continue;
-				displayKey = "Japanese Kanji Flashcards (Hodges/Okazaki)";
-			} else if(key=="kanji_in_context") {
-				if((dictionaries & KDD_KIC) == 0) continue;
-				displayKey = "Kanji in Context (Nishiguchi/Kono)";
-			} else if(key=="kodansha_compact") {
-				if((dictionaries & KDD_KCKG) == 0) continue;
-				displayKey = "Kodansha Compact Kanji Guide";
-			} else if(key=="moro") {
-				if((dictionaries & KDD_MORO) == 0) continue;
-				displayKey = "Morohashi Daikanwajiten";
-			} else if(key=="nelson_c") {
-				if((dictionaries & KDD_MRJECD) == 0) continue;
-				displayKey = "Modern Reader's Japanese-English Character "
-					"Dictionary (Nelson)";
-			} else if(key=="nelson_n") {
-				if((dictionaries & KDD_NNJECD) == 0) continue;
-				displayKey = "The New Nelson Japanese-English Character Dictionary (Haig)";
-			} else if(key=="oneill_kk") {
-				if((dictionaries & KDD_EK) == 0) continue;
-				displayKey = "Essential Kanji (O'Neill)";
-			} else if(key=="oneill_names") {
-				if((dictionaries & KDD_JN) == 0) continue;
-				displayKey = "Japanese Names (O'Neill)";
-			} else if(key=="sakade") {
-				if((dictionaries & KDD_GTRWJS) == 0) continue;
-				displayKey = "A Guide To Reading and Writing Japanese (Sakade)";
-			} else if(key=="sh_kk") {
-				if((dictionaries & KDD_KK) == 0) continue;
-				displayKey = "Kanji and Kana (Spahn/Hadamitzky)";
-			} else if(key=="tutt_cards") {
-				if((dictionaries & KDD_TKC) == 0) continue;
-				displayKey = "Tuttle Kanji Cards (Kask)";
-			} else {
-				ostringstream oss;
-				oss << ERR_PREF
-					<< "Unexpected dictionary code \"" << key
-					<< "\" encountered.";
-				el.Push(EL_Warning, oss.str());
-				displayKey = key;
-			}
-			dictOut << "<li>" << displayKey << ": "
-				   << mssi->second << "</li>";		
+		if(k.qc_four_corner.length() < 0) {
+			if((dictionaries & KDD_FC) != 0)
+				dictOut << "<li>Four Corner code: "
+						<< k.qc_four_corner << "</li>";
 		}
+		if(k.qc_sh_desc.length() < 0) {
+			if((dictionaries & KDD_KD) != 0)
+				dictOut << "<li>Spahn/Hadamitzky Kanji Dictionary code: "
+						<< k.qc_sh_desc << "</li>";
+		}
+		if(k.qc_skip.length() < 0) {
+			if((dictionaries & KDD_SKIP) != 0)
+			dictOut << "<li>SKIP code: " << k.qc_skip;
+			if(!k.skipMisclass.empty()) {
+				/* Display miscode info */
+				list< pair<string,string> >::const_iterator iMiscode;
+				for(iMiscode = k.skipMisclass.begin();
+					iMiscode != k.skipMisclass.end(); iMiscode++) {
+					dictOut << "<br />Miscode (" << iMiscode->first
+							<< "): " << iMiscode->second;
+				}
+			}
+			dictOut << "</li>";
+		}
+		if(k.dc_busy_people.length() > 0) {
+			if((dictionaries & KDD_JBP) != 0)
+				dictOut << "<li>Japanese For Busy People (AJLT): "
+						<< k.dc_busy_people << "</li>";		
+		}
+		if(k.dc_crowley.length() > 0) {
+			if((dictionaries & KDD_KWJLP) != 0)
+				dictOut << "<li>The Kanji Way to Japanese Language Power "
+					"(Crowley): " << k.dc_crowley << "</li>";		
+		}
+		if(k.dc_gakken.length() > 0) {
+			if((dictionaries & KDD_GKD) != 0)
+				dictOut << "<li>A New Dictionary of Kanji Usage (Gakken): "
+						<< k.dc_gakken << "</li>";		
+		}
+		if(k.dc_halpern_kkld.length() > 0) {
+			if((dictionaries & KDD_KLD) != 0)
+				dictOut << "<li>Kodansha Kanji Learners Dictionary (Halpern): "
+						<< k.dc_halpern_kkld << "</li>";		
+		}
+		if(k.dc_halpern_njecd.length() > 0) {
+			if((dictionaries & KDD_NJECD) != 0)
+				dictOut << "<li>New Japanese-English Character Dictionary "
+					"(Halpern): " << k.dc_halpern_njecd << "</li>";		
+		}
+		if(k.dc_heisig.length() > 0) {
+			if((dictionaries & KDD_RTK) != 0)
+				dictOut << "<li>Remembering the Kanji (Heisig): "
+						<< k.dc_heisig << "</li>";		
+		}
+		if(k.dc_henshall.length() > 0) {
+			if((dictionaries & KDD_GRJC) != 0)
+				dictOut << "<li>A Guide To Remembering Japanese Characters "
+					"(Henshall): " << k.dc_henshall << "</li>";		
+		}
+		if(k.dc_henshall3.length() > 0) {
+			if((dictionaries & KDD_GTRWJH) != 0)
+				dictOut << "<li>A Guide To Reading and Writing Japanese "
+					"(Henshall): " << k.dc_henshall3 << "</li>";		
+		}
+		if(k.dc_jf_cards.length() > 0) {
+			if((dictionaries & KDD_JKF) != 0)
+				dictOut << "<li>Japanese Kanji Flashcards (Hodges/Okazaki): "
+						<< k.dc_jf_cards << "</li>";		
+		}
+		if(k.dc_kanji_in_context.length() > 0) {
+			if((dictionaries & KDD_KIC) != 0)
+				dictOut << "<li>Kanji in Context (Nishiguchi/Kono): "
+						<< k.dc_kanji_in_context << "</li>";		
+		}
+		if(k.dc_kodansha_compact.length() > 0) {
+			if((dictionaries & KDD_KCKG) != 0)
+				dictOut << "<li>Kodansha Compact Kanji Guide: "
+						<< k.dc_kodansha_compact << "</li>";		
+		}
+		if(k.dc_moro.length() > 0) {
+			if((dictionaries & KDD_MORO) != 0)
+				dictOut << "<li>Morohashi Daikanwajiten: "
+						<< k.dc_moro << "</li>";		
+		}
+		if(k.dc_nelson_c.length() > 0) {
+			if((dictionaries & KDD_MRJECD) != 0)
+				dictOut << "<li>Modern Reader's Japanese-English Character "
+					"Dictionary (Nelson): "
+						<< k.dc_nelson_c << "</li>";		
+		}
+		if(k.dc_nelson_n.length() > 0) {
+			if((dictionaries & KDD_NNJECD) != 0)
+				dictOut << "<li>The New Nelson Japanese-English Character "
+					"Dictionary (Haig): " << k.dc_nelson_n << "</li>";		
+		}
+		if(k.dc_oneill_kk.length() > 0) {
+			if((dictionaries & KDD_EK) != 0)
+				dictOut << "<li>Essential Kanji (O'Neill): "
+						<< k.dc_oneill_kk << "</li>";		
+		}
+		if(k.dc_oneill_names.length() > 0) {
+			if((dictionaries & KDD_JN) != 0)
+				dictOut << "<li>Japanese Names (O'Neill): "
+						<< k.dc_oneill_names << "</li>";		
+		}
+		if(k.dc_sakade.length() > 0) {
+			if((dictionaries & KDD_GTRWJS) != 0)
+				dictOut << "<li>A Guide To Reading and Writing Japanese "
+					"(Sakade): " << k.dc_sakade << "</li>";		
+		}
+		if(k.dc_sh_kk.length() > 0) {
+			if((dictionaries & KDD_KK) != 0)
+				dictOut << "<li>Kanji and Kana (Spahn/Hadamitzky): "
+						<< k.dc_sh_kk << "</li>";		
+		}
+		if(k.dc_tutt_cards.length() > 0) {
+			if((dictionaries & KDD_TKC) != 0)
+				dictOut << "<li>Tuttle Kanji Cards (Kask): "
+						<< k.dc_tutt_cards << "</li>";		
+		}
+		/* Append dict str to result */
 		if(dictOut.str().length()>0)
 			result << "<li>Dictionary Codes:<ul>"
 				   << dictOut.str() << "</ul></li>";
@@ -1186,11 +1302,18 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 		result << "<li>Extra Information:<ul>";
 		/* JIS codes, UTF-8 codes */
 		result << "<li>Character codes:<ul>";
-		for(map<string,string>::const_iterator mssci = k.codepoint.begin();
-			mssci != k.codepoint.end(); mssci++) {
+		if(k.cp_j208.length() > 0)
 			result << "<li>"
-				   << mssci->first << ": " << mssci->second << "</li>";
-		}
+				   << "JIS-208: " << k.cp_j208 << "</li>";
+		if(k.cp_j212.length() > 0)
+			result << "<li>"
+				   << "JIS-212: " << k.cp_j212 << "</li>";
+		if(k.cp_j213.length() > 0)
+			result << "<li>"
+				   << "JIS-213: " << k.cp_j213 << "</li>";
+		if(k.cp_ucs.length() > 0)
+			result << "<li>"
+				   << "Unicode: " << k.cp_ucs << "</li>";
 		result << "</ul></li>";
 		/* Classical/Nelson radicals */
 		if(k.radical!=0)
@@ -1200,7 +1323,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			result << "<li>Nelson radical: "
 				   << (unsigned int)k.radicalNelson << "</li>";
 		/* Pinyin/Korean */
-		if(k.pinyin.size()>0) {
+		if(!k.pinyin.empty()) {
 			result << "<li>Pinyin romanization: ";
 			lsi = k.pinyin.begin();
 			result << *lsi;
@@ -1209,7 +1332,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			}
 			result << "</li>";
 		}
-		if(k.korean_h.size()>0) {
+		if(!k.korean_h.empty()) {
 			result << "<li>Korean reading: ";
 			lsi = k.korean_h.begin();
 			result << *lsi;
@@ -1218,7 +1341,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			}
 			result << "</li>";
 		}
-		if(k.korean_r.size()>0) {
+		if(!k.korean_r.empty()) {
 			result << "<li>Korean romanization: ";
 			lsi = k.korean_r.begin();
 			result << *lsi;
@@ -1229,11 +1352,28 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 		}
 		/* Crossref codes */
 		result << "<li>Cross References:<ul>";
-		for(map<string,string>::const_iterator
-				mssci = k.variant.begin(); mssci != k.variant.end(); mssci++) {
-			result << "<li>"
-				   << mssci->first << ": " << mssci->second << "</li>";
-		}
+		if(k.var_j208.length()>0)
+			result << "<li>JIS-208: " << k.var_j208 << "</li>";
+		if(k.var_j212.length()>0)
+			result << "<li>JIS-212: " << k.var_j212 << "</li>";
+		if(k.var_j213.length()>0)
+			result << "<li>JIS-213: " << k.var_j213 << "</li>";
+		if(k.var_ucs.length()>0)
+			result << "<li>Unicode: " << k.var_ucs << "</li>";
+		if(k.var_deroo.length()>0)
+			result << "<li>De Roo code: " << k.var_deroo << "</li>";
+		if(k.var_nelson_c.length()>0)
+			result << "<li>Modern Reader's Japanese-English Character "
+				"Dictionary (Nelson): " << k.var_nelson_c << "</li>";
+		if(k.var_njecd.length()>0)
+			result << "<li>New Japanese-English Character Dictionary "
+				"(Halpern): " << k.var_njecd << "</li>";
+		if(k.var_oneill.length()>0)
+			result << "<li>Japanese Names (O'Neill): " << k.var_oneill
+				   << "</li>";
+		if(k.var_s_h.length()>0)
+			result << "<li>Spahn/Hadamitzky Kanji Dictionary code: "
+				   << k.var_s_h << "</li>";
 		result << "</ul></li>";
 		
 		/* TO DO */
@@ -1319,7 +1459,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 
 	/* Japanese readings */
 	if((options & KDO_READINGS) != 0) {
-		if(k.onyomi.size() > 0) {
+		if(!k.onyomi.empty()) {
 			result << "• Onyomi Readings: <font ja>";
 			lsi = k.onyomi.begin();
 			result << *lsi;
@@ -1328,7 +1468,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			}
 			result << "</font>\n";
 		}
-		if(k.kunyomi.size() > 0) {
+		if(!k.kunyomi.empty()) {
 			result << "• Kunyomi Readings: <font ja>";
 			lsi = k.kunyomi.begin();
 			result << *lsi;
@@ -1337,7 +1477,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			}
 			result << "</font>\n";
 		}
-		if(k.nanori.size() > 0) {
+		if(!k.nanori.empty()) {
 			result << "• Nanori Readings: <font ja>";
 			lsi = k.nanori.begin();
 			result << *lsi;
@@ -1354,19 +1494,14 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 
 	if((options & KDO_MEANINGS) != 0) {
 		/* Meanings (English) */
-		map<string, list<string> >::const_iterator mslsi
-			= k.meaning.find("en");
-		if(mslsi != k.meaning.end()) {
-			const list<string>* pMeaning = &(mslsi->second);
-			if(pMeaning->size()>0) {
-				result << "• English Meanings: ";
-				lsi = pMeaning->begin();
-				result << *lsi;
-				for(lsi++; lsi!=pMeaning->end(); lsi++) {
-					result << "; " << *lsi;
-				}
-				result << '\n';
+		if(!k.meaning.empty()) {
+			result << "• English Meanings: ";
+			lsi = k.meaning.begin();
+			result << *lsi;
+			for(lsi++; lsi!=k.meaning.end(); lsi++) {
+				result << "; " << *lsi;
 			}
+			result << '\n';
 		}
 		/* Meanings (Other languages) */
 		/* -- NOT YET IMPLEMENTED -- */
@@ -1376,7 +1511,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 	if((options & KDO_HIGHIMPORTANCE) != 0) {
 		if(k.strokeCount>0) {
 			result << "• Stroke count: " << k.strokeCount;
-			if(k.misstrokes.size()>0) {
+			if(!k.misstrokes.empty()) {
 				result << " (commonly miscounted as ";
 				lii = k.misstrokes.begin();
 				result << *lii;
@@ -1425,7 +1560,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 				crossRefList.push_back(*vIt);
 			}
 		}
-		if(crossRefList.size()>0) {
+		if(!crossRefList.empty()) {
 			result << "• This kanji is used by words in your "
 				"study list:\n<font ja>";
 			vIt = crossRefList.begin();
@@ -1440,119 +1575,133 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 	if((options & KDO_DICTIONARIES) != 0) {
 		ostringstream dictOut;
 		/* Dict/Query codes - ADD SKIP mis-codes! */
-		map<string, string>::const_iterator mssi;
 		/* Show Query codes first, followed by dict codes */
-		for(mssi = k.queryCode.begin(); mssi != k.queryCode.end(); mssi++) {
-			string key = mssi->first;
-			if(key=="skip") {
-				if((dictionaries & KDD_SKIP) == 0) continue;
-				dictOut << "• SKIP code: " << mssi->second;
-				if(k.skipMisclass.size()>0) {
-					/* Display miscode info */
-					list< pair<string,string> >::const_iterator iMiscode;
-					for(iMiscode = k.skipMisclass.begin();
-						iMiscode != k.skipMisclass.end(); iMiscode++) {
-						dictOut << "\n  Miscode (" << iMiscode->first
-								<< "): " << iMiscode->second;
-					}
-				}
-				dictOut << '\n';
-			} else {
-				string displayKey;
-				/* Query Code: Kanji Dictionary (Spahn, Hadamitzky) */
-				if(key=="sh_desc") {
-					if((dictionaries & KDD_KD) == 0) continue;
-					displayKey = "Spahn/Hadamitzky Kanji Dictionary code";
-				} else if(key=="four_corner") {
-					if((dictionaries & KDD_FC) == 0) continue;
-					displayKey = "Four Corner code";
-				} else if(key=="deroo") {
-					if((dictionaries & KDD_DR) == 0) continue;
-					displayKey = "De Roo code";
-				} else {
-					ostringstream oss;
-					oss << ERR_PREF
-						<< "Unexpected query code \"" << key
-						<< "\" encountered.";
-					el.Push(EL_Warning, oss.str());
-					displayKey = key;
-				}
-				dictOut << "• " << displayKey << ": "
-					   << mssi->second << '\n';
-			}
+		if(k.qc_deroo.length() < 0) {
+			if((dictionaries & KDD_DR) != 0)
+				dictOut << "\t• De Roo code: "
+						<< k.qc_deroo << "</li>";
 		}
-		for(mssi = k.dictCode.begin(); mssi != k.dictCode.end(); mssi++) {
-			string key = mssi->first;
-			string displayKey;
-			if(key=="busy_people") {
-				if((dictionaries & KDD_JBP) == 0) continue;
-				displayKey = "Japanese For Busy People (AJLT)";
-			} else if(key=="crowley") {
-				if((dictionaries & KDD_KWJLP) == 0) continue;
-				displayKey = "The Kanji Way to Japanese Language Power (Crowley)";
-			} else if(key=="gakken") {
-				if((dictionaries & KDD_GKD) == 0) continue;
-				displayKey = "A New Dictionary of Kanji Usage (Gakken)";
-			} else if(key=="halpern_kkld") {
-				if((dictionaries & KDD_KLD) == 0) continue;
-				displayKey = "Kodansha Kanji Learners Dictionary (Halpern)";
-			} else if(key=="halpern_njecd") {
-				if((dictionaries & KDD_NJECD) == 0) continue;
-				displayKey = "New Japanese-English Character Dictionary (Halpern)";
-			} else if(key=="heisig") {
-				if((dictionaries & KDD_RTK) == 0) continue;
-				displayKey = "Remembering the Kanji (Heisig)";
-			} else if(key=="henshall") {
-				if((dictionaries & KDD_GRJC) == 0) continue;
-				displayKey = "A Guide To Remembering Japanese Characters (Henshall)";
-			} else if(key=="henshall3") {
-				if((dictionaries & KDD_GTRWJH) == 0) continue;
-				displayKey = "A Guide To Reading and Writing Japanese (Henshall)";
-			} else if(key=="jf_cards") {
-				if((dictionaries & KDD_JKF) == 0) continue;
-				displayKey = "Japanese Kanji Flashcards (Hodges/Okazaki)";
-			} else if(key=="kanji_in_context") {
-				if((dictionaries & KDD_KIC) == 0) continue;
-				displayKey = "Kanji in Context (Nishiguchi/Kono)";
-			} else if(key=="kodansha_compact") {
-				if((dictionaries & KDD_KCKG) == 0) continue;
-				displayKey = "Kodansha Compact Kanji Guide";
-			} else if(key=="moro") {
-				if((dictionaries & KDD_MORO) == 0) continue;
-				displayKey = "Morohashi Daikanwajiten";
-			} else if(key=="nelson_c") {
-				if((dictionaries & KDD_MRJECD) == 0) continue;
-				displayKey = "Modern Reader's Japanese-English Character "
-					"Dictionary (Nelson)";
-			} else if(key=="nelson_n") {
-				if((dictionaries & KDD_NNJECD) == 0) continue;
-				displayKey = "The New Nelson Japanese-English Character Dictionary (Haig)";
-			} else if(key=="oneill_kk") {
-				if((dictionaries & KDD_EK) == 0) continue;
-				displayKey = "Essential Kanji (O'Neill)";
-			} else if(key=="oneill_names") {
-				if((dictionaries & KDD_JN) == 0) continue;
-				displayKey = "Japanese Names (O'Neill)";
-			} else if(key=="sakade") {
-				if((dictionaries & KDD_GTRWJS) == 0) continue;
-				displayKey = "A Guide To Reading and Writing Japanese (Sakade)";
-			} else if(key=="sh_kk") {
-				if((dictionaries & KDD_KK) == 0) continue;
-				displayKey = "Kanji and Kana (Spahn/Hadamitzky)";
-			} else if(key=="tutt_cards") {
-				if((dictionaries & KDD_TKC) == 0) continue;
-				displayKey = "Tuttle Kanji Cards (Kask)";
-			} else {
-				ostringstream oss;
-				oss << ERR_PREF
-					<< "Unexpected dictionary code \"" << key
-					<< "\" encountered.";
-				el.Push(EL_Warning, oss.str());
-				displayKey = key;
-			}
-			dictOut << "\t• " << displayKey << ": "
-				   << mssi->second << '\n';		
+		if(k.qc_four_corner.length() < 0) {
+			if((dictionaries & KDD_FC) != 0)
+				dictOut << "\t• Four Corner code: "
+						<< k.qc_four_corner << "</li>";
 		}
+		if(k.qc_sh_desc.length() < 0) {
+			if((dictionaries & KDD_KD) != 0)
+				dictOut << "\t• Spahn/Hadamitzky Kanji Dictionary code: "
+						<< k.qc_sh_desc << "</li>";
+		}
+		if(k.qc_skip.length() < 0) {
+			if((dictionaries & KDD_SKIP) != 0)
+			dictOut << "\t• SKIP code: " << k.qc_skip;
+			if(!k.skipMisclass.empty()) {
+				/* Display miscode info */
+				list< pair<string,string> >::const_iterator iMiscode;
+				for(iMiscode = k.skipMisclass.begin();
+					iMiscode != k.skipMisclass.end(); iMiscode++) {
+					dictOut << "\n  Miscode (" << iMiscode->first
+							<< "): " << iMiscode->second;
+				}
+			}
+			dictOut << '\n';
+		}
+		if(k.dc_busy_people.length() > 0) {
+			if((dictionaries & KDD_JBP) != 0)
+				dictOut << "\t• Japanese For Busy People (AJLT): "
+						<< k.dc_busy_people << '\n';		
+		}
+		if(k.dc_crowley.length() > 0) {
+			if((dictionaries & KDD_KWJLP) != 0)
+				dictOut << "\t• The Kanji Way to Japanese Language Power "
+					"(Crowley): " << k.dc_crowley << '\n';		
+		}
+		if(k.dc_gakken.length() > 0) {
+			if((dictionaries & KDD_GKD) != 0)
+				dictOut << "\t• A New Dictionary of Kanji Usage (Gakken): "
+						<< k.dc_gakken << '\n';		
+		}
+		if(k.dc_halpern_kkld.length() > 0) {
+			if((dictionaries & KDD_KLD) != 0)
+				dictOut << "\t• Kodansha Kanji Learners Dictionary (Halpern): "
+						<< k.dc_halpern_kkld << '\n';		
+		}
+		if(k.dc_halpern_njecd.length() > 0) {
+			if((dictionaries & KDD_NJECD) != 0)
+				dictOut << "\t• New Japanese-English Character Dictionary "
+					"(Halpern): " << k.dc_halpern_njecd << '\n';		
+		}
+		if(k.dc_heisig.length() > 0) {
+			if((dictionaries & KDD_RTK) != 0)
+				dictOut << "\t• Remembering the Kanji (Heisig): "
+						<< k.dc_heisig << '\n';		
+		}
+		if(k.dc_henshall.length() > 0) {
+			if((dictionaries & KDD_GRJC) != 0)
+				dictOut << "\t• A Guide To Remembering Japanese Characters "
+					"(Henshall): " << k.dc_henshall << '\n';		
+		}
+		if(k.dc_henshall3.length() > 0) {
+			if((dictionaries & KDD_GTRWJH) != 0)
+				dictOut << "\t• A Guide To Reading and Writing Japanese "
+					"(Henshall): " << k.dc_henshall3 << '\n';		
+		}
+		if(k.dc_jf_cards.length() > 0) {
+			if((dictionaries & KDD_JKF) != 0)
+				dictOut << "\t• Japanese Kanji Flashcards (Hodges/Okazaki): "
+						<< k.dc_jf_cards << '\n';		
+		}
+		if(k.dc_kanji_in_context.length() > 0) {
+			if((dictionaries & KDD_KIC) != 0)
+				dictOut << "\t• Kanji in Context (Nishiguchi/Kono): "
+						<< k.dc_kanji_in_context << '\n';		
+		}
+		if(k.dc_kodansha_compact.length() > 0) {
+			if((dictionaries & KDD_KCKG) != 0)
+				dictOut << "\t• Kodansha Compact Kanji Guide: "
+						<< k.dc_kodansha_compact << '\n';		
+		}
+		if(k.dc_moro.length() > 0) {
+			if((dictionaries & KDD_MORO) != 0)
+				dictOut << "\t• Morohashi Daikanwajiten: "
+						<< k.dc_moro << '\n';		
+		}
+		if(k.dc_nelson_c.length() > 0) {
+			if((dictionaries & KDD_MRJECD) != 0)
+				dictOut << "\t• Modern Reader's Japanese-English Character "
+					"Dictionary (Nelson): "
+						<< k.dc_nelson_c << '\n';		
+		}
+		if(k.dc_nelson_n.length() > 0) {
+			if((dictionaries & KDD_NNJECD) != 0)
+				dictOut << "\t• The New Nelson Japanese-English Character "
+					"Dictionary (Haig): " << k.dc_nelson_n << '\n';		
+		}
+		if(k.dc_oneill_kk.length() > 0) {
+			if((dictionaries & KDD_EK) != 0)
+				dictOut << "\t• Essential Kanji (O'Neill): "
+						<< k.dc_oneill_kk << '\n';		
+		}
+		if(k.dc_oneill_names.length() > 0) {
+			if((dictionaries & KDD_JN) != 0)
+				dictOut << "\t• Japanese Names (O'Neill): "
+						<< k.dc_oneill_names << '\n';		
+		}
+		if(k.dc_sakade.length() > 0) {
+			if((dictionaries & KDD_GTRWJS) != 0)
+				dictOut << "\t• A Guide To Reading and Writing Japanese "
+					"(Sakade): " << k.dc_sakade << '\n';		
+		}
+		if(k.dc_sh_kk.length() > 0) {
+			if((dictionaries & KDD_KK) != 0)
+				dictOut << "\t• Kanji and Kana (Spahn/Hadamitzky): "
+						<< k.dc_sh_kk << '\n';		
+		}
+		if(k.dc_tutt_cards.length() > 0) {
+			if((dictionaries & KDD_TKC) != 0)
+				dictOut << "\t• Tuttle Kanji Cards (Kask): "
+						<< k.dc_tutt_cards << '\n';		
+		}
+		/* Append dict str to result */
 		if(dictOut.str().length()>0)
 			result << "• Dictionary Codes:\n"
 				   << dictOut.str();
@@ -1564,11 +1713,18 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 		result << "• Extra Information:\n";
 		/* JIS codes, UTF-8 codes */
 		result << "\t• Character codes:\n";
-		for(map<string,string>::const_iterator mssci = k.codepoint.begin();
-			mssci != k.codepoint.end(); mssci++) {
+		if(k.cp_j208.length() > 0)
 			result << "\t\t• "
-				   << mssci->first << ": " << mssci->second << '\n';
-		}
+				   << "JIS-208: " << k.cp_j208 << '\n';
+		if(k.cp_j212.length() > 0)
+			result << "\t\t• "
+				   << "JIS-212: " << k.cp_j212 << '\n';
+		if(k.cp_j213.length() > 0)
+			result << "\t\t• "
+				   << "JIS-213: " << k.cp_j213 << '\n';
+		if(k.cp_ucs.length() > 0)
+			result << "\t\t• "
+				   << "Unicode: " << k.cp_ucs << '\n';
 		/* Classical/Nelson radicals */
 		if(k.radical!=0)
 			result << "\t• KangXi Zidian radical: "
@@ -1577,7 +1733,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			result << "\t• Nelson radical: "
 				   << (unsigned int)k.radicalNelson << '\n';
 		/* Pinyin/Korean */
-		if(k.pinyin.size()>0) {
+		if(!k.pinyin.empty()) {
 			result << "\t• Pinyin romanization: ";
 			lsi = k.pinyin.begin();
 			result << *lsi;
@@ -1586,7 +1742,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			}
 			result << '\n';
 		}
-		if(k.korean_h.size()>0) {
+		if(!k.korean_h.empty()) {
 			result << "\t• Korean reading: ";
 			lsi = k.korean_h.begin();
 			result << *lsi;
@@ -1595,7 +1751,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			}
 			result << '\n';
 		}
-		if(k.korean_r.size()>0) {
+		if(!k.korean_r.empty()) {
 			result << "\t• Korean romanization: ";
 			lsi = k.korean_r.begin();
 			result << *lsi;
@@ -1606,27 +1762,44 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 		}
 		/* Crossref codes */
 		result << "\t• Cross References:\n";
-		for(map<string,string>::const_iterator
-				mssci = k.variant.begin(); mssci != k.variant.end(); mssci++) {
-			result << "\t\t• "
-				   << mssci->first << ": " << mssci->second << '\n';
-		}
+		if(k.var_j208.length()>0)
+			result << "\t\t• JIS-208: " << k.var_j208 << '\n';
+		if(k.var_j212.length()>0)
+			result << "\t\t• JIS-212: " << k.var_j212 << '\n';
+		if(k.var_j213.length()>0)
+			result << "\t\t• JIS-213: " << k.var_j213 << '\n';
+		if(k.var_ucs.length()>0)
+			result << "\t\t• Unicode: " << k.var_ucs << '\n';
+		if(k.var_deroo.length()>0)
+			result << "\t\t• De Roo code: " << k.var_deroo << '\n';
+		if(k.var_nelson_c.length()>0)
+			result << "\t\t• Modern Reader's Japanese-English Character "
+				"Dictionary (Nelson): " << k.var_nelson_c << '\n';
+		if(k.var_njecd.length()>0)
+			result << "\t\t• New Japanese-English Character Dictionary "
+				"(Halpern): " << k.var_njecd << '\n';
+		if(k.var_oneill.length()>0)
+			result << "\t\t• Japanese Names (O'Neill): " << k.var_oneill
+				   << '\n';
+		if(k.var_s_h.length()>0)
+			result << "\t\t• Spahn/Hadamitzky Kanji Dictionary code: "
+				   << k.var_s_h << '\n';
 	}
 
 	return result.str();
 }
 
-const BoostHM<wchar_t,KInfo>* KDict::GetHashTable() const {
+const unordered_map<wchar_t,KInfo>* KDict::GetHashTable() const {
 	return &kdictData;
 }
 
 bool KDict::MainDataLoaded() const {
-	if(kdictData.size()>0) return true;
+	if(!kdictData.empty()) return true;
 	return false;
 }
 
 const KInfo* KDict::GetEntry(const wchar_t key) const {
-	BoostHM<wchar_t, KInfo>::const_iterator kci = kdictData.find(key);
+	unordered_map<wchar_t, KInfo>::const_iterator kci = kdictData.find(key);
 	if(kci != kdictData.end())
 		return &(kci->second);
 	return NULL;;

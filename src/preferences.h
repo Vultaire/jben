@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include <map>
 #include <string>
+#include <boost/regex.hpp>
 using namespace std;
 
 class Preferences {
@@ -39,6 +40,8 @@ public:
 	~Preferences();
 	void SetDefaultPrefs();
 	string& GetSetting(string key, string defaultValue = "");
+	list<string> GetKeyList(string searchKey);
+	list<string> GetKeyList(boost::regex exp);
 
 	/* Options contained within config file - these may eventually go away. */
 	unsigned long kanjidicOptions;

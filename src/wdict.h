@@ -26,14 +26,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 /* #define USING_INDICES */
 
-#include "boosthm.h"
 #include <list>
 #include <vector>
 #include <utility>
+#include <string>
 using namespace std;
 
-#define ED_SUCCESS 0x0
-#define ED_FAILURE 0x80000000
+#define WD_SUCCESS 0x0
+#define WD_FAILURE 0x80000000
 
 #define EDS_EXACT 0x1u
 #define EDS_BEGIN 0x2u
@@ -67,7 +67,8 @@ private:
 	WDict();
 
 	/* Dictionary file loaders */
-	int LoadEdict2(const char *filename);
+	int LoadEdict2(const string& filename,
+				   const string& encoding="utf-8");
 
 	/* EDICT2-specific stuff */
 	void Edict2Parser(char *edict2RawData);

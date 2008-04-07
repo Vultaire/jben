@@ -73,13 +73,6 @@ int main(int argc, char **argv) {
 	KanjiList* kanjiList = NULL;
 	VocabList* vocabList = NULL;
 
-	/* the below -might- help on win32 systems, but for now is unused. */
-#if 0
-#ifndef __WIN32__
-	setlocale(LC_ALL, "");
-#endif
-#endif
-	
 	/* Various initialization */
 	srand(time(NULL));
 	InitUTFConv();
