@@ -94,7 +94,7 @@ int VocabList::AddList(const wstring& s, void* srcObj) {
 	int duplicates = 0;
 	while(!t.empty()) {
 		token = t.front();
-		if(token.length()>0) {
+		if(!token.empty()) {
 			if(Add(token)) count++;
 			else duplicates++;
 		}

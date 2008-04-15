@@ -13,7 +13,7 @@ StoredDialog::StoredDialog
 	Preferences* p = Preferences::Get();
 	string& size = p->GetSetting(prefsKey);
 	int x, y;
-	if(size.length()>0) {
+	if(!size.empty()) {
 		std::list<string> ls = StrTokenize<char>(size, "x");
 		if(ls.size()>=2) {
 			x = atoi(ls.front().c_str());

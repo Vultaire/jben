@@ -91,7 +91,7 @@ void DialogVocabListEditor::Update() {
 	ListManager* lm = ListManager::Get();
 	wstring ws = lm->VList()->ToString();
 	string s;
-	if(ws.length()>0) s = utfconv_wm(ws);
+	if(!ws.empty()) s = utfconv_wm(ws);
 	tvList.get_buffer()->set_text(s);
 	bChanged = bOldState;
 }

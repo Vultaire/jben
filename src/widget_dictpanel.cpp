@@ -65,15 +65,10 @@ void DictPanel::Update() {
 		pTable->add(pTag);
 	}
 
-#if 0
 	/* Also, let's set the entry field's font
 	   to the normal-sized Japanese font. */
-	/* - DOES NOT YET WORK, so disabled! - */
 	Pango::FontDescription *fd
-		= new Pango::FontDescription(p->GetSetting("font.en"));
-	entQuery.unset_font();
+		= new Pango::FontDescription(p->GetSetting("font.ja"));
 	entQuery.modify_font(*fd);
-	entQuery.queue_resize();
 	delete fd;
-#endif
 }

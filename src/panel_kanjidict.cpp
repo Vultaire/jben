@@ -37,6 +37,8 @@ PanelKanjiDict::PanelKanjiDict() {
 	Gtk::ScrolledWindow* pswResults
 		= manage(new Gtk::ScrolledWindow);
 	Gtk::HBox* phbBottomRow = manage(new Gtk::HBox(false, 5));
+	Gtk::HButtonBox* phbbSearch
+		= manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_START, 5));
 	Gtk::HButtonBox* phbbButtons
 		= manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_START, 5));
 
@@ -46,7 +48,8 @@ PanelKanjiDict::PanelKanjiDict() {
 
 	phbEntry->pack_start(*plblSearch, Gtk::PACK_SHRINK);
 	phbEntry->pack_start(entQuery);
-	phbEntry->pack_end(btnSearch, Gtk::PACK_SHRINK);
+	phbEntry->pack_end(*phbbSearch, Gtk::PACK_SHRINK);
+	phbbSearch->pack_start(btnSearch, Gtk::PACK_SHRINK);
 
 	pswResults->add(tvResults);
 	pswResults->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
@@ -158,12 +161,12 @@ void PanelKanjiDict::UpdateOutput() {
 		c = currentSearchString[i];
 		ki = kd->GetEntry(c);
 		if(ki) {
-			if(output.length()>0) output.append(1,'\n');
+			if(!output.empty()) output.append(1,'\n');
 			output.append(KDict::KInfoToTextBuf(*ki));
 		}
 	}
 
-	if(output.length()==0)
+	if(output.empty())
 		output.append(_("No kanji have been selected."));
 	SetTextBuf(tvResults.get_buffer(), output);
 }

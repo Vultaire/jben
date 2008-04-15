@@ -47,12 +47,13 @@ FrameMainGUI::FrameMainGUI() {
 	pdConfig          = NULL;
 	pdKanjiPreTest    = NULL;
 	pfHWPad           = NULL;
+	pfKSearch         = NULL;
 
 	/* Logic copied from widget_storeddialog */
 	Preferences* p = Preferences::Get();
 	string& size = p->GetSetting("gui.main.size");
 	int x, y;
-	if(size.length()>0) {
+	if(!size.empty()) {
 		std::list<string> ls = StrTokenize<char>(size, "x");
 		if(ls.size()>=2) {
 			x = atoi(ls.front().c_str());
@@ -91,6 +92,10 @@ FrameMainGUI::FrameMainGUI() {
 		Gtk::Action::create("MenuToolsHand",
 							_("_Handwriting Recognition for Kanji")),
 		sigc::mem_fun(*this, &FrameMainGUI::OnMenuToolsHand));
+	refActionGroup->add(
+		Gtk::Action::create("MenuToolsKanjiSearch",
+							_("_Kanji Search")),
+		sigc::mem_fun(*this, &FrameMainGUI::OnMenuToolsKanjiSearch));
 	/* Help Menu */
 	refActionGroup->add(Gtk::Action::create("MenuHelp", _("_Help")));
 	refActionGroup->add(
@@ -120,6 +125,7 @@ FrameMainGUI::FrameMainGUI() {
 		"    </menu>"
 		"    <menu action='MenuTools'>"
 		"      <menuitem action='MenuToolsHand'/>"
+		"      <menuitem action='MenuToolsKanjiSearch'/>"
 		"    </menu>"
 		"    <menu action='MenuHelp'>"
 		"      <menuitem action='MenuHelpAbout'/>"
@@ -142,6 +148,7 @@ FrameMainGUI::FrameMainGUI() {
 
 FrameMainGUI::~FrameMainGUI() {
 	if(pfHWPad)           delete pfHWPad;
+	if(pfKSearch)         delete pfKSearch;
 	if(pdKanjiListEditor) delete pdKanjiListEditor;
 	if(pdVocabListEditor) delete pdVocabListEditor;
 	if(pdConfig)          delete pdConfig;
@@ -158,6 +165,8 @@ FrameMainGUI::~FrameMainGUI() {
 void FrameMainGUI::Update() {
 	panelWordDict.Update();
 	panelKanjiDict.Update();
+	if(pfHWPad) pfHWPad->Update();
+	if(pfKSearch) pfKSearch->Update();
 }
 
 void FrameMainGUI::OnMenuFileQuit() {hide();}
@@ -218,6 +227,14 @@ void FrameMainGUI::OnMenuToolsHand() {
 	else
 		pfHWPad->present();
 	pfHWPad->show();
+}
+
+void FrameMainGUI::OnMenuToolsKanjiSearch() {
+	if(!pfKSearch)
+		pfKSearch = new FrameKSearch();
+	else
+		pfKSearch->present();
+	pfKSearch->show();
 }
 
 void FrameMainGUI::OnMenuHelpAbout() {

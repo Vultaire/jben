@@ -178,7 +178,7 @@ bool WDict::Search(const wstring& query, list<int>& results,
 	int priorityExact, priorityBeginsWith, priorityEndsWith, priorityOther;
 	vector<string>::const_iterator vIt;
 
-	if(query.length()==0) {
+	if(query.empty()) {
 #ifdef DEBUG
 		printf("[%s:%d] Empty string passed into WDict::Search.  (Not a problem!)\n", __FILE__, __LINE__);
 #endif
@@ -481,8 +481,8 @@ wstring WDict::ResultToHTML(const wstring& rawResult) {
 				else
 					subToken = token.substr(indexSlash+1,
 											indexNextSlash-1 - indexSlash);
-				if(subToken.length()>0) {
-					if(eStr.length()>0)
+				if(!subToken.empty()) {
+					if(!eStr.empty())
 						eStr.append(L"; ");
 					eStr.append(subToken);
 				}
@@ -501,7 +501,7 @@ string WDict::ResultToTextBuf(const string& rawResult) {
 	list<string> tk = StrTokenize(rawResult, "\n");
 	size_t indexSlash, indexNextSlash, indexBreak;
 	while(!tk.empty()) {
-		if(outStr.length()>0) outStr.append(1, '\n');
+		if(!outStr.empty()) outStr.append(1, '\n');
 		token = tk.front();
 		tk.pop_front();
 
@@ -533,8 +533,8 @@ string WDict::ResultToTextBuf(const string& rawResult) {
 				else
 					subToken = token.substr(indexSlash+1,
 											indexNextSlash-1 - indexSlash);
-				if(subToken.length()>0) {
-					if(eStr.length()>0)
+				if(!subToken.empty()) {
+					if(!eStr.empty())
 						eStr.append("; ");
 					eStr.append(subToken);
 				}
@@ -607,7 +607,7 @@ void WDict::GetJapanese(const string& edictStr, vector<string>& dest) {
 		} else {
 			temp = jStr.substr(indexStart, indexBreak-indexStart);
 		}
-		if(temp.length()>0) dest.push_back(temp);
+		if(!temp.empty()) dest.push_back(temp);
 
 		/* Return if either indexBreak or index == string::npos.
 		   index==string::npos:

@@ -3,6 +3,7 @@
 
 #include "vocablist.h"
 #include "kanjilist.h"
+#include <map>
 
 class ListManager {
 public:

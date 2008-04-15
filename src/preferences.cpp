@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#define CURRENT_CONFIG_VERSION "1.1"
+#define CURRENT_CONFIG_VERSION "1.2"
 
 #include "preferences.h"
 #include "kdict.h"
@@ -69,7 +69,7 @@ Preferences *Preferences::Get() {
 		   AND a config file is present there, then reset to default settings
 		   and re-load from that file instead. */
 		if(OK && prefsSingleton->GetSetting("config_save_target")=="home") {
-			if(sCfgPath.length() > 0 && FileExists(sCfgPath.c_str())) {
+			if((!sCfgPath.empty()) && FileExists(sCfgPath.c_str())) {
 				prefsSingleton->SetDefaultPrefs();
 				OK = false;
 			} else {
@@ -164,7 +164,7 @@ int Preferences::LoadFile(const char *filename) {
 		while(!tokenList.empty()) {
 			token = tokenList.front();
 			tokenList.pop_front();
-			if( (token.length()>0) && (token[0]!=L'#') ) {
+			if((!token.empty()) && (token[0]!=L'#') ) {
 				/* We only want to split the string into two subtokens, so we'll
 				   do it manually. */
 				index = token.find_first_of(L" \t");
@@ -194,9 +194,9 @@ int Preferences::LoadFile(const char *filename) {
 						while(!tSub.empty()) {
 							subToken = tSub.front();
 							tSub.pop_front();
-							if(subToken.length()>0) {
+							if(!subToken.empty()) {
 								string *temp = &stringOpts["vocablist"];
-								if(temp->length()>0)
+								if(!temp->empty())
 									temp->append(1, '\n');
 								temp->append(utfconv_wm(subToken));
 							}
@@ -238,7 +238,7 @@ int Preferences::LoadFile(const char *filename) {
 }
 
 void Preferences::UpgradeConfigFile() {
-	string version = stringOpts["config_version"];
+	string& version = stringOpts["config_version"];
 	/* Iterate through the version-wise changes */
 	if(version=="1") {
 		el.Push(EL_Silent, "Upgrading config file from version 1 to 1.1.");
@@ -252,7 +252,44 @@ void Preferences::UpgradeConfigFile() {
 			= JB_DATADIR DSSTR "dicts" DSSTR "kanjd212";
 		version = "1.1";
 	}
-	stringOpts["config_version"] = CURRENT_CONFIG_VERSION;	
+	if(version=="1.1") {
+		/* 1.1 to 1.2:
+			- Convert xdict_filename to xdict.dicttype_file# format */
+		string* pStr;
+		pStr = &stringOpts["kdict_kanjidic"];
+		if(!pStr->empty()) {
+			stringOpts["kdict.kanjidic.file"] = *pStr;
+			pStr->clear();
+		}
+		pStr = &stringOpts["kdict_kanjd212"];
+		if(!pStr->empty()) {
+			stringOpts["kdict.kanjidic.file2"] = *pStr;
+			stringOpts["kdict.kanjidic.file2.jispage"] = "jis212";
+			pStr->clear();
+		}
+		pStr = &stringOpts["kdict_kanjidic2"];
+		if(!pStr->empty()) {
+			stringOpts["kdict.kanjidic2.file"] = *pStr;
+			pStr->clear();
+		}
+		pStr = &stringOpts["kdict_kradfile"];
+		if(!pStr->empty()) {
+			stringOpts["kdict.kradfile.file"] = *pStr;
+			pStr->clear();
+		}
+		pStr = &stringOpts["kdict_radkfile"];
+		if(!pStr->empty()) {
+			stringOpts["kdict.radkfile.file"] = *pStr;
+			pStr->clear();
+		}
+		pStr = &stringOpts["wdict_edict2"];
+		if(!pStr->empty()) {
+			stringOpts["wdict.edict2.file"] = *pStr;
+			pStr->clear();
+		}
+		version = "1.2";
+	}
+	version = CURRENT_CONFIG_VERSION;
 }
 
 Preferences::~Preferences() {
@@ -345,6 +382,11 @@ string& Preferences::GetSetting(string key, string defaultValue) {
 			defaultValue = "450x-1";
 		else if(lKey=="gui.wnd.kanjihwpad.size")
 			defaultValue = "200x230";
+		else if(lKey=="wnd.kanjiksearch.size")
+			defaultValue = "-1x400";
+		else if(lKey=="wnd.kanjiksearch.pane.divider.pos")
+			defaultValue = "300";
+
 #ifdef __WIN32__
 		/* GTK does not support bold text under Windows very well.  It might be
 		   due to the rendering engine it use, but I'm unsure.  Italic and

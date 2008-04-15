@@ -24,30 +24,21 @@ UninstPage instfiles
 Section "!J-Ben Core"
 	# Program Files\J-Ben
 	SetOutPath "$INSTDIR"
-	File "..\J-Ben\jben.exe"
-	File "..\J-Ben\jben_kpengine.exe"
-#	File "..\J-Ben\libcharset1.dll"
-#	File "..\J-Ben\libiconv2.dll"
-#	File "..\J-Ben\libstlport.5.1.dll"
-	File "..\J-Ben\mingwm10.dll"
-#	File "..\J-Ben\wxbase28u_gcc_vultaire.net.dll"
-#	File "..\J-Ben\wxmsw28u_core_gcc_vultaire.net.dll"
-#	File "..\J-Ben\wxmsw28u_html_gcc_vultaire.net.dll"
 	File "..\J-Ben\README.txt"
 	File "..\J-Ben\CHANGELOG.txt"
-	# The following 2 folders will always be added/removed in full,
+	# The following folders will always be added/removed in full,
 	# so using File /r (and RMDir /r on uninstall) is acceptable.
+	File /r "..\J-Ben\bin"
+	File /r "..\J-Ben\etc"
 	File /r "..\J-Ben\kpengine_data"
+	File /r "..\J-Ben\lib"
 	File /r "..\J-Ben\license"
+	File /r "..\J-Ben\share"
 
 	# Program Files\J-Ben\dicts
-	# By default, we install EDICT2, KANJIDIC, KRADFILE and RADKFILE.
-	SetOutPath "$INSTDIR\dicts"
-	File "..\J-Ben\dicts\README.txt"
-	File "..\J-Ben\dicts\edict2"
-	File "..\J-Ben\dicts\kanjidic"
-	File "..\J-Ben\dicts\kanjd212"
-	File "..\J-Ben\dicts\kradfile"
+	# Although the user could add their own dictionaries one-by-one,
+	# I think we can safely use /r here on installation and removal.
+	File /r "..\J-Ben\dicts"
 
 	# Program Files\J-Ben\sods
 	# No SODs are loaded by default; this is an optional component.
@@ -72,15 +63,15 @@ Section "!J-Ben Core"
 SectionEnd
 
 Section "Create Start Menu Icons"
-	SetOutPath "$INSTDIR"
+	SetOutPath "$INSTDIR\bin"
 	CreateDirectory "$SMPROGRAMS\J-Ben"
-	CreateShortcut "$SMPROGRAMS\J-Ben\J-Ben.lnk" "$INSTDIR\jben.exe"
+	CreateShortcut "$SMPROGRAMS\J-Ben\J-Ben.lnk" "$INSTDIR\bin\jben.exe"
 	CreateShortcut "$SMPROGRAMS\J-Ben\Uninstall J-Ben.lnk" "$INSTDIR\uninstall.exe"
 SectionEnd
 
-Section /o "Create Desktop Icon"
-	SetOutPath "$INSTDIR"
-	CreateShortcut "$DESKTOP\J-Ben.lnk" "$INSTDIR\jben.exe"
+Section "Create Desktop Icon"
+	SetOutPath "$INSTDIR\bin"
+	CreateShortcut "$DESKTOP\J-Ben.lnk" "$INSTDIR\bin\jben.exe"
 SectionEnd
 
 ;Section "J-Ben Documentation"
@@ -92,28 +83,19 @@ SectionEnd
 Section "un.J-Ben Core"
 	# Program Files\J-Ben
 	SetOutPath "$INSTDIR"
-	Delete "jben.exe"
-	Delete "jben_kpengine.exe"
-#	Delete "libcharset1.dll"
-#	Delete "libiconv2.dll"
-#	Delete "libstlport.5.1.dll"
-	Delete "mingwm10.dll"
-#	Delete "wxbase28u_gcc_vultaire.net.dll"
-#	Delete "wxmsw28u_core_gcc_vultaire.net.dll"
-#	Delete "wxmsw28u_html_gcc_vultaire.net.dll"
 	Delete "README.txt"
 	Delete "CHANGELOG.txt"
+	RMDir /r "$INSTDIR\bin"
+	RMDir /r "$INSTDIR\etc"
 	RMDir /r "$INSTDIR\kpengine_data"
+	RMDir /r "$INSTDIR\lib"
 	RMDir /r "$INSTDIR\license"
+	RMDir /r "$INSTDIR\share"
 
 	# Program Files\J-Ben\dicts
-	# By default, we install EDICT2, KANJIDIC, KRADFILE and RADKFILE.
-	Delete "dicts\README.txt"
-	Delete "dicts\edict2"
-	Delete "dicts\kanjidic"
-	Delete "dicts\kanjd212"
-	Delete "dicts\kradfile"
-	RMDir "$INSTDIR\dicts"
+	# Although the user could add their own dictionaries one-by-one,
+	# I think we can safely use /r here on installation and removal.
+	RMDir /r "$INSTDIR\dicts"
 
 	# Program Files\J-Ben\sods
 	# No SODs are loaded by default; this is an optional component.

@@ -41,6 +41,8 @@ PanelWordDict::PanelWordDict() {
 	Gtk::ScrolledWindow* pswResults
 		= manage(new Gtk::ScrolledWindow);
 	Gtk::HBox* phbBottomRow = manage(new Gtk::HBox(false, 5));
+	Gtk::HButtonBox* phbbSearch
+		= manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_START, 5));
 	Gtk::HButtonBox* phbbButtons
 		= manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_START, 5));
 
@@ -50,7 +52,8 @@ PanelWordDict::PanelWordDict() {
 
 	phbEntry->pack_start(*plblSearch, Gtk::PACK_SHRINK);
 	phbEntry->pack_start(entQuery);
-	phbEntry->pack_end(btnSearch, Gtk::PACK_SHRINK);
+	phbEntry->pack_end(*phbbSearch, Gtk::PACK_SHRINK);
+	phbbSearch->pack_start(btnSearch, Gtk::PACK_SHRINK);
 
 	pswResults->add(tvResults);
 	pswResults->set_shadow_type(Gtk::SHADOW_ETCHED_IN);
@@ -125,7 +128,7 @@ void PanelWordDict::Update() {
 	if(currentIndex!=-1) {
 		wstring ws = (*lm->VList())[currentIndex];
 		Glib::ustring newVocab;
-		if(ws.length()>0) newVocab = utfconv_wm(ws);
+		if(!ws.empty()) newVocab = utfconv_wm(ws);
 		if(newVocab=="")    /* The returned may be 0 if the currentIndex
 							   no longer refers to a valid character. */
 			currentIndex = -1; /* In this case, we'll reset our index to -1. */
@@ -150,7 +153,7 @@ void PanelWordDict::UpdateOutput() {
 	const WDict *wd = WDict::Get();
 
 	string output;
-	if(currentSearchString.length()==0) {
+	if(currentSearchString.empty()) {
 		output = _("No search has been entered.");
 	} else {
 		/* Get search results string */
@@ -160,7 +163,7 @@ void PanelWordDict::UpdateOutput() {
 			for(list<int>::iterator li = resultList.begin();
 			  li!=resultList.end();
 			  li++) {
-				if(resultString.length()!=0) resultString.append(1, '\n');
+				if(!resultString.empty()) resultString.append(1, '\n');
 				temp = wd->GetEdictString(*li);
 				resultString.append(temp);
 			}

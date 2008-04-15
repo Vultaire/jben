@@ -1,12 +1,14 @@
 #ifndef widget_kanjihwpad_h
 #define widget_kanjihwpad_h
 
-#include <gtkmm/aspectframe.h>
+/*#include <gtkmm/aspectframe.h>*/
+#include <gtkmm/frame.h>
 #include <gtkmm/drawingarea.h>
 #include <vector>
 #include <list>
 
-class KanjiHWPad : public Gtk::AspectFrame {
+/*class KanjiHWPad : public Gtk::AspectFrame {*/
+class KanjiHWPad : public Gtk::Frame {
 public:
 	KanjiHWPad();
 	const std::vector<wchar_t>& GetResults();

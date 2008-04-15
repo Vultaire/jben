@@ -17,6 +17,7 @@
 #include "dialog_kanjitest.h"
 #include "dialog_kanjiposttest.h"
 #include "frame_hwpad.h"
+#include "frame_ksearch.h"
 
 class FrameMainGUI : public Gtk::Window {
 public:
@@ -32,6 +33,7 @@ private:
 	void OnMenuEditPrefs();
 	void OnMenuPracticeKanji();
 	void OnMenuToolsHand();
+	void OnMenuToolsKanjiSearch();
 	void OnMenuHelpAbout();
 	void OnMenuHelpLicense();
 
@@ -48,6 +50,7 @@ private:
 	DialogConfig* pdConfig;
 	DialogKanjiPreTest* pdKanjiPreTest;
 	FrameHWPad* pfHWPad;
+	FrameKSearch* pfKSearch;
 
 	FrameMainGUI();
 	~FrameMainGUI();

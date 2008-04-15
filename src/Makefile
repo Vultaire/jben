@@ -1,7 +1,10 @@
 # J-Ben Makefile for Linux and Windows
-# Note: Windows builds expect MinGW WITH MSys,
+
+# NOTES FOR WINDOWS:
+# Windows builds expect MinGW WITH MSys,
 # one of the tech. preview gcc 4 compilers (for wstrings),
-# plus 7-Zip and NSIS binaries in your path for "make install".
+# plus 7-Zip, NSIS and GTK binaries in your path for "make install".
+# PKG_CONFIG_PATH must also be set appropriately.
 
 ### User-editable options ###
 # PLATFORM: either windows or linux
@@ -9,7 +12,7 @@ PLATFORM = linux
 # BUILD: either release, debug, or profile
 BUILD = release
 # JBEN_VERSION: Used for labeling release packages
-JBEN_VERSION = 1.1.3.4
+JBEN_VERSION = 1.2.0-pre2
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
@@ -18,18 +21,23 @@ ifeq ($(PLATFORM),windows)
 	CC = gcc-dw2
 	mingwbase = C:/MinGW
 	gtkdevbase = C:/GTK
-	boostbase = C:/devel/boost_1_34_1
+	boostbase = C:/devel/boost_1_35_0
+	# The below 2 vars should be direct paths to the boost::regex library and the zlib library.
+	libboost_regex = C:/devel/boost-build-gcc4dw2/boost/bin.v2/libs/regex/build/gcc-mingw-4.2.1/release/link-static/threading-multi/libboost_regex-mgw42-mt-1_35.lib
+	libzlib = C:/GTK/lib/zdll.lib
+	# The below variables point towards the path to a configured,
+	# redistributable GTK/GTKmm environment.  It's used by the Windows
+	# "make install" target.  If you need help setting this up, contact the
+	# author directly.
+	gtkredist = C:/gtk-redist
 #   LEAVE THESE ALONE
-
 	wincxxflags = -I$(gtkdevbase)/include `pkg-config --cflags gtkmm-2.4 libxml-2.0`
 	wincppflags = -D__WIN32__
-#	winlinkflags = -mwindows -mthreads
 	winlinkflags = -mwindows
-#	winlinkflags = 
 
 	SharedCXXFLAGS = $(wincxxflags)
 	SharedCPPFLAGS = $(wincppflags) -I$(boostbase)
-	libs = $(winlinkflags) `pkg-config --libs gtkmm-2.4 libxml-2.0` -liconv
+	libs = $(winlinkflags) `pkg-config --libs gtkmm-2.4 libxml-2.0` -liconv $(libboost_regex) $(libzlib)
 endif
 
 ##################################
@@ -161,11 +169,20 @@ endif
 installprep:
 ifeq ($(PLATFORM),windows)
 #	Make a phony output folder with all redist files
-	mkdir -p ../J-Ben/bin
+	mkdir -p ../J-Ben
+#	Copy GTK files
+	cp -R $(gtkredist)/bin ../J-Ben
+	cp -R $(gtkredist)/etc ../J-Ben
+	cp -R $(gtkredist)/lib ../J-Ben
+	cp -R $(gtkredist)/share ../J-Ben
+#	Copy J-Ben binaries and DLLs not in GTK redist folder
 	cp "$(mingwbase)/bin/mingwm10.dll" ../J-Ben/bin
 	cp "$(build_bindir)/$(target)" ../J-Ben/bin
 	cp "$(build_bindir)/kpengine/jben_kpengine.exe" ../J-Ben/bin
-#	Copy GTK files... currently not done automatically
+#	Strip J-Ben executables
+	strip ../J-Ben/bin/$(target)
+	strip ../J-Ben/bin/jben_kpengine.exe
+#	Copy remaining J-Ben files (data, readmes, licenses, docs, etc.)
 	cp ../README.txt ../J-Ben
 	cp ../CHANGELOG.txt ../J-Ben
 	cp -R ../license ../J-Ben

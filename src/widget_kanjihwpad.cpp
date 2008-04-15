@@ -246,7 +246,7 @@ void KanjiHWPad::LookupChars() {
 			close(standard_out);
 			close(standard_err);
 
-			if(ossErr.str().length()==0 && ossOut.str().length()>0) {
+			if(ossErr.str().empty() && (!ossOut.str().empty())) {
 				/* Create new wchar_t list */
 				/* First: trim the response string */
 				std::string data = ossOut.str().substr(1); /* skip the "k" */
@@ -257,7 +257,7 @@ void KanjiHWPad::LookupChars() {
 				std::list<std::string> l = StrTokenize<char>(data, " ");
 				for(std::list<std::string>::iterator
 						it = l.begin(); it != l.end(); it++) {
-					if(it->length()>0) {
+					if(!it->empty()) {
 						temp = atoi(it->c_str());
 						if(temp > 0xFFFF || temp < 32) {
 							el.Push(EL_Error,

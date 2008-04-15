@@ -4,7 +4,9 @@
 #include <gtkmm/window.h>
 #include <gtkmm/box.h>
 #include <gtkmm/button.h>
+#include <gtkmm/label.h>
 #include "widget_kanjihwpad.h"
+#include <string>
 
 class FrameHWPad : public Gtk::Window {
 public:
@@ -17,11 +19,12 @@ private:
 	void OnKanjiClicked(unsigned int index);
 	bool OnDeleteEvent(GdkEventAny* event);
 	
-	void Hide();
 	KanjiHWPad hwp;
 	Gtk::HBox hbResults;
 	Gtk::Button buttons[5];
+	Gtk::Label btnLabels[5];
 	Gtk::Button btnClear;
+	std::string sOldFontStr;
 };
 
 #endif

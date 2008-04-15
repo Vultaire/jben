@@ -12,6 +12,6 @@ doc/*manual.tar.bz2
 doc/*manual.zip
 dicts/edict*
 dicts/kanj*
-dicts/kradfile
-dicts/radkfile
+dicts/kradfile*
+dicts/radkfile*
 J-Ben

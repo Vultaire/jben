@@ -31,7 +31,7 @@ DialogKanjiPostTest::DialogKanjiPostTest
 		oss << _("- TEST COMPLETED -\n\n")
 			<< (boost::format(_("Final score: %d/%d (%0.3f%%)\n"))
 				% test.correct % test.totalTested % score);
-		if(kanjiMissed.length()>0) {
+		if(!kanjiMissed.empty()) {
 			oss << _("List of missed kanji:\n\n") << utfconv_wm(kanjiMissed)
 				<< '\n';
 		}
@@ -41,7 +41,7 @@ DialogKanjiPostTest::DialogKanjiPostTest
 				% test.totalTested % test.totalToTest % progress)
 			<< (boost::format(_("Partial score: %d/%d (%0.3f%%)\n"))
 				% test.correct % test.totalTested % score);
-		if(kanjiMissed.length()>0) {
+		if(!kanjiMissed.empty()) {
 			oss << _("List of missed kanji:\n\n") << utfconv_wm(kanjiMissed)
 				<< '\n';
 		}

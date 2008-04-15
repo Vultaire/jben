@@ -20,6 +20,9 @@ FrameHWPad::FrameHWPad() : btnClear(_("Clear")) {
 	set_title(
 		(boost::format(_("%s: Kanji Handwriting Pad")) % PROGRAM_NAME).str());
 
+	Preferences* p = Preferences::Get();
+	sOldFontStr = p->GetSetting("font.ja");
+
 #ifndef __WIN32__
 	/* Load icons */
 	list< Glib::RefPtr<Gdk::Pixbuf> > lIcons;
@@ -31,10 +34,9 @@ FrameHWPad::FrameHWPad() : btnClear(_("Clear")) {
 #endif
 
 	/* Logic copied from widget_storeddialog */
-	Preferences* p = Preferences::Get();
 	string& size = p->GetSetting(FHWPAD_SIZE_STR);
 	int x, y;
-	if(size.length()>0) {
+	if(!size.empty()) {
 		std::list<string> ls = StrTokenize<char>(size, "x");
 		if(ls.size()>=2) {
 			x = atoi(ls.front().c_str());
@@ -47,9 +49,14 @@ FrameHWPad::FrameHWPad() : btnClear(_("Clear")) {
 	Gtk::Alignment* paBox = manage(
 		new Gtk::Alignment(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 0, 0));
 	paBox->add(hbResults);
+
+	Pango::FontDescription *fd
+		= new Pango::FontDescription(sOldFontStr);
 	for(int i=0; i<5; i++) {
-		buttons[i].set_label("");
-		buttons[i].set_relief(Gtk::RELIEF_NONE);
+		btnLabels[i].set_text("　");
+		btnLabels[i].modify_font(*fd);
+		buttons[i].add(btnLabels[i]);
+		buttons[i].get_child()->modify_font(*fd);
 		buttons[i].signal_clicked().connect(
 			sigc::bind<unsigned int>(
 				sigc::mem_fun(*this, &FrameHWPad::OnKanjiClicked)
@@ -57,14 +64,12 @@ FrameHWPad::FrameHWPad() : btnClear(_("Clear")) {
 		buttons[i].set_sensitive(false);
 		hbResults.pack_start(buttons[i], Gtk::PACK_SHRINK);
 	}
+	delete fd;
 	signal_delete_event()
 		.connect(sigc::mem_fun(*this, &FrameHWPad::OnDeleteEvent), false);
 
 	btnClear.signal_clicked()
 		.connect(sigc::mem_fun(*this, &FrameHWPad::Clear));
-/*	Gtk::Alignment* paClear = manage(
-		new Gtk::Alignment(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, 0, 0));
-	paClear->add(btnClear);*/
 	Gtk::HButtonBox* pboxClear = manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_CENTER));
 	pboxClear->pack_start(btnClear, Gtk::PACK_SHRINK);
 
@@ -121,6 +126,14 @@ void FrameHWPad::Clear() {
 
 void FrameHWPad::Update() {
 	std::vector<wchar_t> vwc = hwp.GetResults();
+	
+	/* Check for a font update, and perform if necessary */
+	std::string& newStr = Preferences::Get()->GetSetting("font.ja");
+	if(sOldFontStr != newStr) {
+		Pango::FontDescription fd(newStr);
+		for(int i=0; i<5; i++) btnLabels[i].modify_font(fd);
+		sOldFontStr = newStr;
+	}
 
 	std::wstring ws;
 	for(std::vector<wchar_t>::iterator it = vwc.begin(); it!=vwc.end(); it++) {
@@ -131,11 +144,11 @@ void FrameHWPad::Update() {
 	size_t i;
 	for(i=0; i<vwc.size(); i++) {
 		utf8char = utfconv_wm(std::wstring().append(1, vwc[i]));
-		buttons[i].set_label(utf8char);
+		btnLabels[i].set_text(utf8char);
 		buttons[i].set_sensitive(true);
 	}
 	for(; i<5; i++) {
-		buttons[i].set_label("");
+		btnLabels[i].set_text("　");
 		buttons[i].set_sensitive(false);
 	}
 }

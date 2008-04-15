@@ -189,29 +189,38 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	tvEnNormal.set_editable(false);
 	tvEnSmall .set_editable(false);
 
+	Gtk::HButtonBox *fntBtnBox1 = manage(new Gtk::HButtonBox);
+	fntBtnBox1->pack_start(btnJaNormal, Gtk::PACK_SHRINK);
+	Gtk::HButtonBox *fntBtnBox2 = manage(new Gtk::HButtonBox);
+	fntBtnBox2->pack_start(btnJaLarge, Gtk::PACK_SHRINK);
+	Gtk::HButtonBox *fntBtnBox3 = manage(new Gtk::HButtonBox);
+	fntBtnBox3->pack_start(btnEnNormal, Gtk::PACK_SHRINK);
+	Gtk::HButtonBox *fntBtnBox4 = manage(new Gtk::HButtonBox);
+	fntBtnBox4->pack_start(btnEnSmall, Gtk::PACK_SHRINK);
+	
 	tblFonts.attach(lblJaNormal, 0, 1, 0, 1, Gtk::SHRINK,
 		Gtk::SHRINK, 5, 5);
 	tblFonts.attach(frJaNormal,  1, 2, 0, 1, Gtk::FILL | Gtk::EXPAND,
 		Gtk::SHRINK, 5, 5);
-	tblFonts.attach(btnJaNormal, 2, 3, 0, 1, Gtk::SHRINK,
+	tblFonts.attach(*fntBtnBox1, 2, 3, 0, 1, Gtk::SHRINK,
 		Gtk::SHRINK, 5, 5);
 	tblFonts.attach(lblJaLarge,  0, 1, 1, 2, Gtk::SHRINK,
 		Gtk::SHRINK, 5, 5);
 	tblFonts.attach(frJaLarge,   1, 2, 1, 2, Gtk::FILL | Gtk::EXPAND,
 		Gtk::SHRINK, 5, 5);
-	tblFonts.attach(btnJaLarge,  2, 3, 1, 2, Gtk::SHRINK,
+	tblFonts.attach(*fntBtnBox2,  2, 3, 1, 2, Gtk::SHRINK,
 		Gtk::SHRINK, 5, 5);
 	tblFonts.attach(lblEnNormal, 0, 1, 2, 3, Gtk::SHRINK,
 		Gtk::SHRINK, 5, 5);
 	tblFonts.attach(frEnNormal,  1, 2, 2, 3, Gtk::FILL | Gtk::EXPAND,
 		Gtk::SHRINK, 5, 5);
-	tblFonts.attach(btnEnNormal, 2, 3, 2, 3, Gtk::SHRINK,
+	tblFonts.attach(*fntBtnBox3, 2, 3, 2, 3, Gtk::SHRINK,
 		Gtk::SHRINK, 5, 5);
 	tblFonts.attach(lblEnSmall,  0, 1, 3, 4, Gtk::SHRINK,
 		Gtk::SHRINK, 5, 5);
 	tblFonts.attach(frEnSmall,   1, 2, 3, 4, Gtk::FILL | Gtk::EXPAND,
 		Gtk::SHRINK, 5, 5);
-	tblFonts.attach(btnEnSmall,  2, 3, 3, 4, Gtk::SHRINK,
+	tblFonts.attach(*fntBtnBox4,  2, 3, 3, 4, Gtk::SHRINK,
 		Gtk::SHRINK, 5, 5);
 
 	btnJaNormal.signal_clicked().connect(sigc::bind<Gtk::Button*>(
