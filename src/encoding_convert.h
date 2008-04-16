@@ -36,8 +36,8 @@ extern string wcType;
 
 bool InitUTFConv();
 void DestroyUTFConv();
-#define utfconv_wm(data) ConvertString<wchar_t, char>(data, wcType.c_str(), "UTF-8")
-#define utfconv_mw(data) ConvertString<char, wchar_t>(data, "UTF-8", wcType.c_str())
+#define utfconv_wm(data) ConvertString<wchar_t, char>(data, wcType.c_str(), "utf-8")
+#define utfconv_mw(data) ConvertString<char, wchar_t>(data, "utf-8", wcType.c_str())
 
 /* Encoding conversion template function.  In addition to char encoding, it
    also allows conversion to/from wstrings and strings. */

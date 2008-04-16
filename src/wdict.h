@@ -68,7 +68,7 @@ private:
 
 	/* Dictionary file loaders */
 	int LoadEdict2(const string& filename,
-				   const string& encoding="utf-8");
+				   const string& encoding="euc-jp");
 
 	/* EDICT2-specific stuff */
 	void Edict2Parser(char *edict2RawData);

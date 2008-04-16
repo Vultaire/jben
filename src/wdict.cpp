@@ -112,8 +112,13 @@ int WDict::LoadEdict2(const string& filename, const string& encoding) {
 	   just read, or towards a converted version. */
 	char* rawData = NULL;
 	if(ToLower(encoding)!="utf-8") {
+		/* Convert from source encoding to UTF-8 */
 		string convertedData = ConvertString<char, char>(
-			data, encoding.c_str(), "UTF-8");
+			data, encoding.c_str(), "utf-8");
+		/* If conversion fails, fall back and assume data is already in
+		   UTF-8. */
+		if(convertedData.empty()) convertedData = data;
+
 		rawData = new char[convertedData.length()+1];
 		strcpy(rawData, convertedData.c_str());
 	} else {

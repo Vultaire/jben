@@ -7,13 +7,13 @@
 ]>
 <book>
 	<bookinfo>
-		<title>J-Ben User Manual (for J-Ben v1.1.2)</title>
+		<title>J-Ben User Manual (for J-Ben v1.2.0)</title>
 		<author>
 			<firstname>Paul</firstname>
 			<surname>Goins</surname>
 		</author>
 		<copyright>
-			<year>2007</year>
+			<year>2007, 2008</year>
 			<holder>Paul Goins</holder>
 		</copyright>
 	</bookinfo>

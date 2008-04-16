@@ -6,24 +6,21 @@
 			<title>Dependencies</title>
 
 			<para>
-				J-Ben is dependent on (at least) two different development
-				packages.
+				J-Ben is dependent on the following:
 				<itemizedlist>
-					<listitem>wxWidgets: J-Ben is being developed using
-					wxWidgets 2.8.7. It may and probably will work on slightly
-					earlier versions, but I can't guarantee everything will work
-					right.</listitem>
+					<listitem>GTK+/GTKmm: J-Ben is now developed using GTK on
+					all platforms.  Any recent version should work, but here's a
+					listing of some of the libraries in use on my Linux system:
+					<itemizedlist>
+						<listitem>GTK+: 2.12.9</listitem>
+						<listitem>GLib: 2.16.1</listitem>
+						<listitem>Cairo: 1.4.10</listitem>
+						<listitem>libsigc++: 2.0.18</listitem>
+						<listitem>GTKmm/GLibmm/etc.: roughly matching versions</listitem>
+					</itemizedlist>
+					</listitem>
 					<listitem>The Boost Libraries: J-Ben should work with boost
 					1.34.1 or later.</listitem>
-				</itemizedlist>
-			</para>
-
-			<para>
-				If building for Linux, you will also need a development package
-				for:
-				<itemizedlist>
-					<listitem>GTK+ 2: Tested using debian's libgtk2.0-dev
-					package, version 2.12.1-1</listitem>
 				</itemizedlist>
 			</para>
 		</sect2>
@@ -37,9 +34,24 @@
 		<sect2>
 			<title>Windows Users</title>
 
-			<para>While Linux building should be mostly non-problematic, the
-			Windows build support is NOT robust. It's designed specifically for
-			use with MinGW without the MSYS environment.</para>
+			<para>NOTE: These instructions are only for people building J-Ben
+			from source code.  If you just want to use J-Ben, proceed to
+			<link linkend="jben_install">Installing J-Ben</link>.</para>
+
+			<para>Windows builds are more challenging in large because setting
+			up the dependent libraries is more of a chore.  This is especially
+			true of GTK+ and GTKmm, for which at the time of writing no official
+			all-in-one development distributions for Windows exist, and the ones
+			which are readily available tend to be very out of date.  As such,
+			I strongly recommend -against- building from source unless you have
+			a really good reason to do so.</para>
+
+			<para>That being said, the Windows development environment supported
+			is MinGW with MSys.  The Makefile provided works both under Linux
+			and MSys.  (I personally do not plan to support other build
+			environments at this time.)</para>
+
+			<para>OUT OF DATE</para>
 
 			<para>
 				If you want to give it a try, do the following:
@@ -76,7 +88,7 @@ CC=&lt;cross-compiling gcc> CXX=&lt;cross-compiling g++></programlisting>
 		</sect2>
 	</sect1>
 
-	<sect1>
+	<sect1 id="jben_install">
 		<title>Installing J-Ben</title>
 
 		<para>Currently there is no proper installer mechanism for the program;

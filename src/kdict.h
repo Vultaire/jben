@@ -136,10 +136,10 @@ private:
 	/* Dictionary file loaders */
 	int LoadKanjidic(const string& filename,
 					 const string& jisStd="jis208",
-					 const string& encoding="utf-8");
+					 const string& encoding="euc-jp");
 	int LoadKanjidic2(const string& filename);
-	int LoadRadkfile(const string& filename);
-	int LoadKradfile(const string& filename);
+	int LoadRadkfile(const string& filename, const string& encoding="euc-jp");
+	int LoadKradfile(const string& filename, const string& encoding="euc-jp");
 
 	/* Kanjidic-specific stuff */
 	void KanjidicToKInfo(const string& kanjidicEntry, KInfo& k,

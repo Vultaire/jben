@@ -77,9 +77,10 @@ KDict::KDict() {
 		foreach(string& s, files) {
 			string encoding = p->GetSetting(string(s).append(".encoding"));
 			string jispage = p->GetSetting(string(s).append(".jispage"));
+			if(encoding.empty()) jispage = "euc-jp";
 			if(jispage.empty()) jispage = "jis208";
 			/* Need to add encoding option to loader */
-			result = LoadKanjidic(p->GetSetting(s), jispage);
+			result = LoadKanjidic(p->GetSetting(s), jispage, encoding);
 			if(result == KD_SUCCESS) success = true;
 		}
 	}
@@ -128,8 +129,13 @@ int KDict::LoadKanjidic(const string& filename, const string& jisStd,
 	   just read, or towards a converted version. */
 	char* rawData = NULL;
 	if(ToLower(encoding)!="utf-8") {
+		/* Convert from source encoding to UTF-8 */
 		string convertedData = ConvertString<char, char>(
-			data, encoding.c_str(), "UTF-8");
+			data, encoding.c_str(), "utf-8");
+		/* If conversion fails, fall back and assume data is already in
+		   UTF-8. */
+		if(convertedData.empty()) convertedData = data;
+
 		rawData = new char[convertedData.length()+1];
 		strcpy(rawData, convertedData.c_str());
 	} else {
@@ -477,7 +483,7 @@ int KDict::LoadKanjidic2(const string& filename) {
 	return returnCode;
 }
 
-int KDict::LoadKradfile(const string& filename) {
+int KDict::LoadKradfile(const string& filename, const string& encoding) {
 	int returnCode = KD_FAILURE;
 
 	/* Get file names */
@@ -485,11 +491,16 @@ int KDict::LoadKradfile(const string& filename) {
 	GetGzipName(filename, gzfn, fn);	
 
 	/* Load file */
-	string dataStr;
+	string rawDataStr, dataStr;
 	string *pFnOpened = NULL;
-	if(ReadGzipIntoString(gzfn, dataStr)) pFnOpened = &gzfn;
-	else if(ReadFileIntoString(fn, dataStr)) pFnOpened = &fn;
+	if(ReadGzipIntoString(gzfn, rawDataStr)) pFnOpened = &gzfn;
+	else if(ReadFileIntoString(fn, rawDataStr)) pFnOpened = &fn;
 	if(!pFnOpened) return returnCode;
+
+	if(ToLower(encoding)!="utf-8")
+		dataStr = ConvertString<char, char>(
+			rawDataStr, encoding.c_str(), "utf-8");
+	if(dataStr.empty()) dataStr = rawDataStr;
 
 	list<wstring> data =
 		StrTokenize<wchar_t>(utfconv_mw(dataStr), L"\n");
@@ -510,7 +521,7 @@ int KDict::LoadKradfile(const string& filename) {
 	return returnCode;
 }
 
-int KDict::LoadRadkfile(const string& filename) {
+int KDict::LoadRadkfile(const string& filename, const string& encoding) {
 	int returnCode = KD_FAILURE;
 
 	/* Get file names */
@@ -518,11 +529,16 @@ int KDict::LoadRadkfile(const string& filename) {
 	GetGzipName(filename, gzfn, fn);	
 
 	/* Load file */
-	string dataStr;
+	string rawDataStr, dataStr;
 	string *pFnOpened = NULL;
-	if(ReadGzipIntoString(gzfn, dataStr)) pFnOpened = &gzfn;
-	else if(ReadFileIntoString(fn, dataStr)) pFnOpened = &fn;
+	if(ReadGzipIntoString(gzfn, rawDataStr)) pFnOpened = &gzfn;
+	else if(ReadFileIntoString(fn, rawDataStr)) pFnOpened = &fn;
 	if(!pFnOpened) return returnCode;
+
+	if(ToLower(encoding)!="utf-8")
+		dataStr = ConvertString<char, char>(
+			rawDataStr, encoding.c_str(), "utf-8");
+	if(dataStr.empty()) dataStr = rawDataStr;
 
 	/* RADKFILE entries all start with $.
 	   Split on $, and discard the first entry since it is the explanation

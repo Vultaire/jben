@@ -134,7 +134,7 @@ void Preferences::SetDefaultPrefs() {
 		= JB_DATADIR DSSTR "dicts" DSSTR "edict";
 	stringOpts["wdict.edict2.file"]
 		= JB_DATADIR DSSTR "dicts" DSSTR "edict2";
-	/* Default encoding is UTF-8, however most (all?) of Jim Breen's non-XML
+	/* J-Ben's internal encoding is UTF-8, however most of Jim Breen's non-XML
 	   dict files are in EUC-JP.  We should allow the program to support
 	   these files. */
 	stringOpts["wdict.edict.file.encoding"] = "euc-jp";
