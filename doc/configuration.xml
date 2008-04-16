@@ -1,15 +1,13 @@
-<chapter id="cfg">
-	<title>Configuration</title>
+<chapter id="prefs">
+	<title>Preferences editor</title>
 
 	<para>
-		Configuring J-Ben is done through the Configuration tab. Currently all
-		options pertain to the kanji dictionary. Later versions will have
-		options to control many more things, such as word dictionary output,
-		fonts, and paths to the dictionary files used (which is especially
-		important on Linux).
+		Configuring J-Ben is done through the Preferences editor.  Currently,
+		you can configure the kanji dictionary, the display fonts, and J-Ben's
+		mobile/standard mode.
 	</para>
-	<sect1>
-		<title>Configuring the Kanji Dictionary</title>
+	<sect1 id="prefs_kdict">
+		<title>Configuring the kanji dictionary</title>
 
 		<para>
 			Most configuration options have to do with the various data
@@ -50,6 +48,46 @@
 		<para>
 			Finally, if you install one or more of the KanjiCafe.com stroke
 			order diagram packs, you can toggle whether to show them here.
+		</para>
+	</sect1>
+	<sect1 id="prefs_kdict">
+		<title>Configuring the display fonts</title>
+
+		<para>
+			J-Ben uses four special fonts for displaying text in the program.
+			Here, you can change how they are set.  Each font is described
+			below.
+		</para>
+
+		<itemizedlist>
+			<listitem>Japanese Font, Normal: General purpose Japanese display
+			font.  Used for most Japanese text display throughout the program.</listitem>
+			<listitem>Japanese Font, Large: Used for displaying the "header"
+			character in kanji dictionary output.</listitem>
+			<listitem>English Font, Normal: General purpose English font.  Used
+			for dictionary output and some other places where Japanese is not
+			expected.</listitem>
+			<listitem>English Font, Small: Used for displaying
+			disclaimer/copyright related text in some places.</listitem>
+		</itemizedlist>
+	</sect1>
+	<sect1 id="prefs_kdict">
+		<title>Other options</title>
+
+		<para>
+			Currently only one "other option" is supported: the J-Ben "mobile
+			mode" toggle.  As mentioned earlier, this simply adjusts where
+			J-Ben's configuration file(s) are saved.  If mobile mode is
+			checked, then settings will be saved based upon the working directory.
+			Usually, this means that it'll save to the program's root folder,
+			which is ideal for USB thumb drives.  If mobile mode is not checked,
+			then J-Ben will save to the user's "home" or "Application Data"
+			folder.
+		</para>
+		<para>
+			(Note for Linux users: mobile mode is currently a Windows-only
+			option.  Also, because of this, you probably will not have an
+			"Other" tab.)
 		</para>
 	</sect1>
 </chapter>

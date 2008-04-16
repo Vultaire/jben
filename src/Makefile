@@ -16,21 +16,22 @@ JBEN_VERSION = 1.2.0-pre2
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
-#	CHANGE THESE VARIABLES
+#	===CHANGE THESE VARIABLES===
 	CXX = g++-dw2
 	CC = gcc-dw2
 	mingwbase = C:/MinGW
 	gtkdevbase = C:/GTK
 	boostbase = C:/devel/boost_1_35_0
-	# The below 2 vars should be direct paths to the boost::regex library and the zlib library.
+#	The below 2 vars should be direct paths to the boost::regex library and the zlib library.
 	libboost_regex = C:/devel/boost-build-gcc4dw2/boost/bin.v2/libs/regex/build/gcc-mingw-4.2.1/release/link-static/threading-multi/libboost_regex-mgw42-mt-1_35.lib
 	libzlib = C:/GTK/lib/zdll.lib
-	# The below variables point towards the path to a configured,
-	# redistributable GTK/GTKmm environment.  It's used by the Windows
-	# "make install" target.  If you need help setting this up, contact the
-	# author directly.
+#	The below variables point towards the path to a configured,
+#	redistributable GTK/GTKmm environment.  It's used by the Windows
+#	"make install" target.  If you need help setting this up, contact the
+#	author directly.
 	gtkredist = C:/gtk-redist
-#   LEAVE THESE ALONE
+
+#   ===LEAVE THESE ALONE===
 	wincxxflags = -I$(gtkdevbase)/include `pkg-config --cflags gtkmm-2.4 libxml-2.0`
 	wincppflags = -D__WIN32__
 	winlinkflags = -mwindows

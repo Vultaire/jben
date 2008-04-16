@@ -124,8 +124,6 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	/* Connect signals */
 	chkDict.signal_toggled()
 		.connect(sigc::mem_fun(*this, &DialogConfig::OnDictionaryToggle));
-	chkMobile.signal_toggled()
-		.connect(sigc::mem_fun(*this, &DialogConfig::OnMobileToggle));
 	btnCancel.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogConfig::OnCancel));
 	btnOK.signal_clicked()
@@ -133,14 +131,13 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 
 	/* Layout and display */
 	Gtk::Notebook *pnb = manage(new Gtk::Notebook);
-	Gtk::VBox *pvbKanjiConfig, *pvbFontConfig, *pvbOtherConfig;
+	Gtk::VBox *pvbKanjiConfig, *pvbFontConfig;
 	Gtk::VBox *pvbKanjiMainOpts, *pvbKanjiDictsOuter, *pvbKanjiOtherOpts;
 	pvbKanjiConfig = manage(new Gtk::VBox);
 	pvbKanjiMainOpts   =  manage(new Gtk::VBox);
 	pvbKanjiDictsOuter =  manage(new Gtk::VBox);
 	pvbKanjiOtherOpts  =  manage(new Gtk::VBox);
 	pvbFontConfig  = manage(new Gtk::VBox);
-	pvbOtherConfig = manage(new Gtk::VBox);
 	Gtk::HButtonBox *phbbButtons = manage(new Gtk::HButtonBox);
 	Gtk::ScrolledWindow *pswDicts = manage(new Gtk::ScrolledWindow);
 	pswDicts->set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC);
@@ -232,11 +229,17 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	btnEnSmall.signal_clicked() .connect(sigc::bind<Gtk::Button*>(
 		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnEnSmall));
 
-	pvbOtherConfig->pack_start(chkMobile, Gtk::PACK_SHRINK);
-
 	pnb->append_page(*pvbKanjiConfig, _("Kanji Dictionary"));
 	pnb->append_page(*pvbFontConfig, _("Fonts"));
+
+	/* Windows only: "mobile mode" */
+#ifdef __WIN32__
+	chkMobile.signal_toggled()
+		.connect(sigc::mem_fun(*this, &DialogConfig::OnMobileToggle));
+	Gtk::VBox *pvbOtherConfig = manage(new Gtk::VBox);
+	pvbOtherConfig->pack_start(chkMobile, Gtk::PACK_SHRINK);
 	pnb->append_page(*pvbOtherConfig, _("Other"));
+#endif
 
 	set_border_width(5);
 	Gtk::VBox* pvb = get_vbox();

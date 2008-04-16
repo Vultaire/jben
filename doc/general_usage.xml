@@ -1,17 +1,19 @@
 <chapter>
-	<title>General Usage</title>
+	<title>General usage</title>
 	<sect1>
-		<title>The Dictionaries</title>
+		<title>The main interface</title>
 
 		<para>
-			J-Ben provides a bidirectional word dictionary and a kanji
-			(character) dictionary. These dictionaries are dependent upon the
-			freely available EDICT2 and KANJIDIC dictionary files from Monash
-			University.
+			J-Ben's main window has two tabs, providing a bidirectional word
+			dictionary and a kanji (character) dictionary. These dictionaries
+			are dependent upon the various dictionary files (EDICT2,
+			KANJIDIC/KANJD212/KANJIDIC2, KRADFILE/RADKFILE) freely available
+			from Monash University on
+			<ulink url="http://www.csse.monash.edu.au/~jwb/japanese.html">Jim Breen's homepage</ulink>.
 		</para>
 
 		<sect2>
-			<title>The Word Dictionary</title>
+			<title>The word dictionary</title>
 			<para>
 				The word dictionary performs a very simple search based upon the
 				ENTIRE QUERY - it doesn't try to match all the words or some of
@@ -32,33 +34,34 @@
 		</sect2>
 
 		<sect2 id="kdict">
-			<title>The Kanji (Character) Dictionary</title>
+			<title>The kanji (character) dictionary</title>
 
 			<para>
 				The kanji dictionary searches for one or more kanji characters
 				and displays detailed information about each one. Because of
 				the amount of data available for each character, and because
 				most people don't need much of the data available, the output
-				can be customized through the <link linkend="cfg">configuration
-				tab</link>.
+				can be customized through the <link linkend="prefs">preferences
+				editor</link>.
 			</para>
 
 			<para>
 				Information provided includes (but is not limited to) the
 				following:
-				<itemizedlist>
-					<listitem>Japanese-style readings (kun-yomi) and
-					"Chinese-style" sound-based readings (on-yomi)</listitem>
-					<listitem>Special readings for use in names
-					(nanori)</listitem>
-					<listitem>Stroke count</listitem>
-					<listitem>Jouyou grade level</listitem>
-					<listitem>Dictionary reference codes</listitem>
-					<listitem>Korean and "Pinyin" readings</listitem>
-					<listitem>JIS and Unicode values in hexadecimal</listitem>
-					<listitem>Various radical information</listitem>
-				</itemizedlist>
 			</para>
+
+			<itemizedlist>
+				<listitem>Japanese-style readings (kun-yomi) and
+				"Chinese-style" sound-based readings (on-yomi)</listitem>
+				<listitem>Special readings for use in names
+				(nanori)</listitem>
+				<listitem>Stroke count</listitem>
+				<listitem>Jouyou grade level</listitem>
+				<listitem>Dictionary reference codes</listitem>
+				<listitem>Korean and "Pinyin" readings</listitem>
+				<listitem>JIS and Unicode values in hexadecimal</listitem>
+				<listitem>Various radical information</listitem>
+			</itemizedlist>
 
 			<para>
 				Display of stroke order diagrams can be toggled here. This is
@@ -81,27 +84,71 @@
 		</sect2>
 
 	</sect1>
-	<sect1 id="kdrill">
-		<title>Kanji Drilling</title>
+	<sect1>
+		<title>Kanji search</title>
 
-		<para>
-			J-Ben provides an easy-to-use kanji "flash card" mode. After
-			defining a <link linkend="ksl">kanji study list</link>, the Kanji
-			Practice tab is enabled.  The kanji practice mode is intended as a
-			basic self-study tool, and does not ask you to input any answers to
-			questions or anything similar. It will display information about a
-			kanji with some of the information hidden from view, and it is your
-			job to guess, either mentally or on a separate sheet of paper, what
-			the missing information is. After doing this, you can look at the
-			hidden fields, and you decide for yourself whether or not you
-			remembered the character properly or not. This is a self-graded
-			test; you decide for each character whether you got it "Correct" or
-			"Wrong", and the program will simply track your answers and help you
-			study the ones you had trouble with.  The program will continue to
-			drill you through the characters you mark as "Wrong", and at the end
-			of the test will present you with a score and a list of the
-			characters you got wrong.
-		</para>
+		<para>If you do not know how to type a kanji, or are unable to, J-Ben has
+		two methods to allow you to look kanji up and copy them to the
+		clipboard.</para>
+
+		<para>The first method is handwriting recognition.  This is available via
+		the menu item "Tools->Handwriting Recognition for Kanji".  Using this,
+		draw the character using your mouse.  As you draw the character, the
+		window will show you the 5 best matches for what you have drawn.  This
+		method uses the database from JStroke/KanjiPad/im-ja, and at last count
+		supports searching for 2116 characters.</para>
+
+		<para>The second method is the new integrated kanji search, available via
+		"Tools->Kanji Search".  This method allows you to choose one or more
+		search methods to quickly find kanji.  These search methods all use the
+		standard dictionary files, with the exception of handwriting recognition
+		as previously described.</para>
+
+		<para>The integrated search currently supports the following search methods:</para>
+
+		<itemizedlist>
+			<listitem>Stroke count.  Allows for including common
+			miscounts and a +/- search range.</listitem>
+			<listitem>SKIP code, as used in Halpern dictionaries.  (An
+			explanation can be found
+			<ulink url="http://www.csse.monash.edu.au/~jwb/SKIP.html">here</ulink>.)
+			Allows wildcard searches by specifying "0" as any of the 3
+			index numbers.  Also allows a +/- search range, which is
+			applied to both the second and third index.</listitem>
+			<listitem>Handwriting Recognition.  This is functionally
+			identical to that provided by the standalone handwriting
+			"pad", but can also be used through this
+			interface.</listitem>
+		</itemizedlist>
+
+		<para>All selected search methods are applied together, from top to bottom.</para>
+
+		<para>More methods will be added in future versions.  My highest priority
+		is multiradical search support as seen in JWP/JWPce/Gjiten/WWWJDIC.
+		Other methods will be added as requested by users and as time
+		allows.</para>
+	</sect1>
+	<sect1 id="kdrill">
+		<title>Kanji drilling</title>
+
+		<para>J-Ben provides an easy-to-use kanji "flash card" mode.  This can be
+		accessed via the "Practice->Kanji" menu item.  It requires that you
+		define a <link linkend="ksl">kanji study list</link> before using it.</para>
+			
+		<para>The kanji practice mode is intended as a basic self-study tool, and
+		does not ask you to input any answers to questions or anything similar.
+		It will display information about a kanji with some of the information
+		hidden from view, and it is your job to guess, either mentally or on a
+		separate sheet of paper, what the missing information is. After doing
+		this, you can look at the hidden fields, and you decide for yourself
+		whether or not you remembered the character properly or not.</para>
+
+		<para>This is a self-graded test; you decide for each character whether
+		you got it "Correct" or "Wrong", and the program will simply track your
+		answers and help you study the ones you had trouble with.  The program
+		will continue to drill you through the characters you mark as "Wrong",
+		and at the end of the test will present you with a score and a list of
+		the characters you got wrong.</para>
 
 		<para>
 			The first step in using this mode is to select which characters to
@@ -124,8 +171,9 @@
 
 		<para>
 			After clicking "Start Drill", test mode begins. While in test mode,
-			you will not be allowed to change to other tabs in the program. The
-			screen will display 4 textboxes containing information about the
+			any active dictionary searches will be cleared, and you will be
+			unable to access the word and kanji dictionaries until you finish.
+			The screen will display 4 textboxes containing information about the
 			kanji: the character itself, its on-yomi (sound-based) reading, its
 			kun-yomi (Japanese style) reading, and its meaning in English.
 			Some of the textboxes will be covered up, depending on which test
@@ -154,9 +202,9 @@
 		</para>
 	</sect1>
 	<sect1>
-		<title>Study Lists</title>
+		<title>Study lists</title>
 		<sect2 id="ksl">
-			<title>The Kanji Study List</title>
+			<title>The kanji study list</title>
 
 			<para>
 				The kanji study list is used for storing any kanji characters
@@ -184,7 +232,20 @@
 					Alternatively, you can <link linkend="klistimport">import a
 					list from a text file</link>, or you can <link
 					linkend="klistedit">manually edit the list</link> using the
-					Kanji Study List tab.
+					Kanji Study List editor.
+				</para>
+			</sect3>
+
+			<sect3 id="klistimport">
+				<title>Importing study lists</title>
+
+				<para>
+					The "Add Kanji From File" button will let you import a plain
+					text file into J-Ben, from which all the kanji characters
+					will be detected and added to your study list.  The text
+					file must be encoded in UTF-8.  If you are unsure about this,
+					it is probably safer to just copy and paste the file directly
+					into the editor window and then press Apply.
 				</para>
 			</sect3>
 
@@ -192,9 +253,10 @@
 				<title>Manually editing the list</title>
 
 				<para>
-					The Kanji Study List tab lets you manually edit your kanji
+					The Kanji Study List editor lets you manually edit your kanji
 					list. You can type kanji in by hand, or copy and paste them
-					from another application.
+					from another application.  This editor is accessible via
+					"Edit->Kanji Study List".
 				</para>
 
 				<para>
@@ -218,35 +280,11 @@
 
 				<para>
 					After adding characters to the list, it is strongly
-					recommended to sort the list. Via the Kanji -&gt; Sort
-					Kanji in List menu, you can sort your current study list by
-					Jouyou grade level and newspaper frequency ranking.
-					Currently you can only sort in ascending order.
-				</para>
-
-				<para>
-					Personally, I like to apply both sorting methods. First I
-					sort by newspaper ranking, so that the most common
-					characters are first in the list. Next, I sort by Jouyou
-					level. This will sort the characters from the lowest
-					Jouyou level to the highest (with uncategorized characters
-					at the very end). However, within the grade levels it will
-					maintain the newspaper frequency sort, meaning that as I
-					study each grade level, I'm exposed to the likely more
-					important characters first.
-				</para>
-			</sect3>
-
-			<sect3 id="klistimport">
-				<title>Exporting and importing study lists</title>
-
-				<para>
-					The current kanji list can be exported to a plain text file
-					using the Kanji -&gt; Save Kanji List to File... menu.
-					Likewise, this text file (or any other plain text file) can
-					be imported using the Kanji -&gt; Add Kanji to List -> From
-					File... menu. However, you may want to <link
-					linkend="klistclear">clear the study list</link> first.
+					recommended to sort the list.  The editor allows 3 methods
+					of sorting: by Jouyou grade level, by newspaper frequency,
+					or by both (using an outer sort by grade level and an inner
+					sort by newspaper frequency).  Currently you can only sort
+					in ascending order.
 				</para>
 			</sect3>
 
@@ -264,16 +302,15 @@
 
 		</sect2>
 		<sect2 id="vsl">
-			<title>The Vocab Study List</title>
+			<title>The vocab study list</title>
 
 			<para>
-				The vocab study list is a newer feature and is primarily used
-				as as cross-referencing resource for the kanji dictionary. Due
-				to its lower importance, there is currently only one way to edit
-				this list, and that is through the Words -&gt; Study List tab.
-				The list is formatted with each line representing one Japanese
-				word or phrase. Either manually type in the list, or copy and
-				paste it from another program, and press Commit. That's it!
+				The vocab study list can be edited via the "Edit->Vocab Study
+				List" menu item.  This study list is primarily used as a
+				cross-referencing resource for the kanji dictionary.  The list
+				is formatted with each line representing one Japanese word or
+				phrase. Either manually type in the list, or copy and
+				paste it from another program, and press Apply or OK.
 			</para>
 		</sect2>
 	</sect1>

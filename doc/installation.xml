@@ -1,38 +1,36 @@
 <chapter>
 	<title>Installation</title>
 	<sect1>
-		<title>Building J-Ben</title>
+		<title>Building J-Ben from source</title>
 		<sect2>
 			<title>Dependencies</title>
 
-			<para>
-				J-Ben is dependent on the following:
+			<para>J-Ben is dependent on the following:</para>
+			<itemizedlist>
+				<listitem>GTK+/GTKmm: J-Ben is now developed using GTK on
+				all platforms.  Any recent version should work, but here's a
+				listing of some of the libraries in use on my Linux system:
 				<itemizedlist>
-					<listitem>GTK+/GTKmm: J-Ben is now developed using GTK on
-					all platforms.  Any recent version should work, but here's a
-					listing of some of the libraries in use on my Linux system:
-					<itemizedlist>
-						<listitem>GTK+: 2.12.9</listitem>
-						<listitem>GLib: 2.16.1</listitem>
-						<listitem>Cairo: 1.4.10</listitem>
-						<listitem>libsigc++: 2.0.18</listitem>
-						<listitem>GTKmm/GLibmm/etc.: roughly matching versions</listitem>
-					</itemizedlist>
-					</listitem>
-					<listitem>The Boost Libraries: J-Ben should work with boost
-					1.34.1 or later.</listitem>
+					<listitem>GTK+: 2.12.9</listitem>
+					<listitem>GLib: 2.16.1</listitem>
+					<listitem>Cairo: 1.4.10</listitem>
+					<listitem>libsigc++: 2.0.18</listitem>
+					<listitem>GTKmm/GLibmm/etc.: roughly matching versions</listitem>
 				</itemizedlist>
-			</para>
+				</listitem>
+				<listitem>The Boost Libraries: J-Ben should work with boost
+				1.34.1 or later.</listitem>
+			</itemizedlist>
 		</sect2>
 		<sect2>
-			<title>Linux Users</title>
+			<title>Linux users</title>
 
 			<para>Ensure you have the development packages for libboost and
-			wxWidgets installed. Then, just "make". There is no "make install"
-			at this time, sorry. It will be added later.</para>
+			wxWidgets installed. Then, just "make", followed by "make install"
+			to finish the installation.</para>
 		</sect2>
 		<sect2>
-			<title>Windows Users</title>
+			<title>Windows users</title>
 
 			<para>NOTE: These instructions are only for people building J-Ben
 			from source code.  If you just want to use J-Ben, proceed to
@@ -51,33 +49,27 @@
 			and MSys.  (I personally do not plan to support other build
 			environments at this time.)</para>
 
-			<para>OUT OF DATE</para>
+			<para>If you want to give it a try, do the following:</para>
 
-			<para>
-				If you want to give it a try, do the following:
-				<itemizedlist>
-					<listitem>Ensure mingw's bin folder is in your
-					path.</listitem>
-					<listitem>Install the coreutils and sed packages from the
-					gnuwin32 project. This means the binaries and the
-					dependencies. You'll probably come across duplicate DLLs
-					while unzipping these packages. This should be okay, just
-					keep the newer copy of any duplicate DLLs.</listitem>
-					<listitem>Make sure the coreutils/sed binaries are in your
-					path.</listitem>
-					<listitem>Change the 4 variables in the "WINDOWS-SPECIFIC"
-					section of the makefile as needed.</listitem>
-					<listitem>
-						Build using the following command:
-						<informalexample>
-							<programlisting>mingw32-make PLATFORM=windows</programlisting>
-						</informalexample>
-					</listitem>
-				</itemizedlist>
-			</para>
+			<itemizedlist>
+				<listitem>Ensure that you have pkg-config and makensis in
+				your path, or add them in after starting MSys.</listitem>
+				<listitem>Change the variables in the "WINDOWS-SPECIFIC"
+				section of the makefile as needed.</listitem>
+				<listitem>
+					Build using the following command:
+					<informalexample>
+						<programlisting>mingw32-make PLATFORM=windows</programlisting>
+					</informalexample>
+				</listitem>
+			</itemizedlist>
+
+			<para>If there is demand for more detailed Windows build
+			instructions, I will provide them in a later version of this
+			manual.</para>
 		</sect2>
 		<sect2>
-			<title>Expert: Canadian Cross Linux->Windows builds</title>
+			<title>Expert: "Canadian Cross" Linux->Windows builds</title>
 			<note>Most people can safely skip this section.</note>
 			<para>To attempt a "canadian cross" build, run:
 			<informalexample>
@@ -89,19 +81,43 @@ CC=&lt;cross-compiling gcc> CXX=&lt;cross-compiling g++></programlisting>
 	</sect1>
 
 	<sect1 id="jben_install">
-		<title>Installing J-Ben</title>
+		<title>Installing J-Ben from a precompiled package</title>
 
-		<para>Currently there is no proper installer mechanism for the program;
-		I've been mostly focused on the program itself since it is still quite
-		lacking in several areas. I will address installation at a future
-		date.</para>
+		<sect2>
+			<title>Windows users</title>
 
-		<para>For Windows users, adding a start menu shortcut should be a
-		trivial affair, if desired. Just do it yourself.</para>
+			<para>Most users should use the regular J-Ben installer package,
+			which should be available from the
+			<ulink url="http://www.vultaire.net/software/jben/">project web site</ulink>.
+			This installer is most suitable for standard installs of J-Ben.</para>
 
-		<para>For Linux users, you could add the program's directory to your
-		path via your ~/.bashrc file, or you could make a script like the
-		following:</para>
+			<para>If you are installing J-Ben onto a USB thumb drive or similar
+			device, you may want to instead download one of the zipped (.zip or
+			.7z) versions of the program and extract it by hand.  In this case,
+			to run the program you will want to look for jben.exe, located in
+			the J-Ben\bin folder.</para>
+
+			<para>When you run J-Ben for the first time, it will prompt you as
+			to whether you want to run J-Ben in "standard" or "mobile" mode.
+			This simply refers to where J-Ben will store its data files.  If
+			you're running on a thumb drive or similar, select "mobile", and
+			your data files will be saved to the thumb drive.  If you've
+			installed J-Ben permanently on your system, select "standard", and
+			your files will be stored in your user's Application Data folder.
+			(Usually this is C:\Documents and Settings\&lt;username>\Application
+			Data.)</para>
+		</sect2>
+
+		<sect2>
+			<title>Linux users</title>
+
+			<para>At the time of writing, no precompiled packages exist.  I have
+			plans to eventually have J-Ben added to Debian, and if I can make a
+			Linux Standard Base-compliant package I would like to do that as
+			well.  For the time being though, it is necessary to compile from
+			source.</para>
+		</sect2>
+		
 
 		<informalexample><programlisting>#!/bin/sh
 cd &lt;path_to_jben>
@@ -112,7 +128,7 @@ cd &lt;path_to_jben>
 	</sect1>
 
 	<sect1 id="kksod_install">
-		<title>Optional: Installing Stroke Order Diagrams</title>
+		<title>Optional: Installing stroke order diagrams</title>
 
 		<para>
 			The kanji dictionary can be supplemented with kanji stroke order
@@ -126,10 +142,11 @@ cd &lt;path_to_jben>
 			download page</ulink> along with the rest of the J-Ben packages.
 			Download one of these packages and decompress it into the "sods"
 			directory of J-Ben. If there is no "sods" directory, create one.
-			Then, in the <link linkend="cfs">configuration tab</link>, enable
-			either regular or animated stroke order diagrams, and you should be
-			set. (As a last note, packages directly from KanjiCafe can also be
-			used, but they need marked as utf8-hex.)
+			Then, go to Edit->Preferences, and in the
+			<link linkend="prefs_kdict">Kanji Dictionary preferences tab</link>,
+			enable either regular or animated stroke order diagrams.  You should
+			be set.  (As a last note, packages directly from KanjiCafe can also
+			be used, but they must be marked as utf8-hex.)
 		</para>
  	</sect1>
 </chapter>
