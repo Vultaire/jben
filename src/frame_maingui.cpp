@@ -1,3 +1,26 @@
+/*
+Project: J-Ben
+Author:  Paul Goins
+Website: http://www.vultaire.net/software/jben/
+License: GNU General Public License (GPL) version 2
+         (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
+
+File: frame_maingui.cpp
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
+
 #include "frame_maingui.h"
 #include "version.h"
 #ifndef __WIN32__
@@ -247,16 +270,18 @@ void FrameMainGUI::OnMenuHelpAbout() {
 				"Inspired in large by JWPce and JFC by Glenn Rosenthal:\n"
 				"http://www.physics.ucla.edu/~grosenth/\n\n"
 
-				"Powered by Monash University's EDICT2 and KANJIDIC:\n"
-				"http://www.csse.monash.edu.au/~jwb/edict_doc.html\n"
-				"http://www.csse.monash.edu.au/~jwb/kanjidic.html\n\n"
+				"Powered by the many Japanese dictionary files from Monash "
+				"University, many thanks to Jim Breen:\n"
+				"http://www.csse.monash.edu.au/~jwb/japanese.html\n"
+				"Thanks also to Jim Rose of kanjicafe.com for his extended "
+				"RADKFILE2/KRADFILE2 databases and derived database files.\n\n"
 
 				"Built using gtkmm: http://www.gtkmm.org/\n\n"
 
-				"Hand writing recognition is based upon code from im-ja:\n"
-				"http://im-ja.sourceforge.net/\n"
-				"Which uses code based upon KanjiPad by Owen Taylor:\n"
-				"http://fishsoup.net/software/kanjipad/\n\n"
+				"Hand writing recognition is based upon code from im-ja "
+				"(http://im-ja.sourceforge.net/) and KanjiPad "
+				"(http://fishsoup.net/software/kanjipadf/).  KanjiPad was "
+				"written by Owen Taylor.\n\n"
 
 				"See \"Help->License Information...\" for important license "
 				"details."))
@@ -270,9 +295,16 @@ void FrameMainGUI::OnMenuHelpLicense() {
 		_("Program distributed under the GNU General Public License (GPL) "
 		  "version 2:\n"
 		  "http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt\n\n"
-		  "EDICT2 and KANJIDIC distributed under a separate license specified "
+
+		  "The included dictionary data files, with the exception of the "
+		  "handwriting databases and Jim Rose's extensions to the radical "
+		  "databases, are distributed under a separate license specified "
 		  "at\n"
 		  "http://www.csse.monash.edu.au/~jwb/edrdg/license.htm\n\n"
+
+		  "Jim Rose's extended databases are licensed to Monash University "
+		  "with permission to modify and redistribute the files, as long as "
+		  "his copyright notices are preserved.\n\n"
 
 		  "The SKIP (System of Kanji Indexing by Patterns) system for ordering "
 		  "kanji was developed by Jack Halpern (Kanji Dictionary Publishing "
