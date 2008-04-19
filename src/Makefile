@@ -12,7 +12,7 @@ PLATFORM = linux
 # BUILD: either release, debug, or profile
 BUILD = release
 # JBEN_VERSION: Used for labeling release packages
-JBEN_VERSION = 1.2.0-pre2
+JBEN_VERSION = 1.2.0-pre5
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
@@ -22,6 +22,8 @@ ifeq ($(PLATFORM),windows)
 	mingwbase = C:/MinGW
 	gtkdevbase = C:/GTK
 	boostbase = C:/devel/boost_1_35_0
+#	Path to GNU iconv development files (works faster than win_iconv, from my tests)
+	iconvbase = C:/devel/libiconv
 #	The below 2 vars should be direct paths to the boost::regex library and the zlib library.
 	libboost_regex = C:/devel/boost-build-gcc4dw2/boost/bin.v2/libs/regex/build/gcc-mingw-4.2.1/release/link-static/threading-multi/libboost_regex-mgw42-mt-1_35.lib
 	libzlib = C:/GTK/lib/zdll.lib
@@ -32,13 +34,13 @@ ifeq ($(PLATFORM),windows)
 	gtkredist = C:/gtk-redist
 
 #   ===LEAVE THESE ALONE===
-	wincxxflags = -I$(gtkdevbase)/include `pkg-config --cflags gtkmm-2.4 libxml-2.0`
+	wincxxflags = -I$(iconvbase)/include -I$(gtkdevbase)/include `pkg-config --cflags gtkmm-2.4 libxml-2.0`
 	wincppflags = -D__WIN32__
 	winlinkflags = -mwindows
 
 	SharedCXXFLAGS = $(wincxxflags)
 	SharedCPPFLAGS = $(wincppflags) -I$(boostbase)
-	libs = $(winlinkflags) `pkg-config --libs gtkmm-2.4 libxml-2.0` -liconv $(libboost_regex) $(libzlib)
+	libs = $(winlinkflags) `pkg-config --libs gtkmm-2.4 libxml-2.0` -L$(iconvbase)/lib -liconv.dll $(libboost_regex) $(libzlib)
 endif
 
 ##################################
@@ -176,6 +178,8 @@ ifeq ($(PLATFORM),windows)
 	cp -R $(gtkredist)/etc ../J-Ben
 	cp -R $(gtkredist)/lib ../J-Ben
 	cp -R $(gtkredist)/share ../J-Ben
+#	Copy GNU iconv files
+	cp -R $(iconvbase)/bin/libiconv2.dll ../J-Ben/bin
 #	Copy J-Ben binaries and DLLs not in GTK redist folder
 	cp "$(mingwbase)/bin/mingwm10.dll" ../J-Ben/bin
 	cp "$(build_bindir)/$(target)" ../J-Ben/bin

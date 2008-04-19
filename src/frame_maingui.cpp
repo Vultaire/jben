@@ -280,7 +280,7 @@ void FrameMainGUI::OnMenuHelpAbout() {
 
 				"Hand writing recognition is based upon code from im-ja "
 				"(http://im-ja.sourceforge.net/) and KanjiPad "
-				"(http://fishsoup.net/software/kanjipadf/).  KanjiPad was "
+				"(http://fishsoup.net/software/kanjipad/).  KanjiPad was "
 				"written by Owen Taylor.\n\n"
 
 				"See \"Help->License Information...\" for important license "
