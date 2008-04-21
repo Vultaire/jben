@@ -1,0 +1,3 @@
+Version 1.2.0 of J-Ben is dedicated to Mr. Toshiki Kumakura, my former
+Japanese instructor, and to Aviation High School where he currently
+teaches.  I hope that this tool may be useful to his students.
