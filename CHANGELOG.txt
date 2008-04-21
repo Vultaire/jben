@@ -1,3 +1,46 @@
+1.2.0:
+For end users:
+* KANJIDIC2 is now supported and will be used instead of
+  KANJIDIC/KANJD212 if found.
+* (Windows only) J-Ben has a "mobile mode" for users running off of USB
+  "thumb" drives and similar removable devices.  This lets you carry all
+  your settings with you without having to install J-Ben on a system.
+* The interface has changed dramatically.  The dictionary windows are
+  still in the main window, but all the other tabs have been moved into
+  the menus.  I think it should have a cleaner feel than before.
+* Fonts for the dictionary windows, kanji drill mode and some other parts
+  of the program can now be customized.  Check the "Edit->Preferences"
+  menu, under the Fonts tab.
+* A new kanji search window has been added, under "Tools->Kanji Search".
+  It allows users to search for a kanji by stroke count or Halpern SKIP
+  code, and also includes the handwriting recognition from previous
+  versions.  Multi-method searching is supported, with more methods
+  coming in later versions.
+* Copying from dictionary windows should now work properly.
+* Dictionaries may be gzipped to reduce size.
+* (Windows only) J-Ben includes HTML documentation in the docs folder.
+  Open the file named index.html.
+* (Linux only) J-Ben has a "make doc" option, which will make the
+  documentation for you if you have not separately downloaded it.
+  It requires docbook2html.  Run "make doc" from the "src" folder,
+  and the docs will be output in the "doc" folder.
+
+For developers:
+* The interface is now powered by GTK+/GTKmm on both Windows and Linux.
+  wxWidgets is no longer being used.  As a result, the program should look
+  much more similar between the Linux and Windows versions.
+* J-Ben's directory structure has been changed.  Source files are all
+  included in the "src" folder, and make should be run from within "src".
+  Many other changes are present as well, but that's the most important
+  change.
+* The "BoostHM" object I used in previous versions has now been replaced
+  by the TR1 unordered_map.  This obviously adds the requirement that your
+  compiler includes this part of TR1!
+* Windows builds now use the combination of MinGW AND MSys.  Straight
+  MinGW builds are NOT supported since I'm using GTK's pkg-config in
+  my makefile.  Further, since TR1 is required, so is GCC/G++ 4.x,
+  so it will be necessary to grab one of those as well.
+
 1.1.3:
 For end users:
 * New installers for both Linux and Windows.
