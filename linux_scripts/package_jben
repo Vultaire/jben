@@ -22,7 +22,7 @@ print "Packaging " + baseName + " version " + version + "..."
 # Define the files to save
 linuxfiles = " jben/src/*.xpm jben/linux_scripts"
 winfiles = " jben/src/jben.ico jben/src/jben.rc"
-otherfiles = " jben/*.txt jben/dicts/README.txt  jben/doc/*.xml jben/doc/jben.dia" \
+otherfiles = " jben/*.txt jben/dicts/* jben/doc/*.xml jben/doc/jben.dia" \
     + " jben/license jben/old_files jben/sods/README.txt" \
     + " jben/src/jben_icon.xcf jben/src/installer.nsi"
 kpenginefiles = " jben/src/kpengine"
