@@ -256,6 +256,7 @@ endif
 
 doc:
 #	docbook2html errors since it expects SGML and I'm passing it XML.  Ignore the error.
+    rm -rfv ../doc/html
 	cd ../doc && (docbook2html -o html manual.xml || true) && cd ../src
 	@echo '(Errors on docbook2html/openjade are expected; do not panic!)'
 	cd ../doc && tar -cjf jben-$(JBEN_VERSION)-manual.tar.bz2 html && cd ../src
