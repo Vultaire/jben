@@ -1,10 +1,16 @@
-This directory holds the dictionary data files for J-Ben.  Currently
-J-Ben requires that these files are formatted in UTF-8, which any
-of the dictionaries from vultaire.net should already be.  If you
-are using a dictionary from elsewhere, it must first be converted.
+This directory holds the dictionary data files for J-Ben.  None are
+included with the source distribution of J-Ben, since J-Ben uses the
+exact copies distributed by Monash University.  If you need the
+dictionaries, copy them from a binary distribution of J-Ben or
+download them yourself from Jim Breen's page at Monash University:
+http://www.csse.monash.edu.au/~jwb/japanese.html
 
-If you need to convert such a file, there is a utility called iconv.
-It's a command line tool with versions for both Linux and Windows.
-The Linux version is often included in your distro already; the
-Windows version can be found by searching for the GnuWin32 project
-using your favorite search engine.
+J-Ben REQUIRES the following:
+edict2(.gz)
+J-Ben also REQUIRES ONE OR MORE of the following:
+kanjidic2.xml(.gz) - If found, the below two are not loaded.
+kanjidic(.gz)
+kanjd212(.gz)
+
+These files may be left in gzip format (advised for KANJIDIC2), or
+may be unzipped for faster loading.

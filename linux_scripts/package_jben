@@ -8,7 +8,7 @@ baseName = "jben"
 # Get version number.  If not specified, assume we're just doing a snapshot.
 if(len(argv)<2):
 	print "No version specified.  Using today's date as a snapshot name."
-	p = P("./mydate", shell=True, stdout=PIPE)
+	p = P("jben/linux_scripts/mydate", shell=True, stdout=PIPE)
 	waitpid(p.pid,0)
 	version = p.stdout.readline().strip()
 else:
@@ -20,14 +20,13 @@ sourcePackageName = packageName + "-source"
 print "Packaging " + baseName + " version " + version + "..."
 
 # Define the files to save
-linuxfiles = " jben/Makefile jben/jben.xpm jben/linux_scripts"
-winfiles = " jben/jben.ico jben/jben.rc"
-otherfiles = " jben/*.txt jben/installer.nsi jben/dicts jben/license" \
-    + " jben/jben_icon.xcf jben/old_files jben/sods/README.txt" \
-    + " jben/doc/*.xml jben/doc/jben.dia"
-kpenginefiles = " jben/kanjipad/*.c jben/kanjipad/*.h" \
-    + " jben/kanjipad/*.unistrok jben/kanjipad/Makefile"
-sourcefiles = "jben/*.cpp jben/*.h " + otherfiles + kpenginefiles + linuxfiles + winfiles
+linuxfiles = " jben/src/*.xpm jben/linux_scripts"
+winfiles = " jben/src/jben.ico jben/src/jben.rc"
+otherfiles = " jben/*.txt jben/dicts  jben/doc/*.xml jben/doc/jben.dia" \
+    + " jben/license jben/old_files jben/sods/README.txt" \
+    + " jben/src/jben_icon.xcf jben/src/installer.nsi"
+kpenginefiles = " jben/src/kpengine"
+sourcefiles = "jben/src/Makefile jben/src/*.cpp jben/src/*.h " + otherfiles + kpenginefiles + linuxfiles + winfiles
 
 # Make the .tar.bz2 archive
 p = P("tar -cjf " + sourcePackageName + ".tar.bz2 " + sourcefiles, \
