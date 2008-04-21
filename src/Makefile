@@ -188,8 +188,7 @@ ifeq ($(PLATFORM),windows)
 	strip ../J-Ben/bin/$(target)
 	strip ../J-Ben/bin/jben_kpengine.exe
 #	Copy remaining J-Ben files (data, readmes, licenses, docs, etc.)
-	cp ../README.txt ../J-Ben
-	cp ../CHANGELOG.txt ../J-Ben
+	cp ../*.txt ../J-Ben
 	cp -R ../license ../J-Ben
 	mkdir -p ../J-Ben/kpengine_data ../J-Ben/dicts ../J-Ben/sods
 	cp kpengine/*.unistrok ../J-Ben/kpengine_data
