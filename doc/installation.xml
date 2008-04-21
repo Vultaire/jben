@@ -116,15 +116,15 @@ CC=&lt;cross-compiling gcc> CXX=&lt;cross-compiling g++></programlisting>
 			Linux Standard Base-compliant package I would like to do that as
 			well.  For the time being though, it is necessary to compile from
 			source.</para>
-		</sect2>
-		
 
-		<informalexample><programlisting>#!/bin/sh
+			<informalexample><programlisting>#!/bin/sh
 cd &lt;path_to_jben>
 ./jben</programlisting></informalexample>
 
-		<para>Put that in /usr/bin or similar, do a chmod +x on it and that'll
-		make things simpler.</para>
+			<para>Put that in /usr/bin or similar, do a chmod +x on it and
+			that'll make things simpler.</para>
+		</sect2>
+		
 	</sect1>
 
 	<sect1 id="kksod_install">

@@ -12,7 +12,7 @@ PLATFORM = linux
 # BUILD: either release, debug, or profile
 BUILD = release
 # JBEN_VERSION: Used for labeling release packages
-JBEN_VERSION = 1.2.0-pre5
+JBEN_VERSION = 1.2.0
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)
@@ -129,7 +129,7 @@ else
 	@echo "program."
 endif
 
-.PHONY : kpengine clean cleandep cleanall installprep install uninstall
+.PHONY : kpengine clean cleandep cleanall installprep install uninstall doc
 
 $(build_bindir)/$(target) : $(objects)
 	mkdir -p $(build_bindir)
@@ -250,3 +250,11 @@ else
 	@echo
 	@echo "J-Ben was uninstalled successfully."
 endif
+
+doc:
+#	docbook2html errors since it expects SGML and I'm passing it XML.  Ignore the error.
+	cd ../doc && (docbook2html -o html manual.xml || true) && cd ../src
+	@echo '(Errors on docbook2html/openjade are expected; do not panic!)'
+	cd ../doc && tar -cjf jben-$(JBEN_VERSION)-manual.tar.bz2 html && cd ../src
+	cd ../doc && (rm jben-$(JBEN_VERSION)-manual.zip || true) && \
+		zip -rq jben-$(JBEN_VERSION)-manual.zip html && cd ../src

@@ -50,7 +50,7 @@
 			order diagram packs, you can toggle whether to show them here.
 		</para>
 	</sect1>
-	<sect1 id="prefs_kdict">
+	<sect1 id="prefs_fonts">
 		<title>Configuring the display fonts</title>
 
 		<para>
@@ -71,7 +71,7 @@
 			disclaimer/copyright related text in some places.</listitem>
 		</itemizedlist>
 	</sect1>
-	<sect1 id="prefs_kdict">
+	<sect1 id="prefs_other">
 		<title>Other options</title>
 
 		<para>
