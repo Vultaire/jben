@@ -62,6 +62,14 @@ Section "!J-Ben Core"
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
+Section "J-Ben Documentation"
+	# Program Files\J-Ben
+	SetOutPath "$INSTDIR"
+	# The following folders will always be added/removed in full,
+	# so using File /r (and RMDir /r on uninstall) is acceptable.
+	File /r "..\J-Ben\doc"
+SectionEnd
+
 Section "Create Start Menu Icons"
 	SetOutPath "$INSTDIR\bin"
 	CreateDirectory "$SMPROGRAMS\J-Ben"
@@ -109,6 +117,17 @@ Section "un.J-Ben Core"
 
 	DeleteRegKey HKLM \
 		"Software\Microsoft\Windows\CurrentVersion\Uninstall\J-Ben"
+SectionEnd
+
+Section "un.J-Ben Documentation"
+	# Program Files\J-Ben
+	SetOutPath "$INSTDIR"
+	# The following folders will always be added/removed in full,
+	# so using File /r (and RMDir /r on uninstall) is acceptable.
+	RMDir /r "$INSTDIR\doc"
+
+	SetOutPath "$INSTDIR\.."
+	RMDir "$INSTDIR"
 SectionEnd
 
 Section "un.Start Menu and Desktop Shortcuts"

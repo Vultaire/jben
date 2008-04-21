@@ -193,6 +193,8 @@ ifeq ($(PLATFORM),windows)
 	cp -R ../license ../J-Ben
 	mkdir -p ../J-Ben/kpengine_data ../J-Ben/dicts ../J-Ben/sods
 	cp kpengine/*.unistrok ../J-Ben/kpengine_data
+	rm -rf ../J-Ben/doc
+	cp -R ../doc/html ../J-Ben/doc || true
 	cp ../dicts/* ../J-Ben/dicts
 	cp ../sods/README.txt ../J-Ben/sods
 	@echo J-Ben distribution created in ..\\J-Ben.
@@ -202,6 +204,8 @@ install : installprep
 ifeq ($(PLATFORM),windows)
 #	Zip the output folder into 7z and zip archives
 	mkdir -p ../archives/$(JBEN_VERSION)
+	rm ../archives/$(JBEN_VERSION)/jben-$(JBEN_VERSION)-win-binary.zip || true
+	rm ../archives/$(JBEN_VERSION)/jben-$(JBEN_VERSION)-win-binary.7z || true
 	7z a -tzip ../archives/$(JBEN_VERSION)/jben-$(JBEN_VERSION)-win-binary.zip \
 		../J-Ben
 	7z a -t7z ../archives/$(JBEN_VERSION)/jben-$(JBEN_VERSION)-win-binary.7z \
