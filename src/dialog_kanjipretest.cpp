@@ -61,13 +61,7 @@ DialogKanjiPreTest::DialogKanjiPreTest(Gtk::Window& parent)
 	spnIndex.set_digits(0);
 	spnCount.set_range(0.0, (double)iListSize);
 	spnCount.set_value(min(20, iListSize));
-	if(iListSize>0) {
-		spnIndex.set_range(1.0, (double)iListSize - spnCount.get_value() + 1.0);
-		spnIndex.set_value(1.0);
-	} else {
-		spnIndex.set_range(0.0, 0.0);
-		spnIndex.set_value(0.0);
-	}
+	Update(); /* Updates spin button ranges */
 	spnCount.set_width_chars(5);
 	spnIndex.set_width_chars(5);
 	spnCount.set_increments(1,10);
@@ -114,6 +108,20 @@ DialogKanjiPreTest::DialogKanjiPreTest(Gtk::Window& parent)
 
 	OnKanjiCountChange(); /* Force a button update */
 	show_all_children();
+}
+
+void DialogKanjiPreTest::Update() {
+	int iListSize = ListManager::Get()->KList()->Size();
+	if(iListSize>0) {
+		int oldIndex = spnIndex.get_value_as_int();
+		int maxIndex = iListSize - spnCount.get_value_as_int() + 1;
+		spnIndex.set_range(1.0, (double)maxIndex);
+		if(oldIndex < 1) spnIndex.set_value(1.0);
+		if(oldIndex > maxIndex) spnIndex.set_value((double)maxIndex);
+	} else {
+		spnIndex.set_range(0.0, 0.0);
+		spnIndex.set_value(0.0);
+	}
 }
 
 void DialogKanjiPreTest::OnKanjiCountChange() {

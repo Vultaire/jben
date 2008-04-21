@@ -382,9 +382,9 @@ string& Preferences::GetSetting(string key, string defaultValue) {
 			defaultValue = "450x-1";
 		else if(lKey=="gui.wnd.kanjihwpad.size")
 			defaultValue = "200x230";
-		else if(lKey=="wnd.kanjiksearch.size")
+		else if(lKey=="gui.wnd.kanjiksearch.size")
 			defaultValue = "-1x400";
-		else if(lKey=="wnd.kanjiksearch.pane.divider.pos")
+		else if(lKey=="gui.wnd.kanjiksearch.pane.divider.pos")
 			defaultValue = "300";
 
 #ifdef __WIN32__

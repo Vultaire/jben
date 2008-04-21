@@ -225,6 +225,9 @@ void FrameMainGUI::OnMenuPracticeKanji() {
 	/* Test config dialog */
 	if(!pdKanjiPreTest)
 		pdKanjiPreTest = new DialogKanjiPreTest(*this);
+	else
+		pdKanjiPreTest->Update(); /* Updates controls in case the kanji list
+									 has changed. */
 	int result = pdKanjiPreTest->run();	
 	pdKanjiPreTest->hide();
 	if(result==Gtk::RESPONSE_OK) {

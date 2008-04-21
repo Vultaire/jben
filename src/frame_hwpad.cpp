@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <gtkmm/buttonbox.h>
 #include <boost/format.hpp>
 
-#define FHWPAD_SIZE_STR "wnd.kanjihwpad.size"
+#define FHWPAD_SIZE_STR "gui.wnd.kanjihwpad.size"
 
 FrameHWPad::FrameHWPad() : btnClear(_("Clear")) {
 	set_title(

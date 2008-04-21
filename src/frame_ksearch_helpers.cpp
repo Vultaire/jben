@@ -107,6 +107,7 @@ KSearchStroke::KSearchStroke()
 	miscountControls.pack_start(plusMinus, Gtk::PACK_SHRINK);	
 	miscountControls.pack_start(miscountAdjust, Gtk::PACK_SHRINK);
 	leftLayout.pack_start(strokeControls, Gtk::PACK_SHRINK);
+	leftLayout.pack_start(allowCommonMiscounts, Gtk::PACK_SHRINK);
 	leftLayout.pack_start(miscountControls, Gtk::PACK_SHRINK);
 	layout.pack_start(leftLayout, Gtk::PACK_EXPAND_WIDGET);
 }

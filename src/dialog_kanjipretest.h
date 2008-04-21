@@ -33,6 +33,7 @@ public:
    	DialogKanjiPreTest(Gtk::Window& parent);
 	Gtk::RadioButton rdoRandom, rdoIndex, rdoReading, rdoWriting;
 	Gtk::SpinButton spnCount, spnIndex;
+	void Update();
 private:
 	void OnKanjiCountChange();
 	void OnRdoRandom();

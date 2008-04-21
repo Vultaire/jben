@@ -43,8 +43,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "widget_kanjihwpad.h"
 #include "frame_ksearch_helpers.h"
 
-#define FKSEARCH_SIZE_STR "wnd.kanjiksearch.size"
-#define FKSEARCH_PANE_DIVPOS "wnd.kanjiksearch.pane.divider.pos"
+#define FKSEARCH_SIZE_STR "gui.wnd.kanjiksearch.size"
+#define FKSEARCH_PANE_DIVPOS "gui.wnd.kanjiksearch.pane.divider.pos"
 
 FrameKSearch::FrameKSearch()
 	: topLayout(false, 5), searchBar(false, 5),
