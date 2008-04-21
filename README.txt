@@ -35,17 +35,8 @@ information about the copyright and licensing of the various files
 used by J-Ben.
 
 
-THANKS TO:
-
-* Jim Breen and Monash University for EDICT2/KANJIDIC
-* Jim Rose for use of the KanjiCafe.com stroke order diagrams
-* The wxWidgets team for the cross-platform library powering J-Ben
-* Owen Taylor and Robert E. Wells for their work on KanjiPad and
-  JStroke, respectively.  The handwriting recognition is based upon
-  their code.  Thanks also goes to Todd Rudick, author of JavaDict,
-  for the original stroke order data, and seer26@telocity.com for
-  revisions to that data.
-* The im-ja project, whose changes to KanjiPad are also used by this
-  project.
-* The many other people who have offered me feedback, suggestions, and
-  support in writing this software.
+NOTE ABOUT NEWLINES: All .txt files distributed with J-Ben are saved
+with DOS-style newlines, while source files are saved with UNIX-style
+newlines since most development work is done under Linux.  This is
+intentional.  I would normally save everything UNIX-style, but I want
+the .txt files to show up properly in Windows Notepad.
