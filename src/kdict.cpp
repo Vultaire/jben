@@ -1758,7 +1758,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 			lsi = k.korean_h.begin();
 			result << *lsi;
 			for(lsi++; lsi!=k.korean_h.end(); lsi++) {
-				result << "&nbsp; " << *lsi;
+				result << "  " << *lsi;
 			}
 			result << '\n';
 		}
