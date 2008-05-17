@@ -12,7 +12,7 @@ PLATFORM = linux
 # BUILD: either release, debug, or profile
 BUILD = release
 # JBEN_VERSION: Used for labeling release packages
-JBEN_VERSION = 1.2.0
+JBEN_VERSION = `cat version.h | grep VERSION_STR | sed -e 's/^[^"]*"\([^"]*\)"/\1/'`
 
 # WINDOWS-SPECIFIC
 ifeq ($(PLATFORM),windows)

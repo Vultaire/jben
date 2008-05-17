@@ -57,7 +57,7 @@ list< basic_string<t> > StrTokenize
 				src.substr(start, end-start));
 		}
 		start = end + 1;
-		end = src.find(delimiters, start);
+		end = src.find_first_of(delimiters, start);
 	}
 
 	if(start!=basic_string<t>::npos) {
