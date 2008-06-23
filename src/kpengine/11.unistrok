@@ -1,7 +1,6 @@
 # This is unistrok.11
 # See the original unistrok for the format of this file
 #   (c) 1997 Todd David Rudick
-# vi:set ts=24 sw=24 nowrap:
 507d 131	| 1 2 3 1 b b b 2 3 3 3 #	偽
 5076 132	| 1 2 2 b 6 6 2 b 2 6 3 #	偶
 504f 133	| 1 2 6 b 6 x 2 b 6 2 2 #	偏
