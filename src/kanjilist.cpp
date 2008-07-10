@@ -159,7 +159,7 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 			el.Push(EL_Error, oss.str());
 			break;
 		}
-		if(value==0) value=INT_MAX;
+		if(value==0) value=0x7FFFFFFF;
 		(*myCharIndexer)[*vi] = value;
 	}
 

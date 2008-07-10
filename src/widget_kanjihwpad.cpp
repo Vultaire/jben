@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <glibmm/i18n.h>
 #include <gdk/gdk.h>
 #include "jben_defines.h"
+#include <cstring>
 
 #ifndef KPENGINE_DATADIR
 	#ifdef __WIN32__

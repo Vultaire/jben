@@ -225,7 +225,7 @@ else
 		$(DESTDIR)$(datadir)/jben/sods $(DESTDIR)$(docdir)/license
 	$(INSTALL_PROGRAM) $(build_bindir)/$(target) $(DESTDIR)$(bindir)
 	$(INSTALL_DATA) ../dicts/* $(DESTDIR)$(datadir)/jben/dicts
-	$(INSTALL_DATA) ../sods/README.txt $(DESTDIR)$(datadir)/jben/sods
+	$(INSTALL_DATA) ../sods/README $(DESTDIR)$(datadir)/jben/sods
 	$(INSTALL_DATA) ../license/* $(DESTDIR)$(docdir)/license
 #	Install man page: $(INSTALL_DATA) ../<manpage> $(DESTDIR)$(man1dir)
 	cd kpengine \
