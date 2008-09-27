@@ -1610,7 +1610,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 				list< pair<string,SkipCode> >::const_iterator iMiscode;
 				for(iMiscode = k.skipMisclass.begin();
 					iMiscode != k.skipMisclass.end(); iMiscode++) {
-					dictOut << "\n  Miscode (" << iMiscode->first
+					dictOut << "\n\t  Miscode (" << iMiscode->first
 							<< "): " << iMiscode->second.str();
 				}
 			}
