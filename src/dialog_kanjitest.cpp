@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "string_utils.h"
 #include <boost/format.hpp>
 #include "preferences.h"
+#include "file_utils.h"
 
 #include <sstream>
 #include <map>
@@ -49,20 +50,25 @@ DialogKanjiTest::DialogKanjiTest
 	ctvMeaning(_("< Meaning >"),"",true,false)
 {
 
-	//[Alain]
-	// some modifications to uncover the fields according 
-	// to the prefs defined in the kanji test settings dialog
-
-	//get prefs
+	/* Create buttons dynamically to reflect keyboard shortcuts. */
 	Preferences *prefs=Preferences::Get();
-	Glib::ustring s=(_("Show Answer"))+Glib::ustring(" (_")+prefs->GetSetting("kanjitest.showanswer")+Glib::ustring(")");
+	string s = (boost::format(_("Show Answer (_%s)"))
+		    % prefs->GetSetting("kanjitest.showanswer")).str();
 	btnShowAnswer= manage (new Gtk::Button(s,true));
-	s=(_("Correct"))+Glib::ustring(" (_")+prefs->GetSetting("kanjitest.correctanswer")+Glib::ustring(")");
+	s = (boost::format(_("Correct (_%s)"))
+	     % prefs->GetSetting("kanjitest.correctanswer")).str();
 	btnCorrect = manage(new Gtk::Button(s,true));
-	s=(_("Wrong"))+Glib::ustring(" (_")+prefs->GetSetting("kanjitest.wronganswer")+Glib::ustring(")");
+	s = (boost::format(_("Wrong (_%s)"))
+	     % prefs->GetSetting("kanjitest.wronganswer")).str();
 	btnWrong =  manage(new Gtk::Button(s,true));
-	s=(_("Stop Drill"))+Glib::ustring(" (_")+prefs->GetSetting("kanjitest.stopdrill")+Glib::ustring(")");
+	s = (boost::format(_("Stop Drill (_%s)"))
+	     % prefs->GetSetting("kanjitest.stopdrill")).str();
 	btnStop =  manage(new Gtk::Button(s,true));
+
+	/* Init our required legal disclaimer */
+	sodDisclaim.set_text(_("Kanji stroke order graphics used under license from KanjiCafe.com."));
+	Pango::FontDescription fd(prefs->GetSetting("font.en.small"));
+	sodDisclaim.modify_font(fd);
 
 	/* Test setup */
 	ListManager* lm = ListManager::Get();
@@ -113,6 +119,8 @@ DialogKanjiTest::DialogKanjiTest
 	ShowNextKanji();
 
 	/* GUI setup */
+	btnShowAnswer->signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogKanjiTest::OnShowAnswer));
 	btnCorrect->signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogKanjiTest::OnCorrect));
 	btnWrong->signal_clicked()
@@ -131,23 +139,24 @@ DialogKanjiTest::DialogKanjiTest
 	pvb->set_border_width(5);
 	pvb->pack_start(*phbScore,  Gtk::PACK_SHRINK);
 	pvb->pack_start(ctvKanji,   Gtk::PACK_SHRINK);
-	//[Alain]
 	if (testMode==DKT_TM_Writing){
 		pvb->pack_start(sodDisplay, Gtk::PACK_SHRINK);
+		pvb->pack_start(sodDisclaim, Gtk::PACK_SHRINK);
 	}
 	pvb->pack_start(ctvOnyomi,  Gtk::PACK_SHRINK);
 	pvb->pack_start(ctvKunyomi, Gtk::PACK_SHRINK);
 	pvb->pack_start(ctvMeaning, Gtk::PACK_SHRINK);
 
 	Gtk::HButtonBox* phbbButtons = get_action_area();
-	//[Alain]
-	//add show answer button
 	phbbButtons->pack_start(*btnShowAnswer, Gtk::PACK_SHRINK);
 	phbbButtons->pack_start(*btnCorrect, Gtk::PACK_SHRINK);
 	phbbButtons->pack_start(*btnWrong,   Gtk::PACK_SHRINK);
 	phbbButtons->pack_start(*btnStop,    Gtk::PACK_SHRINK);
 
 	show_all_children();
+	sodDisplay.hide(); /* -might- cause a brief rendering blip when this
+			      object is quicly shown and hidden? */
+	sodDisclaim.hide();
 }
 
 void DialogKanjiTest::ShowNextKanji() {
@@ -194,13 +203,10 @@ void DialogKanjiTest::ShowNextKanji() {
 	ctvOnyomi.SetHiddenText(ListToString<string>(ki->onyomi, "、"));
 	ctvKunyomi.SetHiddenText(ListToString<string>(ki->kunyomi, "、"));
 	ctvMeaning.SetHiddenText(ListToString<string>(ki->meaning, "、"));
-	//[Alain]
-	// clear the image
+	sodDisplay.hide();
+	sodDisclaim.hide();
 	sodDisplay.set("");
-	// get the file path of the sod image file
-	ostringstream filename;
-	KDict::GetSodFileName(&filename,*ki,options);
-	sodPath=filename.str();
+	sodPath = KDict::GetSodFileName(*ki, options);
 
 	/* Update the test status label */
 	double score=0.0, progress=0.0;
@@ -227,10 +233,6 @@ void DialogKanjiTest::ShowNextKanji() {
 	}
 
 	/* Uncover the field(s) appropriate for the current test mode. */
-	//[Alain]
-	// some modifications to uncover the fields according
-	// to the prefs defined in the kanji test settings dialog
-
 	switch(testMode) {
 	case DKT_TM_Reading:
 		ctvKanji.Show();
@@ -290,37 +292,37 @@ void DialogKanjiTest::OnShowAnswer(){
 	ctvMeaning.Show();
 	ctvKunyomi.Show();
 	ctvOnyomi.Show();
-	Glib::RefPtr<Gdk::Pixbuf>  result = Gdk::Pixbuf::create_from_file (sodPath ) ;
-	sodDisplay.set(result);
+	if(FileExists(sodPath.c_str())) {
+		sodDisplay.set(sodPath);
+		sodDisplay.show();
+		sodDisclaim.show();
+	}
 }
 
-//[Alain]
-// Gtkmmm doesn't allow single key shortcuts so we must
-// grab the key press event on the window level to get them
 bool DialogKanjiTest::on_key_press_event (GdkEventKey* event){
-	//get prefs
+	/* get prefs */
 	bool result = false;
 	Preferences *prefs=Preferences::Get();
 	Glib::ustring sh,co,wr,st;
-	// get the shortcuts
+	/* get the shortcuts */
 	sh=prefs->GetSetting("kanjitest.showanswer");
 	co=prefs->GetSetting("kanjitest.correctanswer");
 	wr=prefs->GetSetting("kanjitest.wronganswer");
 	st=prefs->GetSetting("kanjitest.stopdrill");
-	// get the character
+	/* get the character */
 	guint32 car=gdk_keyval_to_unicode(event->keyval);
-	// check if the character is one the shortcuts
+	/* check if the character is one the shortcuts */
 	if (sh[0]==car){
-		OnShowAnswer();
+		btnShowAnswer->clicked();
 		result = true;
 	} else if (co[0]==car){
-		OnCorrect();
+		btnCorrect->clicked();
 		result = true;
 	} else if  (wr[0]==car){
-		OnWrong();
+		btnWrong->clicked();
 		result=true;
 	} else if (st[0]==car){
-		OnStop();
+		btnStop->clicked();
 		result=true;
 	}
 	return result;

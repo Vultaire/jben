@@ -46,15 +46,15 @@ public:
 protected :
   /** return "true" or "false" has string depending on value*/
   std::string boolString(bool value);
-  // kw : kanji write
+  /* kw : kanji write */
   Gtk::CheckButton *kwShowOnYomi;
   Gtk::CheckButton *kwShowKunYomi;
   Gtk::CheckButton *kwShowEnglish;
-  //kr : kanji read
+  /* kr : kanji read */
   Gtk::CheckButton *krShowOnYomi;
   Gtk::CheckButton *krShowKunYomi;
   Gtk::CheckButton *krShowEnglish;
-  //short cut definitions
+  /* short cut definitions */
   Gtk::Entry *okField;
   Gtk::Entry *wrongField;
   Gtk::Entry *showAnswerField;

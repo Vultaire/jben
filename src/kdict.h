@@ -130,16 +130,12 @@ public:
 
 	/* Other functions */
 	bool MainDataLoaded() const;
-	//[Alain]
-	//make GetSODHtml(const KInfo& k, long options) a static function
-	// of KDict and break the middle of it in the function
-	// GetSodFileName();
-	static string GetSODHtml(const KInfo& k, long options);
-	static void GetSodFileName(ostringstream* filename, const KInfo& k, long options);
+	static string GetSodHtml(const KInfo& k, long options);
+	static string GetSodFileName(const KInfo& k, long options);
 private:
 	/* Hidden constructor */
 	KDict();
-	
+
 	/* Dictionary file loaders */
 	int LoadKanjidic(const string& filename,
 					 const string& jisStd="jis208",

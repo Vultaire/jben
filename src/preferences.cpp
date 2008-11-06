@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#define CURRENT_CONFIG_VERSION "1.2.0.1-ab1"
+#define CURRENT_CONFIG_VERSION "1.2.0.2"
 
 #include "preferences.h"
 #include "kdict.h"
@@ -207,7 +207,7 @@ int Preferences::LoadFile(const char *filename) {
 						/* Default handling for any
 						   other string-based entries */
 						string key = utfconv_wm(subToken);
-						subToken = token.substr(index+1);						
+						subToken = token.substr(index+1);
 						stringOpts[key] = utfconv_wm(Trim(subToken));
 					}
 				} else {
@@ -290,21 +290,18 @@ void Preferences::UpgradeConfigFile() {
 		}
 		version = "1.2";
 	}
-	//[Alain]
-	// add prefs for kanji test
 	if (version=="1.2"){
-		stringOpts["kanjitest.kanjiwrite.showonyomi"]="true" ;
-		stringOpts["kanjitest.kanjiwrite.showkunyomi"]="true" ;
-		stringOpts["kanjitest.kanjiwrite.showenglish"]="true" ;
-		stringOpts["kanjitest.kanjiread.showonyomi"]="false" ;
-		stringOpts["kanjitest.kanjiread.showkunyomi"]="false" ;
-		stringOpts["kanjitest.kanjiread.showenglish"]="false" ;
-		// I am left handed, choose default keys adapted to me :-)
-		stringOpts["kanjitest.showanswer"]="0";
-		stringOpts["kanjitest.correctanswer"]="1";
-		stringOpts["kanjitest.wronganswer"]="2";
-		stringOpts["kanjitest.stopdrill"]="3";
-		version ="1.2.0.1-ab1";
+		stringOpts["kanjitest.writing.showonyomi"]="true" ;
+		stringOpts["kanjitest.writing.showkunyomi"]="true" ;
+		stringOpts["kanjitest.writing.showenglish"]="true" ;
+		stringOpts["kanjitest.reading.showonyomi"]="false" ;
+		stringOpts["kanjitest.reading.showkunyomi"]="false" ;
+		stringOpts["kanjitest.reading.showenglish"]="false" ;
+		stringOpts["kanjitest.showanswer"]="1";
+		stringOpts["kanjitest.correctanswer"]="2";
+		stringOpts["kanjitest.wronganswer"]="3";
+		stringOpts["kanjitest.stopdrill"]="4";
+		version = "1.2.0.2";
 	}
 
 	version = CURRENT_CONFIG_VERSION;
@@ -329,7 +326,7 @@ Preferences::~Preferences() {
 				fileNames.push_back(string(getenv(HOMEENV))
 									.append(1, DSCHAR).append(CFGFILE));
 		}
-		
+
 		ofstream ofile;
 		foreach(string& s, fileNames) {
 			ofile.open(s.c_str(), ios::out | ios::binary);

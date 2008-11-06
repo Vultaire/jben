@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "dialog_config.h"
-#include "config_kanji_test.h"
 #include "preferences.h"
 #include "kdict.h"
 #include "file_utils.h"
@@ -253,14 +252,9 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnEnNormal));
 	btnEnSmall.signal_clicked() .connect(sigc::bind<Gtk::Button*>(
 		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnEnSmall));
-	// [Alain]
-	// Create a new page for the kanjitest config
-	ckt= manage ( new ConfigKanjiTest);
 
 	pnb->append_page(*pvbKanjiConfig, _("Kanji Dictionary"));
-	// [Alain]
-	// insert the kanji test page
-	pnb->append_page(*ckt,_("Kanji test"));
+	pnb->append_page(ckt,_("Kanji test"));
 	pnb->append_page(*pvbFontConfig, _("Fonts"));
 
 	/* Windows only: "mobile mode" */
@@ -312,6 +306,7 @@ void DialogConfig::OnOK() {
 	Preferences *prefs = Preferences::Get();
 	prefs->kanjidicOptions = options;
 	prefs->kanjidicDictionaries = dictionaries;
+	ckt.validate(); /* Validate kanji test settings */
 	prefs->GetSetting("font.ja")       = sFontJaNormal;
 	prefs->GetSetting("font.ja.large") = sFontJaLarge;
 	prefs->GetSetting("font.en")       = sFontEnNormal;
@@ -321,10 +316,6 @@ void DialogConfig::OnOK() {
 		prefs->GetSetting("config_save_target") = "mobile";
 	else
 		prefs->GetSetting("config_save_target") = "home";
-
-	//[Alain]
-	// validate kanji test settings
-	ckt->validate();
 
 	Update();  /* Probably unnecessary, but let's be safe. */
 	response(Gtk::RESPONSE_OK);

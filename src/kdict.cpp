@@ -41,6 +41,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 using namespace std;
 
 #define foreach BOOST_FOREACH
+/* Placeholder for gettext includes */
+#define _(s) s
 
 #ifdef __WIN32__
 #	define FALLBACK_DICTDIR "dicts\\"
@@ -117,7 +119,7 @@ int KDict::LoadKanjidic(const string& filename, const string& jisStd,
 
 	/* Get file names */
 	string gzfn, fn;
-	GetGzipName(filename, gzfn, fn);	
+	GetGzipName(filename, gzfn, fn);
 
 	/* Load file */
 	string data;
@@ -172,7 +174,7 @@ int KDict::LoadKanjidic2(const string& filename) {
 	string attr_cp_type, attr_dr_type, attr_m_lang, attr_m_page, attr_m_vol,
 		attr_qc_type, attr_rad_type, attr_r_type, attr_skip_misclass,
 		attr_var_type, attr_on_type, attr_r_status;
-	
+
 	/* Var for storing values of the entries */
 	string sValue;
 	/* GP vars */
@@ -180,7 +182,7 @@ int KDict::LoadKanjidic2(const string& filename) {
 
 	/* Get file names */
 	string gzfn, fn;
-	GetGzipName(filename, gzfn, fn);	
+	GetGzipName(filename, gzfn, fn);
 
 	/* Load file */
 	string data;
@@ -386,7 +388,7 @@ int KDict::LoadKanjidic2(const string& filename) {
 						if(temp=="pinyin") {
 							k->pinyin.push_back(sValue);
 						} else if(temp=="korean_r") {
-							k->korean_r.push_back(sValue);					
+							k->korean_r.push_back(sValue);
 						} else if(temp=="korean_h") {
 							k->korean_h.push_back(sValue);
 						} else if(temp=="ja_on") {
@@ -489,7 +491,7 @@ int KDict::LoadKradfile(const string& filename, const string& encoding) {
 
 	/* Get file names */
 	string gzfn, fn;
-	GetGzipName(filename, gzfn, fn);	
+	GetGzipName(filename, gzfn, fn);
 
 	/* Load file */
 	string rawDataStr, dataStr;
@@ -527,7 +529,7 @@ int KDict::LoadRadkfile(const string& filename, const string& encoding) {
 
 	/* Get file names */
 	string gzfn, fn;
-	GetGzipName(filename, gzfn, fn);	
+	GetGzipName(filename, gzfn, fn);
 
 	/* Load file */
 	string rawDataStr, dataStr;
@@ -583,7 +585,7 @@ int KDict::LoadRadkfile(const string& filename, const string& encoding) {
 				/* Get rid of the spaces in the string */
 				value = entryData.back();
 				value = TextReplace<wchar_t>(value, L"\n", L"");
-				value = TextReplace<wchar_t>(value, L" ", L"");				
+				value = TextReplace<wchar_t>(value, L" ", L"");
 
 				radkData[key] = value;
 				radkDataStrokes[key] = strokeCount;
@@ -629,7 +631,7 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 	} else if(strcmp(jisStd, "jis212")==0) {
 		k.cp_j212 = JisHexToKuten(tl.front()); tl.pop_front();
 	} else if(strcmp(jisStd, "jis213")==0) {
-		k.cp_j213 = JisHexToKuten(tl.front()); tl.pop_front();		
+		k.cp_j213 = JisHexToKuten(tl.front()); tl.pop_front();
 	} else assert(0 && "invalid jis page");
 
 	/* Now, just loop through the remaining entries in the list. */
@@ -782,7 +784,7 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 			case 'D':
 				/* De Roo code */
 				k.var_deroo=ps->substr(2);
-				break;	
+				break;
 			case 'H':
 				/* NJECD code */
 				k.var_njecd=ps->substr(2);
@@ -869,7 +871,7 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 				sTemp = sTemp.substr(1, sTemp.length()-1);
 			} else {
 				/* Strip {} from around the string. */
-				sTemp = sTemp.substr(1, sTemp.length()-2);				
+				sTemp = sTemp.substr(1, sTemp.length()-2);
 			}
 			k.meaning.push_back(sTemp);
 			break;
@@ -910,8 +912,8 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 					el.Push(EL_Error, oss.str());
 				}
 			}
-			
-			break;			
+
+			break;
 		}
 		tl.pop_front();
 	}
@@ -983,9 +985,8 @@ wstring KDict::ConvertKanjidicEntry(const wstring& s) {
 	return temp;
 }
 
-void KDict::GetSodFileName(ostringstream* filename,const KInfo& k, long options){
+string KDict::GetSodFileName(const KInfo& k, long options){
 	string utfStr;
-
 	/* Get the UTF8-encoded string for the kanji. */
 	utfStr = k.literal;
 	/* Convert to a low-to-high-byte hex string. */
@@ -1001,60 +1002,41 @@ void KDict::GetSodFileName(ostringstream* filename,const KInfo& k, long options)
 	if(sodDir.empty()) sodDir = JB_DATADIR DSSTR "sods";
 
 	/* Load static SOD, if present */
+	ostringstream filename;
 	if((options & KDO_SOD_STATIC) != 0) {
-		*filename << sodDir << DSCHAR
+		filename << sodDir << DSCHAR
 			  << "sod-utf8-hex" << DSCHAR
 			  << ss.str() << ".png";
 
 	} else if((options & KDO_SOD_ANIM) != 0) {
-		filename->clear();
-		*filename << sodDir << DSCHAR
-			  << "soda-utf8-hex" << DSCHAR
-			  << ss.str() << ".gif";
+		filename << sodDir << DSCHAR
+			 << "soda-utf8-hex" << DSCHAR
+			 << ss.str() << ".gif";
 	}
+	return filename.str();
 }
 
-string KDict::GetSODHtml(const KInfo& k, long options) {
-	string utfStr;
-
-	// 	/* Get the UTF8-encoded string for the kanji. */
-	// 	utfStr = k.literal;
-	// 	/* Convert to a low-to-high-byte hex string. */
-	// 	ostringstream ss;
-	// 	for(unsigned int i=0;i<utfStr.length();i++) {
-	// 		ss << hex << setw(2) << setfill('0')
-	// 		   << (unsigned int)((unsigned char)utfStr[i]);
-	// 	}
-
-	ostringstream filename, sod;
-	// 	Preferences* p = Preferences::Get();
-	// 	string sodDir = p->GetSetting("sod_dir");
-	// 	if(sodDir.empty()) sodDir = JB_DATADIR DSSTR "sods";
+string KDict::GetSodHtml(const KInfo& k, long options) {
+	string filename;
+	ostringstream sod;
 
 	/* Load static SOD, if present */
 	if((options & KDO_SOD_STATIC) != 0) {
-		// filename << sodDir << DSCHAR
-		// 				 << "sod-utf8-hex" << DSCHAR
-		// 				 << ss.str() << ".png";
-		GetSodFileName(&filename,k,options);
-		ifstream f(filename.str().c_str());
+		filename = GetSodFileName(k, KDO_SOD_STATIC);
+		ifstream f(filename.c_str());
 		if(f.is_open()) {
 			f.close();
-			sod << "<img src=\"" << filename.str() << "\" />";
+			sod << "<img src=\"" << filename << "\" />";
 		}
 	}
 	/* Load animated SOD, if present */
 	if((options & KDO_SOD_ANIM) != 0) {
-		//filename.clear();
-		//filename << sodDir << DSCHAR
-		// 				 << "soda-utf8-hex" << DSCHAR
-		// 				 << ss.str() << ".gif";
-		GetSodFileName(&filename,k,options);
-		ifstream f(filename.str().c_str());
+		filename = GetSodFileName(k, KDO_SOD_ANIM);
+		ifstream f(filename.c_str());
 		if(f.is_open()) {
 			f.close();
 			if(!(sod.str().empty())) sod << "<br />";
-			sod << "<img src=\"" << filename.str() << "\" />";
+			sod << "<img src=\"" << filename << "\" />";
 		}
 	}
 
@@ -1062,8 +1044,9 @@ string KDict::GetSODHtml(const KInfo& k, long options) {
 	if(!(sod.str().empty())) {
 		/* Append the chart(s) in a paragraph object. */
 		result.append("<p>");
-		sod << "<br /><font size=\"1\">(Kanji stroke order graphics "
-			"used under license from KanjiCafe.com.)</font></p>";
+		sod << "<br /><font size=\"1\">("
+		    << _("Kanji stroke order graphics used under license from KanjiCafe.com.")
+		    << ")</font></p>";
 		result.append(sod.str());
 	}
 	return result;
@@ -1087,7 +1070,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 
 	/* Insert KanjiCafe.com SODs if present */
 	if((options & (KDO_SOD_STATIC | KDO_SOD_ANIM)) != 0) {
-		result << GetSODHtml(k, options);
+		result << GetSodHtml(k, options);
 	}
 
 	result << "<ul>";
@@ -1242,98 +1225,98 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 		if(!k.dc_busy_people.empty()) {
 			if((dictionaries & KDD_JBP) != 0)
 				dictOut << "<li>Japanese For Busy People (AJLT): "
-						<< k.dc_busy_people << "</li>";		
+						<< k.dc_busy_people << "</li>";
 		}
 		if(!k.dc_crowley.empty()) {
 			if((dictionaries & KDD_KWJLP) != 0)
 				dictOut << "<li>The Kanji Way to Japanese Language Power "
-					"(Crowley): " << k.dc_crowley << "</li>";		
+					"(Crowley): " << k.dc_crowley << "</li>";
 		}
 		if(!k.dc_gakken.empty()) {
 			if((dictionaries & KDD_GKD) != 0)
 				dictOut << "<li>A New Dictionary of Kanji Usage (Gakken): "
-						<< k.dc_gakken << "</li>";		
+						<< k.dc_gakken << "</li>";
 		}
 		if(!k.dc_halpern_kkld.empty()) {
 			if((dictionaries & KDD_KLD) != 0)
 				dictOut << "<li>Kodansha Kanji Learners Dictionary (Halpern): "
-						<< k.dc_halpern_kkld << "</li>";		
+						<< k.dc_halpern_kkld << "</li>";
 		}
 		if(!k.dc_halpern_njecd.empty()) {
 			if((dictionaries & KDD_NJECD) != 0)
 				dictOut << "<li>New Japanese-English Character Dictionary "
-					"(Halpern): " << k.dc_halpern_njecd << "</li>";		
+					"(Halpern): " << k.dc_halpern_njecd << "</li>";
 		}
 		if(!k.dc_heisig.empty()) {
 			if((dictionaries & KDD_RTK) != 0)
 				dictOut << "<li>Remembering the Kanji (Heisig): "
-						<< k.dc_heisig << "</li>";		
+						<< k.dc_heisig << "</li>";
 		}
 		if(!k.dc_henshall.empty()) {
 			if((dictionaries & KDD_GRJC) != 0)
 				dictOut << "<li>A Guide To Remembering Japanese Characters "
-					"(Henshall): " << k.dc_henshall << "</li>";		
+					"(Henshall): " << k.dc_henshall << "</li>";
 		}
 		if(!k.dc_henshall3.empty()) {
 			if((dictionaries & KDD_GTRWJH) != 0)
 				dictOut << "<li>A Guide To Reading and Writing Japanese "
-					"(Henshall): " << k.dc_henshall3 << "</li>";		
+					"(Henshall): " << k.dc_henshall3 << "</li>";
 		}
 		if(!k.dc_jf_cards.empty()) {
 			if((dictionaries & KDD_JKF) != 0)
 				dictOut << "<li>Japanese Kanji Flashcards (Hodges/Okazaki): "
-						<< k.dc_jf_cards << "</li>";		
+						<< k.dc_jf_cards << "</li>";
 		}
 		if(!k.dc_kanji_in_context.empty()) {
 			if((dictionaries & KDD_KIC) != 0)
 				dictOut << "<li>Kanji in Context (Nishiguchi/Kono): "
-						<< k.dc_kanji_in_context << "</li>";		
+						<< k.dc_kanji_in_context << "</li>";
 		}
 		if(!k.dc_kodansha_compact.empty()) {
 			if((dictionaries & KDD_KCKG) != 0)
 				dictOut << "<li>Kodansha Compact Kanji Guide: "
-						<< k.dc_kodansha_compact << "</li>";		
+						<< k.dc_kodansha_compact << "</li>";
 		}
 		if(!k.dc_moro.empty()) {
 			if((dictionaries & KDD_MORO) != 0)
 				dictOut << "<li>Morohashi Daikanwajiten: "
-						<< k.dc_moro << "</li>";		
+						<< k.dc_moro << "</li>";
 		}
 		if(!k.dc_nelson_c.empty()) {
 			if((dictionaries & KDD_MRJECD) != 0)
 				dictOut << "<li>Modern Reader's Japanese-English Character "
 					"Dictionary (Nelson): "
-						<< k.dc_nelson_c << "</li>";		
+						<< k.dc_nelson_c << "</li>";
 		}
 		if(!k.dc_nelson_n.empty()) {
 			if((dictionaries & KDD_NNJECD) != 0)
 				dictOut << "<li>The New Nelson Japanese-English Character "
-					"Dictionary (Haig): " << k.dc_nelson_n << "</li>";		
+					"Dictionary (Haig): " << k.dc_nelson_n << "</li>";
 		}
 		if(!k.dc_oneill_kk.empty()) {
 			if((dictionaries & KDD_EK) != 0)
 				dictOut << "<li>Essential Kanji (O'Neill): "
-						<< k.dc_oneill_kk << "</li>";		
+						<< k.dc_oneill_kk << "</li>";
 		}
 		if(!k.dc_oneill_names.empty()) {
 			if((dictionaries & KDD_JN) != 0)
 				dictOut << "<li>Japanese Names (O'Neill): "
-						<< k.dc_oneill_names << "</li>";		
+						<< k.dc_oneill_names << "</li>";
 		}
 		if(!k.dc_sakade.empty()) {
 			if((dictionaries & KDD_GTRWJS) != 0)
 				dictOut << "<li>A Guide To Reading and Writing Japanese "
-					"(Sakade): " << k.dc_sakade << "</li>";		
+					"(Sakade): " << k.dc_sakade << "</li>";
 		}
 		if(!k.dc_sh_kk.empty()) {
 			if((dictionaries & KDD_KK) != 0)
 				dictOut << "<li>Kanji and Kana (Spahn/Hadamitzky): "
-						<< k.dc_sh_kk << "</li>";		
+						<< k.dc_sh_kk << "</li>";
 		}
 		if(!k.dc_tutt_cards.empty()) {
 			if((dictionaries & KDD_TKC) != 0)
 				dictOut << "<li>Tuttle Kanji Cards (Kask): "
-						<< k.dc_tutt_cards << "</li>";		
+						<< k.dc_tutt_cards << "</li>";
 		}
 		/* Append dict str to result */
 		if(!(dictOut.str().empty()))
@@ -1420,7 +1403,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 			result << "<li>Spahn/Hadamitzky Kanji Dictionary code: "
 				   << k.var_s_h << "</li>";
 		result << "</ul></li>";
-		
+
 		/* TO DO */
 		result << "</ul></li>";
 	}
@@ -1474,8 +1457,9 @@ string GetSODTextBuf(const KInfo& k, long options) {
 	string result;
 	if(!(sod.str().empty())) {
 		/* Append the chart(s) in a paragraph object. */
-		sod << "\n<font en.small>(Kanji stroke order graphics "
-			"used under license from KanjiCafe.com.)</font>\n\n";
+		sod << "\n<font en.small>("
+		    << _("Kanji stroke order graphics used under license from KanjiCafe.com.")
+		    << ")</font>\n\n";
 		result.append(sod.str());
 	}
 	return result;
@@ -1653,98 +1637,98 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 		if(!k.dc_busy_people.empty()) {
 			if((dictionaries & KDD_JBP) != 0)
 				dictOut << "\t• Japanese For Busy People (AJLT): "
-						<< k.dc_busy_people << '\n';		
+						<< k.dc_busy_people << '\n';
 		}
 		if(!k.dc_crowley.empty()) {
 			if((dictionaries & KDD_KWJLP) != 0)
 				dictOut << "\t• The Kanji Way to Japanese Language Power "
-					"(Crowley): " << k.dc_crowley << '\n';		
+					"(Crowley): " << k.dc_crowley << '\n';
 		}
 		if(!k.dc_gakken.empty()) {
 			if((dictionaries & KDD_GKD) != 0)
 				dictOut << "\t• A New Dictionary of Kanji Usage (Gakken): "
-						<< k.dc_gakken << '\n';		
+						<< k.dc_gakken << '\n';
 		}
 		if(!k.dc_halpern_kkld.empty()) {
 			if((dictionaries & KDD_KLD) != 0)
 				dictOut << "\t• Kodansha Kanji Learners Dictionary (Halpern): "
-						<< k.dc_halpern_kkld << '\n';		
+						<< k.dc_halpern_kkld << '\n';
 		}
 		if(!k.dc_halpern_njecd.empty()) {
 			if((dictionaries & KDD_NJECD) != 0)
 				dictOut << "\t• New Japanese-English Character Dictionary "
-					"(Halpern): " << k.dc_halpern_njecd << '\n';		
+					"(Halpern): " << k.dc_halpern_njecd << '\n';
 		}
 		if(!k.dc_heisig.empty()) {
 			if((dictionaries & KDD_RTK) != 0)
 				dictOut << "\t• Remembering the Kanji (Heisig): "
-						<< k.dc_heisig << '\n';		
+						<< k.dc_heisig << '\n';
 		}
 		if(!k.dc_henshall.empty()) {
 			if((dictionaries & KDD_GRJC) != 0)
 				dictOut << "\t• A Guide To Remembering Japanese Characters "
-					"(Henshall): " << k.dc_henshall << '\n';		
+					"(Henshall): " << k.dc_henshall << '\n';
 		}
 		if(!k.dc_henshall3.empty()) {
 			if((dictionaries & KDD_GTRWJH) != 0)
 				dictOut << "\t• A Guide To Reading and Writing Japanese "
-					"(Henshall): " << k.dc_henshall3 << '\n';		
+					"(Henshall): " << k.dc_henshall3 << '\n';
 		}
 		if(!k.dc_jf_cards.empty()) {
 			if((dictionaries & KDD_JKF) != 0)
 				dictOut << "\t• Japanese Kanji Flashcards (Hodges/Okazaki): "
-						<< k.dc_jf_cards << '\n';		
+						<< k.dc_jf_cards << '\n';
 		}
 		if(!k.dc_kanji_in_context.empty()) {
 			if((dictionaries & KDD_KIC) != 0)
 				dictOut << "\t• Kanji in Context (Nishiguchi/Kono): "
-						<< k.dc_kanji_in_context << '\n';		
+						<< k.dc_kanji_in_context << '\n';
 		}
 		if(!k.dc_kodansha_compact.empty()) {
 			if((dictionaries & KDD_KCKG) != 0)
 				dictOut << "\t• Kodansha Compact Kanji Guide: "
-						<< k.dc_kodansha_compact << '\n';		
+						<< k.dc_kodansha_compact << '\n';
 		}
 		if(!k.dc_moro.empty()) {
 			if((dictionaries & KDD_MORO) != 0)
 				dictOut << "\t• Morohashi Daikanwajiten: "
-						<< k.dc_moro << '\n';		
+						<< k.dc_moro << '\n';
 		}
 		if(!k.dc_nelson_c.empty()) {
 			if((dictionaries & KDD_MRJECD) != 0)
 				dictOut << "\t• Modern Reader's Japanese-English Character "
 					"Dictionary (Nelson): "
-						<< k.dc_nelson_c << '\n';		
+						<< k.dc_nelson_c << '\n';
 		}
 		if(!k.dc_nelson_n.empty()) {
 			if((dictionaries & KDD_NNJECD) != 0)
 				dictOut << "\t• The New Nelson Japanese-English Character "
-					"Dictionary (Haig): " << k.dc_nelson_n << '\n';		
+					"Dictionary (Haig): " << k.dc_nelson_n << '\n';
 		}
 		if(!k.dc_oneill_kk.empty()) {
 			if((dictionaries & KDD_EK) != 0)
 				dictOut << "\t• Essential Kanji (O'Neill): "
-						<< k.dc_oneill_kk << '\n';		
+						<< k.dc_oneill_kk << '\n';
 		}
 		if(!k.dc_oneill_names.empty()) {
 			if((dictionaries & KDD_JN) != 0)
 				dictOut << "\t• Japanese Names (O'Neill): "
-						<< k.dc_oneill_names << '\n';		
+						<< k.dc_oneill_names << '\n';
 		}
 		if(!k.dc_sakade.empty()) {
 			if((dictionaries & KDD_GTRWJS) != 0)
 				dictOut << "\t• A Guide To Reading and Writing Japanese "
-					"(Sakade): " << k.dc_sakade << '\n';		
+					"(Sakade): " << k.dc_sakade << '\n';
 		}
 		if(!k.dc_sh_kk.empty()) {
 			if((dictionaries & KDD_KK) != 0)
 				dictOut << "\t• Kanji and Kana (Spahn/Hadamitzky): "
-						<< k.dc_sh_kk << '\n';		
+						<< k.dc_sh_kk << '\n';
 		}
 		if(!k.dc_tutt_cards.empty()) {
 			if((dictionaries & KDD_TKC) != 0)
 				dictOut << "\t• Tuttle Kanji Cards (Kask): "
-						<< k.dc_tutt_cards << '\n';		
+						<< k.dc_tutt_cards << '\n';
 		}
 		/* Append dict str to result */
 		if(!(dictOut.str().empty()))

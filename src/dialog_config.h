@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef dialog_config_h
 #define dialog_config_h
 
+#include "config_kanji_test.h"
 #include "widget_storeddialog.h"
 #include <gtkmm/checkbutton.h>
 #include <gtkmm/button.h>
@@ -34,10 +35,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <gtkmm/frame.h>
 #include <vector>
 #include <string>
-
-
-//[Alain]
-class ConfigKanjiTest;
 
 class DialogConfig : public StoredDialog {
 public:
@@ -59,6 +56,8 @@ private:
 		chkVocabCrossRef, chkLowImp, chkSodStatic, chkSodAnim;
 	std::vector<Gtk::CheckButton*> vChkDict;
 	Gtk::VBox vbDicts;
+	/* Kanji Test Configuration */
+	ConfigKanjiTest ckt;
 	/* Font Config */
 	Gtk::Table tblFonts;
 	Gtk::Frame    frJaNormal,  frJaLarge,  frEnNormal,  frEnSmall;
@@ -70,9 +69,6 @@ private:
 	Gtk::CheckButton chkMobile;
 	/* Buttons */
 	Gtk::Button btnCancel, btnOK;
-
-	//[Alain]
-	ConfigKanjiTest* ckt;
 };
 
 #endif

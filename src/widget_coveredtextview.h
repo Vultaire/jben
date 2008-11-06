@@ -44,8 +44,6 @@ private:
 	Gtk::TextView tv;
 	Glib::RefPtr<Gtk::TextBuffer> ptbCover, ptbHidden;
 	Gdk::Color cBase, cAlt;
-	//[Alain]
-        // remember the state of the view to avoid flickering
 	bool visible;
 };
 

@@ -44,9 +44,6 @@ public:
 	unsigned int correct, totalTested, totalToTest;
 	std::vector<wchar_t> testKanjiList, missedKanji;
 protected :
-        //[Alain]
-        // Gtkmmm doesn't allow single key shortcuts so we must 
-        // grab the key press event on the window level to get them
 	virtual bool on_key_press_event (GdkEventKey* event);
 private:
 	void ShowNextKanji();
@@ -54,18 +51,13 @@ private:
 	void OnWrong();
 	void OnStop();
 	bool OnDeleteEvent(GdkEventAny* event);
-        //[Alain]
-        //Uncover the masked fields to get the answer
         void OnShowAnswer();
 
 	CoveredTextView ctvKanji, ctvOnyomi, ctvKunyomi, ctvMeaning;
-	Gtk::Button *btnCorrect, *btnWrong, *btnStop;
-	//to show the sod
+	Gtk::Button *btnShowAnswer, *btnCorrect, *btnWrong, *btnStop;
 	Gtk::Image sodDisplay;
 	std::string sodPath;
-	//[Alain]
-	// new button show answer
-	Gtk::Button* btnShowAnswer;
+	Gtk::Label sodDisclaim;
 
 	Gtk::Label lblScore, lblProgress;
 

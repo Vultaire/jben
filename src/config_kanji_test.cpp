@@ -26,75 +26,74 @@
 #include "preferences.h"
 
 ConfigKanjiTest::ConfigKanjiTest():Gtk::VBox(1,3){
+  Preferences* pref=Preferences::Get();
 
-  //upframe : the frame for the kanjiwrite settings
-  Gtk::Frame *upFrame = manage(new Gtk::Frame("Write kanji test"));
+/* upframe : the frame for the kanji read settings */
+
+  Gtk::Frame *upFrame = manage(new Gtk::Frame(_("Read kanji test")));
   pack_start(*upFrame);
 
-  //upbox : item to show or not in kanji write test
+  /* upbox : item to show or not in kanji read test */
 
   Gtk::VBox* upBox= manage(new Gtk::VBox);
   upFrame->add(*upBox);
 
-  // create check buttons
+  /* create check buttons */
 
-  kwShowOnYomi=manage(new Gtk::CheckButton(_("Show on-yomi")));
-  kwShowKunYomi=manage(new Gtk::CheckButton(_("Show kun-yomi")));
-  kwShowEnglish=manage(new Gtk::CheckButton(_("Show english meaning")));
+  krShowOnYomi=manage(new Gtk::CheckButton(_("Show onyomi")));
+  krShowKunYomi=manage(new Gtk::CheckButton(_("Show kunyomi")));
+  krShowEnglish=manage(new Gtk::CheckButton(_("Show English meaning")));
 
-  //put the buttons in the upbox
+  /* put the buttons in the upbox */
 
-  upBox->pack_start(*kwShowOnYomi);
-  upBox->pack_start(*kwShowKunYomi);
-  upBox->pack_start(*kwShowEnglish);
+  upBox->pack_start(*krShowOnYomi);
+  upBox->pack_start(*krShowKunYomi);
+  upBox->pack_start(*krShowEnglish);
 
-  // set their states according to the preferences
+  /* set their states according to their preferences */
 
-  Preferences* pref=Preferences::Get();
-  kwShowOnYomi->set_active(pref->GetSetting("kanjitest.kanjiwrite.showonyomi")=="true");
-  kwShowKunYomi->set_active(pref->GetSetting("kanjitest.kanjiwrite.showkunyomi")=="true");
-  kwShowEnglish->set_active(pref->GetSetting("kanjitest.kanjiwrite.showenglish")=="true"); 
+  krShowOnYomi->set_active(pref->GetSetting("kanjitest.reading.showonyomi")=="true");
+  krShowKunYomi->set_active(pref->GetSetting("kanjitest.reading.showkunyomi")=="true");
+  krShowEnglish->set_active(pref->GetSetting("kanjitest.reading.showenglish")=="true");
 
-
-//midframe : the frame for the kanji read settings
-
-  Gtk::Frame *midFrame = manage(new Gtk::Frame("Read kanji test"));
+  /* midframe : the frame for the kanjiwrite settings */
+  Gtk::Frame *midFrame = manage(new Gtk::Frame(_("Write kanji test")));
   pack_start(*midFrame);
 
-  //midbox : item to show or not in kanji read test
+  /* midbox : item to show or not in kanji write test */
 
   Gtk::VBox* midBox= manage(new Gtk::VBox);
   midFrame->add(*midBox);
 
-  // create check buttons
+  /* create check buttons */
 
-  krShowOnYomi=manage(new Gtk::CheckButton(_("Show on-yomi")));
-  krShowKunYomi=manage(new Gtk::CheckButton(_("Show kun-yomi")));
-  krShowEnglish=manage(new Gtk::CheckButton(_("Show english meaning")));
+  kwShowOnYomi=manage(new Gtk::CheckButton(_("Show onyomi")));
+  kwShowKunYomi=manage(new Gtk::CheckButton(_("Show kunyomi")));
+  kwShowEnglish=manage(new Gtk::CheckButton(_("Show English meaning")));
 
-  //put the buttons in the midbox
+  /* put the buttons in the midbox */
 
-  midBox->pack_start(*krShowOnYomi);
-  midBox->pack_start(*krShowKunYomi);
-  midBox->pack_start(*krShowEnglish);
+  midBox->pack_start(*kwShowOnYomi);
+  midBox->pack_start(*kwShowKunYomi);
+  midBox->pack_start(*kwShowEnglish);
 
-  // set their states according to their preferences
+  /* set their states according to the preferences */
 
-  krShowOnYomi->set_active(pref->GetSetting("kanjitest.kanjiread.showonyomi")=="true");
-  krShowKunYomi->set_active(pref->GetSetting("kanjitest.kanjiread.showkunyomi")=="true");
-  krShowEnglish->set_active(pref->GetSetting("kanjitest.kanjiread.showenglish")=="true");
+  kwShowOnYomi->set_active(pref->GetSetting("kanjitest.writing.showonyomi")=="true");
+  kwShowKunYomi->set_active(pref->GetSetting("kanjitest.writing.showkunyomi")=="true");
+  kwShowEnglish->set_active(pref->GetSetting("kanjitest.writing.showenglish")=="true"); 
 
-  //botframe : the frame for the short cuts settings
+  /* botframe : the frame for the short cuts settings */
 
-  Gtk::Frame *botFrame = manage(new Gtk::Frame("Keyboard shortcuts"));
+  Gtk::Frame *botFrame = manage(new Gtk::Frame(_("Keyboard shortcuts")));
   pack_start(*botFrame);
 
-  //botbox : item to show or not in kanji read test
+  /* botbox : item to show or not in kanji read test */
 
   Gtk::Table* botBox= manage(new Gtk::Table(2,5));
   botBox->set_col_spacings(10);
   botFrame->add(*botBox);
-  Gtk::Label *lab = manage(new Gtk::Label(_("Correct answer : "),Gtk::ALIGN_LEFT ));
+  Gtk::Label *lab = manage(new Gtk::Label(_("Correct answer: "),Gtk::ALIGN_LEFT ));
   botBox->attach(*lab,0, 1, 0, 1);
 
   okField= manage (new Gtk::Entry);
@@ -103,7 +102,7 @@ ConfigKanjiTest::ConfigKanjiTest():Gtk::VBox(1,3){
   okField->set_size_request(30);
   botBox->attach(*okField,1, 2, 0, 1,Gtk::SHRINK);
 
-  lab= manage(new Gtk::Label(_("Wrong answer : "),Gtk::ALIGN_LEFT));
+  lab= manage(new Gtk::Label(_("Wrong answer: "),Gtk::ALIGN_LEFT));
   botBox->attach(*lab,2, 3, 0, 1);
 
   wrongField= manage (new Gtk::Entry);
@@ -113,7 +112,7 @@ ConfigKanjiTest::ConfigKanjiTest():Gtk::VBox(1,3){
   botBox->attach(*wrongField,3, 4, 0, 1,Gtk::SHRINK);
 
 
-  lab= manage(new Gtk::Label(_("Show answer : "),Gtk::ALIGN_LEFT));
+  lab= manage(new Gtk::Label(_("Show answer: "),Gtk::ALIGN_LEFT));
   botBox->attach(*lab,0, 1, 1, 2);
 
   showAnswerField= manage (new Gtk::Entry);
@@ -122,7 +121,7 @@ ConfigKanjiTest::ConfigKanjiTest():Gtk::VBox(1,3){
   showAnswerField->set_size_request(30);
   botBox->attach(*showAnswerField,1, 2, 1, 2,Gtk::SHRINK);
 
-  lab= manage(new Gtk::Label(_("Stop drill : "),Gtk::ALIGN_LEFT));
+  lab= manage(new Gtk::Label(_("Stop drill: "),Gtk::ALIGN_LEFT));
   botBox->attach(*lab,2, 3, 1, 2);
 
   stopField= manage (new Gtk::Entry);
@@ -142,14 +141,14 @@ void ConfigKanjiTest::validate(){
 
   Preferences* pref=Preferences::Get();
 
-  pref->GetSetting("kanjitest.kanjiwrite.showonyomi")=boolString(kwShowOnYomi->get_active());
-  pref->GetSetting("kanjitest.kanjiwrite.showkunyomi")=boolString(kwShowKunYomi->get_active());
-  pref->GetSetting("kanjitest.kanjiwrite.showenglish")=boolString(kwShowEnglish->get_active());
+  pref->GetSetting("kanjitest.writing.showonyomi")=boolString(kwShowOnYomi->get_active());
+  pref->GetSetting("kanjitest.writing.showkunyomi")=boolString(kwShowKunYomi->get_active());
+  pref->GetSetting("kanjitest.writing.showenglish")=boolString(kwShowEnglish->get_active());
 
 
-  pref->GetSetting("kanjitest.kanjiread.showonyomi")=boolString(krShowOnYomi->get_active());
-  pref->GetSetting("kanjitest.kanjiread.showkunyomi")=boolString(krShowKunYomi->get_active());
-  pref->GetSetting("kanjitest.kanjiread.showenglish")=boolString(krShowEnglish->get_active());
+  pref->GetSetting("kanjitest.reading.showonyomi")=boolString(krShowOnYomi->get_active());
+  pref->GetSetting("kanjitest.reading.showkunyomi")=boolString(krShowKunYomi->get_active());
+  pref->GetSetting("kanjitest.reading.showenglish")=boolString(krShowEnglish->get_active());
 
   pref->GetSetting("kanjitest.correctanswer")=okField->get_text();
   pref->GetSetting("kanjitest.wronganswer")=wrongField->get_text();

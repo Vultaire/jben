@@ -71,8 +71,6 @@ CoveredTextView::CoveredTextView
 		 << cAlt.get_blue() << "b, "
 		 << cAlt.get_pixel() << " pixel value" << dec << endl;
 #endif
-	//[Alain]
-	//
 	visible=false;
 
 	/* Set initial control status */
