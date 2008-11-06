@@ -1,11 +1,11 @@
 /*
 Project: J-Ben
-Author:  Paul Goins
 Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: version.h
+File:   version.h
+Author: Paul Goins
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #define AUTHOR_NAME  "Paul Goins"
 #define PROGRAM_NAME "J-Ben"
-#define VERSION_STR  "1.2.0.1"
+#define VERSION_STR  "1.2.0.1-ab1"
 #define COPYRIGHT_DATE "2007, 2008"
 
 #endif

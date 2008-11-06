@@ -1,11 +1,12 @@
 /*
 Project: J-Ben
-Author:  Paul Goins
 Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: widgeet_coveredtextview.h
+File:         widget_coveredtextview.h
+Author:       Paul Goins
+Contributors: Alain Bertrand
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,6 +44,9 @@ private:
 	Gtk::TextView tv;
 	Glib::RefPtr<Gtk::TextBuffer> ptbCover, ptbHidden;
 	Gdk::Color cBase, cAlt;
+	//[Alain]
+        // remember the state of the view to avoid flickering
+	bool visible;
 };
 
 #endif

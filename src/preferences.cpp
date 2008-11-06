@@ -1,11 +1,12 @@
 /*
 Project: J-Ben
-Author:  Paul Goins
 Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: preferences.cpp
+File:         preferences.cpp
+Author:       Paul Goins
+Contributors: Alain Bertrand
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#define CURRENT_CONFIG_VERSION "1.2"
+#define CURRENT_CONFIG_VERSION "1.2.0.1-ab1"
 
 #include "preferences.h"
 #include "kdict.h"
@@ -289,6 +290,23 @@ void Preferences::UpgradeConfigFile() {
 		}
 		version = "1.2";
 	}
+	//[Alain]
+	// add prefs for kanji test
+	if (version=="1.2"){
+		stringOpts["kanjitest.kanjiwrite.showonyomi"]="true" ;
+		stringOpts["kanjitest.kanjiwrite.showkunyomi"]="true" ;
+		stringOpts["kanjitest.kanjiwrite.showenglish"]="true" ;
+		stringOpts["kanjitest.kanjiread.showonyomi"]="false" ;
+		stringOpts["kanjitest.kanjiread.showkunyomi"]="false" ;
+		stringOpts["kanjitest.kanjiread.showenglish"]="false" ;
+		// I am left handed, choose default keys adapted to me :-)
+		stringOpts["kanjitest.showanswer"]="0";
+		stringOpts["kanjitest.correctanswer"]="1";
+		stringOpts["kanjitest.wronganswer"]="2";
+		stringOpts["kanjitest.stopdrill"]="3";
+		version ="1.2.0.1-ab1";
+	}
+
 	version = CURRENT_CONFIG_VERSION;
 }
 

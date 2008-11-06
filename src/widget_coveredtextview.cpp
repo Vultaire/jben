@@ -1,11 +1,12 @@
 /*
 Project: J-Ben
-Author:  Paul Goins
 Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: widget_coveredtextview.cpp
+File:         widget_coveredtextview.cpp
+Author:       Paul Goins
+Contributors: Alain Bertrand
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -70,6 +71,9 @@ CoveredTextView::CoveredTextView
 		 << cAlt.get_blue() << "b, "
 		 << cAlt.get_pixel() << " pixel value" << dec << endl;
 #endif
+	//[Alain]
+	//
+	visible=false;
 
 	/* Set initial control status */
 	if(covered)
@@ -89,11 +93,15 @@ CoveredTextView::CoveredTextView
 void CoveredTextView::Cover() {
 	tv.modify_base(Gtk::STATE_NORMAL, cAlt);
 	tv.set_buffer(ptbCover);
+	visible=false;
 }
 
 void CoveredTextView::Show() {
-	tv.modify_base(Gtk::STATE_NORMAL, cBase);
-	tv.set_buffer(ptbHidden);
+	if(!visible){
+		tv.modify_base(Gtk::STATE_NORMAL, cBase);
+		tv.set_buffer(ptbHidden);
+		visible=true;
+	}
 }
 
 void CoveredTextView::SetCoverText(const Glib::ustring& str) {

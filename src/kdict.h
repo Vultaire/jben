@@ -1,11 +1,12 @@
 /*
 Project: J-Ben
-Author:  Paul Goins
 Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: kdict.h
+File:         kdict.h
+Author:       Paul Goins
+Contributors: Alain Bertrand
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -129,6 +130,12 @@ public:
 
 	/* Other functions */
 	bool MainDataLoaded() const;
+	//[Alain]
+	//make GetSODHtml(const KInfo& k, long options) a static function
+	// of KDict and break the middle of it in the function
+	// GetSodFileName();
+	static string GetSODHtml(const KInfo& k, long options);
+	static void GetSodFileName(ostringstream* filename, const KInfo& k, long options);
 private:
 	/* Hidden constructor */
 	KDict();

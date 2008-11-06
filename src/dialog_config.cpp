@@ -1,11 +1,12 @@
 /*
 Project: J-Ben
-Author:  Paul Goins
 Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: dialog_config.cpp
+File:         dialog_config.cpp
+Author:       Paul Goins
+Contributors: Alain Bertrand
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "dialog_config.h"
+#include "config_kanji_test.h"
 #include "preferences.h"
 #include "kdict.h"
 #include "file_utils.h"
@@ -251,8 +253,14 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnEnNormal));
 	btnEnSmall.signal_clicked() .connect(sigc::bind<Gtk::Button*>(
 		sigc::mem_fun(*this, &DialogConfig::OnFontChange), &btnEnSmall));
+	// [Alain]
+	// Create a new page for the kanjitest config
+	ckt= manage ( new ConfigKanjiTest);
 
 	pnb->append_page(*pvbKanjiConfig, _("Kanji Dictionary"));
+	// [Alain]
+	// insert the kanji test page
+	pnb->append_page(*ckt,_("Kanji test"));
 	pnb->append_page(*pvbFontConfig, _("Fonts"));
 
 	/* Windows only: "mobile mode" */
@@ -313,6 +321,10 @@ void DialogConfig::OnOK() {
 		prefs->GetSetting("config_save_target") = "mobile";
 	else
 		prefs->GetSetting("config_save_target") = "home";
+
+	//[Alain]
+	// validate kanji test settings
+	ckt->validate();
 
 	Update();  /* Probably unnecessary, but let's be safe. */
 	response(Gtk::RESPONSE_OK);

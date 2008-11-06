@@ -1,11 +1,12 @@
 /*
 Project: J-Ben
-Author:  Paul Goins
 Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: kanjidic.cpp
+File:         kdict.cpp
+Author:       Paul Goins
+Contributors: Alain Bertrand
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -982,7 +983,7 @@ wstring KDict::ConvertKanjidicEntry(const wstring& s) {
 	return temp;
 }
 
-string GetSODHtml(const KInfo& k, long options) {
+void KDict::GetSodFileName(ostringstream* filename,const KInfo& k, long options){
 	string utfStr;
 
 	/* Get the UTF8-encoded string for the kanji. */
@@ -994,16 +995,48 @@ string GetSODHtml(const KInfo& k, long options) {
 		   << (unsigned int)((unsigned char)utfStr[i]);
 	}
 
-	ostringstream filename, sod;
+	ostringstream sod;
 	Preferences* p = Preferences::Get();
 	string sodDir = p->GetSetting("sod_dir");
 	if(sodDir.empty()) sodDir = JB_DATADIR DSSTR "sods";
 
 	/* Load static SOD, if present */
 	if((options & KDO_SOD_STATIC) != 0) {
-		filename << sodDir << DSCHAR
-				 << "sod-utf8-hex" << DSCHAR
-				 << ss.str() << ".png";
+		*filename << sodDir << DSCHAR
+			  << "sod-utf8-hex" << DSCHAR
+			  << ss.str() << ".png";
+
+	} else if((options & KDO_SOD_ANIM) != 0) {
+		filename->clear();
+		*filename << sodDir << DSCHAR
+			  << "soda-utf8-hex" << DSCHAR
+			  << ss.str() << ".gif";
+	}
+}
+
+string KDict::GetSODHtml(const KInfo& k, long options) {
+	string utfStr;
+
+	// 	/* Get the UTF8-encoded string for the kanji. */
+	// 	utfStr = k.literal;
+	// 	/* Convert to a low-to-high-byte hex string. */
+	// 	ostringstream ss;
+	// 	for(unsigned int i=0;i<utfStr.length();i++) {
+	// 		ss << hex << setw(2) << setfill('0')
+	// 		   << (unsigned int)((unsigned char)utfStr[i]);
+	// 	}
+
+	ostringstream filename, sod;
+	// 	Preferences* p = Preferences::Get();
+	// 	string sodDir = p->GetSetting("sod_dir");
+	// 	if(sodDir.empty()) sodDir = JB_DATADIR DSSTR "sods";
+
+	/* Load static SOD, if present */
+	if((options & KDO_SOD_STATIC) != 0) {
+		// filename << sodDir << DSCHAR
+		// 				 << "sod-utf8-hex" << DSCHAR
+		// 				 << ss.str() << ".png";
+		GetSodFileName(&filename,k,options);
 		ifstream f(filename.str().c_str());
 		if(f.is_open()) {
 			f.close();
@@ -1012,10 +1045,11 @@ string GetSODHtml(const KInfo& k, long options) {
 	}
 	/* Load animated SOD, if present */
 	if((options & KDO_SOD_ANIM) != 0) {
-		filename.clear();
-		filename << sodDir << DSCHAR
-				 << "soda-utf8-hex" << DSCHAR
-				 << ss.str() << ".gif";
+		//filename.clear();
+		//filename << sodDir << DSCHAR
+		// 				 << "soda-utf8-hex" << DSCHAR
+		// 				 << ss.str() << ".gif";
+		GetSodFileName(&filename,k,options);
 		ifstream f(filename.str().c_str());
 		if(f.is_open()) {
 			f.close();
