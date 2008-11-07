@@ -313,16 +313,16 @@ bool DialogKanjiTest::on_key_press_event (GdkEventKey* event){
 	guint32 car=gdk_keyval_to_unicode(event->keyval);
 	/* check if the character is one the shortcuts */
 	if (sh[0]==car){
-		btnShowAnswer->clicked();
+		btnShowAnswer->activate();
 		result = true;
 	} else if (co[0]==car){
-		btnCorrect->clicked();
+		btnCorrect->activate();
 		result = true;
 	} else if  (wr[0]==car){
-		btnWrong->clicked();
+		btnWrong->activate();
 		result=true;
 	} else if (st[0]==car){
-		btnStop->clicked();
+		btnStop->activate();
 		result=true;
 	}
 	return result;
