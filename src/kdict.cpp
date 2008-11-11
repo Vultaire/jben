@@ -297,6 +297,8 @@ int KDict::LoadKanjidic2(const string& filename) {
 						}
 					} else if(element=="grade") {
 						k->grade = (unsigned char)atoi(sValue.c_str());
+					} else if(element=="jlpt") {
+						k->jlpt = (unsigned char)atoi(sValue.c_str());
 					} else if(element=="stroke_count") {
 						k->strokeCount = (unsigned char)atoi(sValue.c_str());
 					} else if(element=="variant") {
@@ -652,7 +654,10 @@ void KDict::KanjidicToKInfo(const string& kanjidicEntry,
 			k.freq = atoi(ps->substr(1).c_str());
 			break;
 		case 'G':  /* Grade level */
-			k.grade = atoi(ps->substr(1).c_str());
+			k.grade = (unsigned char)atoi(ps->substr(1).c_str());
+			break;
+		case 'J':  /* Japanese Language Proficiency Test (JLPT) level */
+			k.jlpt = (unsigned char)atoi(ps->substr(1).c_str());
 			break;
 		case 'S':  /* Stroke count */
 			if(k.strokeCount==0)
@@ -1063,7 +1068,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 						   long options, long dictionaries) {
 	ostringstream result;
 	list<string>::const_iterator lsi;
-	list<int>::const_iterator lii;
+	list<unsigned char>::const_iterator lii;
 
 	/* Create header: char, optional sod display */
 	result << "<p><font size=\"7\">" << k.literal << "</font></p>";
@@ -1127,13 +1132,13 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 	/* Stroke count (and miscounts), grade, freq */
 	if((options & KDO_HIGHIMPORTANCE) != 0) {
 		if(k.strokeCount>0) {
-			result << "<li>Stroke count: " << k.strokeCount;
+			result << "<li>Stroke count: " << (int)k.strokeCount;
 			if(!k.misstrokes.empty()) {
 				result << " (commonly miscounted as ";
 				lii = k.misstrokes.begin();
-				result << *lii;
+				result << (int)(*lii);
 				for(lii++; lii!=k.misstrokes.end(); lii++) {
-					result << ", " << *lii;
+					result << ", " << (int)(*lii);
 				}
 				result << ')';
 			}
@@ -1142,7 +1147,7 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 		else result << "<li>Stroke count: unspecified</li>";
 		result << "<li>Grade level: ";
 		if(k.grade <= 6 && k.grade >= 1)
-			result << k.grade;
+			result << (int)k.grade;
 		else if(k.grade == 8)
 			result << "General usage";
 		else if(k.grade == 9)
@@ -1150,8 +1155,12 @@ wstring KDict::KInfoToHtml(const KInfo& k,
 		else if(k.grade == 0)
 			result << "Unspecified";
 		else
-			result << "Unhandled grade level (Grade " << k.grade << ')';
+			result << "Unhandled grade level (Grade " << (int)k.grade << ')';
 		result << "</li>";
+		if(k.jlpt > 0)
+			result << "<li>JLPT level: " << (int)k.jlpt << "</li>";
+		else
+			result << "<li>JLPT level: Unspecified</li>";
 		if(k.freq==0)
 			result << "<li>Frequency ranking: Unspecified</li>";
 		else
@@ -1476,7 +1485,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 							 long options, long dictionaries) {
 	ostringstream result;
 	list<string>::const_iterator lsi;
-	list<int>::const_iterator lii;
+	list<unsigned char>::const_iterator lii;
 
 	/* Create header: char, optional sod display */
 	result << "<font ja.large>" << k.literal << "</font>\n\n";
@@ -1539,13 +1548,13 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 	/* Stroke count (and miscounts), grade, freq */
 	if((options & KDO_HIGHIMPORTANCE) != 0) {
 		if(k.strokeCount>0) {
-			result << "• Stroke count: " << k.strokeCount;
+			result << "• Stroke count: " << (int)k.strokeCount;
 			if(!k.misstrokes.empty()) {
 				result << " (commonly miscounted as ";
 				lii = k.misstrokes.begin();
-				result << *lii;
+				result << (int)(*lii);
 				for(lii++; lii!=k.misstrokes.end(); lii++) {
-					result << ", " << *lii;
+					result << ", " << (int)(*lii);
 				}
 				result << ')';
 			}
@@ -1554,7 +1563,7 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 		else result << "• Stroke count: unspecified\n";
 		result << "• Grade level: ";
 		if(k.grade <= 6 && k.grade >= 1)
-			result << k.grade;
+			result << (int)k.grade;
 		else if(k.grade == 8)
 			result << "General usage";
 		else if(k.grade == 9)
@@ -1562,8 +1571,12 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 		else if(k.grade == 0)
 			result << "Unspecified";
 		else
-			result << "Unhandled grade level (Grade " << k.grade << ')';
+			result << "Unhandled grade level (Grade " << (int)k.grade << ')';
 		result << '\n';
+		if(k.jlpt==0)
+			result << "• JLPT level: Unspecified\n";
+		else
+			result << "• JLPT level: " << (int)k.jlpt << '\n';
 		if(k.freq==0)
 			result << "• Frequency ranking: Unspecified\n";
 		else

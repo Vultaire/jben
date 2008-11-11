@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #define KDO_READINGS       0x1
 /* English meanings */
 #define KDO_MEANINGS       0x2
-/* Grade, frequency, stroke count(s) */
+/* Jouyou grade, JLPT level, frequency, stroke count(s) */
 #define KDO_HIGHIMPORTANCE 0x4
 /* Enable dictionary display */
 #define KDO_DICTIONARIES   0x8

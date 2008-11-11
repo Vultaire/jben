@@ -1,7 +1,7 @@
 Project:   J-Ben
 Author:    Paul Goins, with contributions from Alain Bertrand
 Copyright: 2007, 2008
-Version:   1.2.0
+Version:   1.2.1
 Homepage:  http://www.vultaire.net/software/jben/
 License:   GNU General Public License (GPL) version 2
            (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
@@ -9,6 +9,7 @@ License:   GNU General Public License (GPL) version 2
 
 For installation instructions, see the J-Ben manual
 (docs/html/index.html), under the section "Installation".
+(General procedure: make, make download, make install)
 For recent changes, see CHANGELOG.txt.
 For acknowledgments of contributors and of projects used by J-Ben,
 see CREDITS.txt.

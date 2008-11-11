@@ -1,11 +1,11 @@
-# J-Ben Makefile for Linux
+# J-Ben Makefile for Windows
 # Makefile for kpengine executable
 
 ### User-editable options ###
 # BUILD: either release, debug, or profile
 BUILD = release
 # PLATFORM: Used as a subdirectory name.
-PLATFORM = linux
+PLATFORM = windows
 
 ### C options ###
 # These flags will be used for compiling the kpengine program, upon which our
@@ -34,7 +34,9 @@ build_objdir = ../../obj/$(PLATFORM)/$(BUILD)/kpengine
 build_bindir = ../../bin/$(PLATFORM)/$(BUILD)/kpengine
 
 # Build object configuration
-kpengine = jben_kpengine
+kpengine = jben_kpengine.exe
+#We don't want a popup console window on every call...
+kpengine_winflags = -mwindows
 
 sources = $(shell ls -t *.c) # Compile most recently edited files first.
 objects = $(sources:%.c=$(build_objdir)/%.o)

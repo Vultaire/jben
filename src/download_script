@@ -1,0 +1,199 @@
+#!/bin/sh
+
+# Dictionary/SOD download script for J-Ben 1.2.1
+# This script is intended to be executed from the src folder,
+# as it downloads files to relative paths ../dicts and ../sods.
+
+get_yn ()
+{
+    while [ 0 ]; do
+	read yn
+	if [ "$yn" == "Y" ]; then
+	    yn = "y"
+	elif [ "$yn" == "N" ]; then
+	    yn = "n"
+	fi
+
+	if [ -z "$yn" ]; then
+	    if [ ! -z "$1" ]; then
+		yn="$1"
+	    fi
+	fi
+	if [ "$yn" == "y" ]; then
+	    return 0
+	elif [ "$yn" == "n" ]; then
+	    return -1
+	fi
+	echo -ne "Please enter \"Y\" or \"N\": "
+    done
+}
+
+
+# Check for existance of wget, tar and gzip, and bail if not found
+if ! which wget &> /dev/null; then
+    echo -e "wget not found.  wget is required to automatically download dictionaries and stroke order\ndiagrams."
+    exit -1
+fi
+if ! which tar &> /dev/null; then
+    echo -e "tar not found.  tar is required for unpacking downloaded stroke order diagram packages."
+    exit -1
+fi
+if ! which gzip &> /dev/null; then
+    echo -e "wget not found.  wget is required to automatically download dictionaries and stroke order\ndiagrams."
+    exit -1
+fi
+
+# Ask for auto-dl of dictionaries
+# * EDICT2 [Y/n]
+# * KANJIDIC [Y/n]
+# * KANJIDIC2 [y/N]
+echo -ne \
+"\nJ-Ben needs dictionary files in order to work properly.  From now, you\n"\
+"will be given a choice of files to download.  However, you can skip\n"\
+"this if you wish to set them up yourself.\n\n"\
+\
+"Select dictionary files for download and auto-installation? [Y/n]: "
+get_yn y
+if [ "$?" == "0" ]; then dl_dicts=0; fi
+
+if [ $dl_dicts ]; then
+    echo -ne \
+"\nEDICT2: Extended English-Japanese word dictionary.\n\n"\
+\
+"This is the standard English-Japanese dictionary file used by J-Ben.\n"\
+"Download this unless you already have a copy from elsewhere\n"\
+"(ex.: from your Linux distribution)\n\n"\
+\
+"Download EDICT2? [Y/n]: "
+    get_yn y
+    if [ "$?" == "0" ]; then dl_edict2=0; fi
+
+    echo -ne \
+"\nKANJIDIC: Standard character dictionary.\n\n"\
+\
+"This is the standard character dictionary file used by J-Ben,\n"\
+"containing information on 6,355 kanji characters.\n"\
+"Download this unless you already have a copy from elsewhere\n"\
+"(ex.: from your Linux distribution)\n\n"\
+\
+"Download KANJIDIC? [Y/n]: "
+    get_yn y
+    if [ "$?" == "0" ]; then dl_kanjidic=0; fi
+
+    echo -ne \
+"\nKANJIDIC2: Extended character dictionary.\n\n"\
+\
+"KANJIDIC2 is an expanded character dictionary file, containing data\n"\
+"on 13,108 kanji characters.  It contains much extra information not\n"\
+"found in KANJIDIC, but may be overkill for most users.  It's also a\n"\
+"large file and will increase the load time of J-Ben significantly.\n\n"\
+\
+"Download KANJIDIC2? [y/N]: "
+    get_yn n
+    if [ "$?" == "0" ]; then dl_kanjidic2=0; fi
+fi
+
+# Ask for auto-dl of stroke order diagrams
+# * Static charts [Y/n]
+# * Animations [y/N]
+echo -ne \
+"\nJ-Ben supports stroke order diagrams from the SODER project at\n"\
+"KanjiCafe.com.  These are not required, but are recommended.\n\n"\
+\
+"Do you wish to download stroke order diagrams? [Y/n]: "
+get_yn y
+if [ "$?" == "0" ]; then dl_sods=0; fi
+
+if [ $dl_sods ]; then
+    echo -ne \
+"\nStatic Stroke Order Diagrams\n\n"\
+\
+"This package contains stroke order diagrams for 1,513 kanji characters.\n"\
+"These diagrams are not animated, showing a grid with one stroke drawn and\n"\
+"highlighted per box.  These are highly recommended.\n\n"\
+\
+"Do you wish to download static (non-animated) stroke order diagrams? [Y/n]: "
+    get_yn y
+    if [ "$?" == "0" ]; then dl_static_sods=0; fi
+
+    echo -ne \
+"\nAnimated Stroke Order Diagrams\n\n"\
+\
+"This package contains animated stroke order diagrams for 1,513 kanji\n"\
+"characters.  These diagrams show a single box which walks through each of the\n"\
+"kanji strokes in sequence.  Some users prefer these.\n\n"\
+\
+"Do you wish to download animated stroke order diagrams? [y/N]: "
+    get_yn n
+    if [ "$?" == "0" ]; then dl_anim_sods=0; fi
+fi
+
+# Download all selected files and place in ../dicts or ../sods
+echo -e "\nDownloading selected components:"
+if [ $dl_edict2 ];      then echo "* EDICT2"; fi
+if [ $dl_kanjidic ];    then echo "* KANJIDIC"; fi
+if [ $dl_kanjidic2 ];   then echo "* KANJIDIC2"; fi
+if [ $dl_static_sods ]; then echo "* KanjiCafe.com static stroke order diagrams"; fi
+if [ $dl_anim_sods ];   then echo "* KanjiCafe.com animated stroke order diagrams"; fi
+
+# Reset dict/sod vars to null; we'll set them if a download completes
+# successfully.
+dl_dicts=
+dl_sods=
+
+if [ $dl_edict2 ]; then
+    # Download only if not present.
+    if [ -e "../dicts/edict2.gz" ]; then
+	echo "EDICT2 already downloaded; skipping."
+    else
+	wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/edict2.gz
+	if [ "$?" == "0" ]; then dl_dicts=0; fi
+    fi
+fi
+if [ $dl_kanjidic ]; then
+    if [ -e "../dicts/kanjidic.gz" ]; then
+	echo "KANJIDIC already downloaded; skipping."
+    else
+	wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/kanjidic.gz
+	if [ "$?" == "0" ]; then dl_dicts=0; fi
+    fi
+fi
+if [ $dl_kanjidic2 ]; then
+    if [ -e "../dicts/kanjidic2.xml.gz" ]; then
+	echo "KANJIDIC2 already downloaded; skipping."
+    else
+	wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/kanjidic2.xml.gz
+	if [ "$?" == "0" ]; then dl_dicts=0; fi
+    fi
+fi
+if [ $dl_static_sods ]; then
+    if [ -e "../sods/sod-utf8-hex.tar.gz" ]; then
+	echo "EDICT2 already downloaded; skipping."
+    else
+	wget -P../sods http://www.vultaire.net/software/jben/files/sods/sod-utf8-hex.tar.gz
+	if [ "$?" == "0" ]; then dl_sods=0; fi
+    fi
+fi
+if [ $dl_anim_sods ]; then
+    if [ -e "../sods/soda-utf8-hex.tar.gz" ]; then
+	echo "EDICT2 already downloaded; skipping."
+    else
+	wget -P../sods http://www.vultaire.net/software/jben/files/sods/soda-utf8-hex.tar.gz
+	if [ "$?" == "0" ]; then dl_sods=0; fi
+    fi
+fi
+
+#Notify user on success, explain where files were placed.
+echo -e "\nDone."
+if [ $dl_dicts ]; then echo "Dictionary files were placed in the ../dicts directory."; fi
+if [ $dl_sods ];  then echo "Stroke order diagrams were placed in the ../sods directory."; fi
+
+##Extract SOD archives if necessary
+#if [ -e "../sods/sod-utf8-hex.tar.gz" -a ! -e ../sods/sod-utf8-hex ]; then
+#    cd ../sods && tar -xzf sod-utf8-hex.tar.gz
+#fi
+#if [ -e "../sods/soda-utf8-hex.tar.gz" -a ! -e ../sods/soda-utf8-hex ]; then
+#    cd ../sods && tar -xzf soda-utf8-hex.tar.gz
+#fi
+
+exit 0

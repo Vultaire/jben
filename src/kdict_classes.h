@@ -47,9 +47,10 @@ public:
 	string literal;
 	string cp_j208, cp_j212, cp_j213, cp_ucs;
 	unsigned char radical, radicalNelson;
-	int grade;
-	int strokeCount;
-	list<int> misstrokes;
+	unsigned char grade;
+	unsigned char jlpt;
+	unsigned char strokeCount;
+	list<unsigned char> misstrokes;
 	string var_j208, var_j212, var_j213, var_ucs,
 		var_deroo, var_nelson_c, var_njecd, var_oneill, var_s_h;
 	int freq;
