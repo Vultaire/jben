@@ -1,3 +1,22 @@
+1.2.1:
+* Installers for both Windows and Linux now will let you pick and choose
+  which dictionaries and stroke order diagram packages to download and
+  install.
+* Addition of Japanese Language Proficiency Test (JLPT) grade level tag
+  in kanji dictionary.
+* New feature: single-key keyboard shortcuts in kanji practice mode.
+* New feature: customization of kanji practice mode.  Users can decide which
+* New feature: kanji practice mode now has a "show answers" button which
+  uncovers all covered text fields.  (Before, the user had to click each
+  field individually.)
+* New feature: kanji practice "writing" mode now shows a KanjiCafe.com
+  stroke order diagram after pressing "Show Answers".
+* KANJIDIC2 is no longer recommended due to memory usage and speed concerns.
+  It works fine on faster systems, but most users don't need the extra
+  information and should be fine with the original KANJIDIC format file.
+* Several minor bugfixes regarding kanji dictionary output.
+* Several documentation errors have been fixed.
+
 1.2.0:
 For end users:
 * KANJIDIC2 is now supported and will be used instead of

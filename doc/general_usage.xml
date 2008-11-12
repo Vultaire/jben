@@ -178,9 +178,12 @@
       kun-yomi (Japanese style) reading, and its meaning in English.
       Some of the textboxes will be covered up, depending on which test
       mode you chose: for "writing kanji" only the kanji character is
-      covered, while for "reading kanji" everything except the kanji
-      character is covered. You can uncover each of the textboxes simply
-      by clicking on them.  After reviewing each flash card, you choose
+      covered by default, while for "reading kanji" everything except the
+      kanji character is covered. You can uncover each of the textboxes simply
+      by clicking on them, or you can uncover all of them by pressing the
+      "Show Answer" button.  (Clicking "Show Answer" in "writing kanji" mode
+      will also show a stroke order diagram for the kanji, if present.)
+      After reviewing each flash card, you choose
       whether you got it "Correct" or "Wrong", and then the program will
       go to the next card in your list.
     </para>

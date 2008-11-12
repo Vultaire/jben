@@ -101,7 +101,7 @@ $(build_depdir)/%.d : %.cpp
 	@rm $@.mktmp
 
 download:
-	./download_script
+	../linux_scripts/download_script
 
 install:
 	$(INSTALL) -d $(DESTDIR)$(bindir) $(DESTDIR)$(datadir)/jben/dicts \

@@ -135,6 +135,7 @@ if [ $dl_kanjidic ];    then echo "* KANJIDIC"; fi
 if [ $dl_kanjidic2 ];   then echo "* KANJIDIC2"; fi
 if [ $dl_static_sods ]; then echo "* KanjiCafe.com static stroke order diagrams"; fi
 if [ $dl_anim_sods ];   then echo "* KanjiCafe.com animated stroke order diagrams"; fi
+echo
 
 # Reset dict/sod vars to null; we'll set them if a download completes
 # successfully.
@@ -144,7 +145,7 @@ dl_sods=
 if [ $dl_edict2 ]; then
     # Download only if not present.
     if [ -e "../dicts/edict2.gz" ]; then
-	echo "EDICT2 already downloaded; skipping."
+	echo -e "EDICT2 already downloaded; skipping.\n"
     else
 	wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/edict2.gz
 	if [ "$?" == "0" ]; then dl_dicts=0; fi
@@ -152,7 +153,7 @@ if [ $dl_edict2 ]; then
 fi
 if [ $dl_kanjidic ]; then
     if [ -e "../dicts/kanjidic.gz" ]; then
-	echo "KANJIDIC already downloaded; skipping."
+	echo -e "KANJIDIC already downloaded; skipping.\n"
     else
 	wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/kanjidic.gz
 	if [ "$?" == "0" ]; then dl_dicts=0; fi
@@ -160,7 +161,7 @@ if [ $dl_kanjidic ]; then
 fi
 if [ $dl_kanjidic2 ]; then
     if [ -e "../dicts/kanjidic2.xml.gz" ]; then
-	echo "KANJIDIC2 already downloaded; skipping."
+	echo -e "KANJIDIC2 already downloaded; skipping.\n"
     else
 	wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/kanjidic2.xml.gz
 	if [ "$?" == "0" ]; then dl_dicts=0; fi
@@ -168,7 +169,7 @@ if [ $dl_kanjidic2 ]; then
 fi
 if [ $dl_static_sods ]; then
     if [ -e "../sods/sod-utf8-hex.tar.gz" ]; then
-	echo "EDICT2 already downloaded; skipping."
+	echo -e "Static SODs already downloaded; skipping.\n"
     else
 	wget -P../sods http://www.vultaire.net/software/jben/files/sods/sod-utf8-hex.tar.gz
 	if [ "$?" == "0" ]; then dl_sods=0; fi
@@ -176,7 +177,7 @@ if [ $dl_static_sods ]; then
 fi
 if [ $dl_anim_sods ]; then
     if [ -e "../sods/soda-utf8-hex.tar.gz" ]; then
-	echo "EDICT2 already downloaded; skipping."
+	echo -e "Animated SODs already downloaded; skipping.\n"
     else
 	wget -P../sods http://www.vultaire.net/software/jben/files/sods/soda-utf8-hex.tar.gz
 	if [ "$?" == "0" ]; then dl_sods=0; fi
@@ -184,7 +185,7 @@ if [ $dl_anim_sods ]; then
 fi
 
 #Notify user on success, explain where files were placed.
-echo -e "\nDone."
+echo "Done."
 if [ $dl_dicts ]; then echo "Dictionary files were placed in the ../dicts directory."; fi
 if [ $dl_sods ];  then echo "Stroke order diagrams were placed in the ../sods directory."; fi
 
