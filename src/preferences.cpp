@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#define CURRENT_CONFIG_VERSION "1.2.0.2"
+#define CURRENT_CONFIG_VERSION "1.2.1"
 
 #include "preferences.h"
 #include "kdict.h"
@@ -301,7 +301,7 @@ void Preferences::UpgradeConfigFile() {
 		stringOpts["kanjitest.correctanswer"]="2";
 		stringOpts["kanjitest.wronganswer"]="3";
 		stringOpts["kanjitest.stopdrill"]="4";
-		version = "1.2.0.2";
+		version = "1.2.1";
 	}
 
 	version = CURRENT_CONFIG_VERSION;

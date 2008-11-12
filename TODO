@@ -8,13 +8,8 @@ Tue, 20 May 2008 06:02:19 +0000
   program runs.  The size of these buffers can be adjusted through the config
   window.
 * Add keyboard shortcuts to all major functions, callable from any J-Ben window:
-  kanji search modes, kanji drill mdoe, jump to dictionary search box...
+  kanji search modes, kanji drill mode, jump to dictionary search box...
 * Add local keyboard shortcuts to all buttons, as possible... especially on the
   kanji drill mode.
-
-User suggestions:
-
-* Alain Bertrand (Sat, 26 Apr 2008 19:36:00 +0000):
-May I suggest you to add "one key only" keyboard shortcuts to "Correct" and
-"Wrong" buttons to be able to use one hand to write the kanji and the other to
-interact with jben.
+  (Update: This has now been done for kanji drill mode.  Thanks goes to Alain
+  Bertrand.)

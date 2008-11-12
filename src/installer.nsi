@@ -5,7 +5,7 @@ InstallDirRegKey HKLM \
 	"Software\Microsoft\Windows\CurrentVersion\Uninstall\J-Ben" \
 	"InstallLocation"
 
-LicenseData ..\J-Ben\license\gpl-2.0.txt
+LicenseData ..\J-Ben\COPYING
 LicenseForceSelection checkbox
 
 Page license
@@ -24,10 +24,11 @@ UninstPage instfiles
 Section "!J-Ben Core"
 	# Program Files\J-Ben
 	SetOutPath "$INSTDIR"
-	File "..\J-Ben\README.txt"
-	File "..\J-Ben\CHANGELOG.txt"
-	File "..\J-Ben\CREDITS.txt"
-	File "..\J-Ben\DEDICATION.txt"
+	File "..\J-Ben\README"
+	File "..\J-Ben\CHANGELOG"
+	File "..\J-Ben\CREDITS"
+	File "..\J-Ben\DEDICATION"
+	File "..\J-Ben\COPYING"
 	# The following folders will always be added/removed in full,
 	# so using File /r (and RMDir /r on uninstall) is acceptable.
 	File /r "..\J-Ben\bin"
@@ -46,7 +47,7 @@ Section "!J-Ben Core"
 	# No SODs are loaded by default; this is an optional component.
 	# The only file to be copied is a readme.
 	SetOutPath "$INSTDIR\sods"
-	File "..\J-Ben\sods\README.txt"
+	File "..\J-Ben\sods\README"
 
 	# Write registry settings and make uninstaller
 	WriteRegStr HKLM \
@@ -93,10 +94,11 @@ SectionEnd
 Section "un.J-Ben Core"
 	# Program Files\J-Ben
 	SetOutPath "$INSTDIR"
-	Delete "README.txt"
-	Delete "CHANGELOG.txt"
-	Delete "CREDITS.txt"
-	Delete "DEDICATION.txt"
+	Delete "README"
+	Delete "CHANGELOG"
+	Delete "CREDITS"
+	Delete "DEDICATION"
+	Delete "COPYING"
 	RMDir /r "$INSTDIR\bin"
 	RMDir /r "$INSTDIR\etc"
 	RMDir /r "$INSTDIR\kpengine_data"
@@ -112,7 +114,7 @@ Section "un.J-Ben Core"
 	# Program Files\J-Ben\sods
 	# No SODs are loaded by default; this is an optional component.
 	# The only file to be copied is a readme.
-	Delete "sods\README.txt"
+	Delete "sods\README"
 	RMDir "$INSTDIR\sods"
 
 	Delete "uninstall.exe"
