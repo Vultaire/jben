@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+# J-Ben source packaging script.
+# Run this script from BELOW the J-Ben root!
+# Pass the current version number as an argument.
+# (If none is specified, a "snapshot" with date/time will be made.)
+
 from subprocess import PIPE, Popen as P
 from os import waitpid
 from sys import argv, exit
@@ -21,10 +26,10 @@ print "Packaging " + baseName + " version " + version + "..."
 
 # Define the files to save
 linuxfiles = " jben/src/*.xpm jben/linux_scripts"
-winfiles = " jben/src/jben.ico jben/src/jben.rc"
-otherfiles = " jben/*.txt jben/dicts/* jben/doc/*.xml jben/doc/jben.dia" \
-    + " jben/license jben/old_files jben/sods/README.txt" \
-    + " jben/src/jben_icon.xcf jben/src/installer.nsi"
+winfiles = " jben/src/jben.ico jben/src/jben.rc jben/src/installer.nsi"
+otherfiles = " jben/CHANGELOG jben/COPYING jben/CREDITS jben/DEDICATION " \
+    + "jben/README jben/TODO jben/dicts/README jben/sods/README " \
+    + "jben/doc/*.xml jben/license jben/src/jben_icon.xcf"
 kpenginefiles = " jben/src/kpengine"
 sourcefiles = "jben/src/Makefile jben/src/*.cpp jben/src/*.h " + otherfiles + kpenginefiles + linuxfiles + winfiles
 
