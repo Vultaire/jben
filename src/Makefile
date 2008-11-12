@@ -3,7 +3,7 @@
 # BUILD: either release, debug, or profile
 BUILD = release
 # JBEN_VERSION: Used for labeling release packages
-JBEN_VERSION = `cat version.h | grep VERSION_STR | sed -e 's/^[^"]*"\([^"]*\)"/\1/'`
+JBEN_VERSION = $(shell cat version.h | grep VERSION_STR | sed -e 's/^[^"]*"\([^"]*\)"/\1/')
 # PLATFORM: Used as a subdirectory name.
 PLATFORM = linux
 
@@ -150,9 +150,10 @@ uninstall:
 
 doc:
 #	docbook2html errors since it expects SGML and I'm passing it XML.  Ignore the error.
-	rm -rfv ../doc/html || true
+	echo Compiling J-Ben $(JBEN_VERSION) documentation...
+	rm -rf ../doc/html || true
 	cd ../doc && (docbook2html -o html manual.xml || true) && cd ../src
 	@echo '(Errors on docbook2html/openjade are expected; do not panic!)'
 	cd ../doc && tar -cjf jben-$(JBEN_VERSION)-manual.tar.bz2 html && cd ../src
-	cd ../doc && (rm jben-$(JBEN_VERSION)-manual.zip || true) && \
+	cd ../doc && (rm -f jben-$(JBEN_VERSION)-manual.zip || true) && \
 		zip -rq jben-$(JBEN_VERSION)-manual.zip html && cd ../src
