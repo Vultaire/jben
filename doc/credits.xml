@@ -1,0 +1,59 @@
+<appendix id="credits">
+  <title>Credits</title>
+
+  <para>
+    J-Ben was written by Paul Goins.  It uses code from the im-ja and kanjipad
+    projects, and those portions are copyrighted by their original authors.
+    Code has also been directly contributed by Alain Bertrand.
+  </para>
+
+  <para>
+    I've had a lot of help writing this software from many people, and it
+    goes without saying that this list will not be conclusive.  However,
+    I want to try to give credit where credit is due.
+  </para>
+
+  <para>
+    Thanks goes to Jim Breen and Monash University, for without
+    Mr. Breen's dictionary files, J-Ben and countless other
+    programs like it would not exist.
+  </para>
+
+  <para>
+    Thanks also goes to Jim Rose of kanjicafe.com, for allowing me a
+    license to use the stroke order diagrams from his SODER project, and for
+    contributing files to support Jim Breen's projects (RADKFILE2/KRADFILE2).
+  </para>
+
+  <para>
+    Thanks to the wxWidgets team for developing wxWidgets, and to the
+    denizens of the wxForums (especially doublemax, but others as well).
+    Although J-Ben no longer uses wxWidgets, it did help me get off to
+    a good start.
+  </para>
+
+  <para>
+    Thanks to the GTK+ and GTKmm teams, both for their tools and their
+    support when things haven't worked quite as planned.
+  </para>
+
+  <para>
+    Thanks to "taniwha" at the "Tae Kim's Guide to Japanese Grammar"
+    forum.  Taniwha convinced me that integrating KanjiPad into J-Ben
+    was a low hanging fruit and worthwhile, and also pointed me towards
+    the im-ja project and the improvements they have made to KanjiPad.
+    Obviously, thanks also goes to the im-ja teams, Owen Taylor,
+    Robert Wells and Todd David Rudicks for their work on KanjiPad
+    and related programs.
+  </para>
+
+  <para>
+    And last (but certainly not least!), thanks to the users of J-Ben
+    and the feedback they have provided.
+  </para>
+
+  <para>
+    I hope that I haven't missed anyone here, but if I have, drop me a line:
+    general (at) vultaire _dot_ net
+  </para>
+</appendix>

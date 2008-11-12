@@ -1,13 +1,17 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY introduction SYSTEM "introduction.xml">
 <!ENTITY installation SYSTEM "installation.xml">
 <!ENTITY general_usage SYSTEM "general_usage.xml">
 <!ENTITY configuration SYSTEM "configuration.xml">
+<!ENTITY credits SYSTEM "credits.xml">
+<!ENTITY gpl_v20 SYSTEM "gpl-2.0.xml">
+<!ENTITY other_licenses SYSTEM "other_licenses.xml">
 ]>
 <book>
 	<bookinfo>
-		<title>J-Ben User Manual (for J-Ben v1.2.0)</title>
+		<title>J-Ben User Manual (for J-Ben v1.2.1)</title>
 		<author>
 			<firstname>Paul</firstname>
 			<surname>Goins</surname>
@@ -17,7 +21,11 @@
 			<holder>Paul Goins</holder>
 		</copyright>
 	</bookinfo>
+	&introduction;
 	&installation;
 	&general_usage;
 	&configuration;
+	&credits;
+	&gpl_v20;
+	&other_licenses;
 </book>

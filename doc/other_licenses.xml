@@ -1,0 +1,24 @@
+<appendix id="other_licenses">
+  <title>Other Licenses</title>
+
+  <para>
+    While all code in J-Ben falls under the GPL version 2 (or above),
+    the dictionaries and stroke order diagram files used by J-Ben fall
+    under separate licenses.
+  </para>
+
+  <para>
+    EDICT, EDICT2, KANJIDIC, KANJIDIC2, JMDict, KRADFILE and RADKFILE are all
+    property of the Electronic Dictionary Research and Development Group (EDRDG)
+    and fall under the
+    <ulink url="http://www.edrdg.org/edrdg/licence.html">EDRDG general dictionary license</ulink>.
+    RADKFILE2 and KRADFILE2 are property of James Rose, but are licensed
+    for redistribution by EDRDG.
+  </para>
+
+  <para>
+    KanjiCafe.com stroke order diagrams used by J-Ben are property of James Rose,
+    KanjiCafe.com, and Rolomail Trading.  These graphics are used under
+    the KanjiCafe.com <ulink url="http://www.kanjicafe.com/license.htm">SOD and SODA License Agreement, version 3</ulink>.
+  </para>
+</appendix>

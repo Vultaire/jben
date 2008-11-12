@@ -1,93 +1,104 @@
 <chapter id="prefs">
-	<title>Preferences editor</title>
+  <title>Preferences editor</title>
 
-	<para>
-		Configuring J-Ben is done through the Preferences editor.  Currently,
-		you can configure the kanji dictionary, the display fonts, and J-Ben's
-		mobile/standard mode.
-	</para>
-	<sect1 id="prefs_kdict">
-		<title>Configuring the kanji dictionary</title>
+  <para>
+    Configuring J-Ben is done through the Preferences editor.  Currently,
+    you can configure the kanji dictionary, the display fonts, and J-Ben's
+    mobile/standard mode.
+  </para>
+  <sect1 id="prefs_kdict">
+    <title>Configuring the kanji dictionary</title>
 
-		<para>
-			Most configuration options have to do with the various data
-			contained within KANJIDIC. KANJIDIC has tons of information, and
-			much of it is overkill for the purpose of most students. A set of
-			fairly sane defaults are chosen, but you can modify these as
-			necessary. Most options are self-explanatory.
-		</para>
+    <para>
+      Most configuration options have to do with the various data
+      contained within KANJIDIC. KANJIDIC has tons of information, and
+      much of it is overkill for the purpose of most students. A set of
+      fairly sane defaults are chosen, but you can modify these as
+      necessary. Most options are self-explanatory.
+    </para>
 
-		<para>
-			If you own a paper kanji dictionary, or a set of kanji flash cards,
-			you may want to check through the dictionary reference codes. Index
-			codes for many dictionaries and several flash card sets are
-			included. For example, I personally use the Kodansha Kanji
-			Learner's Dictionary by Jack Halpern, so I usually have this code
-			enabled so I can very easily reference it if I'm not satisfied with
-			the output of KANJIDIC.
-		</para>
+    <para>
+      If you own a paper kanji dictionary, or a set of kanji flash cards,
+      you may want to check through the dictionary reference codes. Index
+      codes for many dictionaries and several flash card sets are
+      included. For example, I personally use the Kodansha Kanji
+      Learner's Dictionary by Jack Halpern, so I usually have this code
+      enabled so I can very easily reference it if I'm not satisfied with
+      the output of KANJIDIC.
+    </para>
 
-		<para>
-			If you set up a <link linkend="vsl">vocab study list</link>, then
-			there's a useful option to display words in your vocab list which
-			use the kanji you're looking up. This option is strongly
-			recommended. If there's nothing in your study list, or nothing that
-			matches your search, then this option doesn't display any extra
-			information.
-		</para>
+    <para>
+      If you set up a <link linkend="vsl">vocab study list</link>, then
+      there's a useful option to display words in your vocab list which
+      use the kanji you're looking up. This option is strongly
+      recommended. If there's nothing in your study list, or nothing that
+      matches your search, then this option doesn't display any extra
+      information.
+    </para>
 
-		<para>
-			The "other information" option is for the various other "excessive"
-			data contained in KANJIDIC but which I feel most Japanese learners
-			usually will not need. This includes JIS and Unicode hex codes,
-			various radical index numbers, Korean and "Pinyin" romanizations,
-			dictionary cross-reference codes, and any other KANJIDIC fields not
-			handled elsewhere.
-		</para>
+    <para>
+      The "other information" option is for the various other "excessive"
+      data contained in KANJIDIC but which I feel most Japanese learners
+      usually will not need. This includes JIS and Unicode hex codes,
+      various radical index numbers, Korean and "Pinyin" romanizations,
+      dictionary cross-reference codes, and any other KANJIDIC fields not
+      handled elsewhere.
+    </para>
 
-		<para>
-			Finally, if you install one or more of the KanjiCafe.com stroke
-			order diagram packs, you can toggle whether to show them here.
-		</para>
-	</sect1>
-	<sect1 id="prefs_fonts">
-		<title>Configuring the display fonts</title>
+    <para>
+      Finally, if you install one or more of the KanjiCafe.com stroke
+      order diagram packs, you can toggle whether to show them here.
+    </para>
+  </sect1>
+  <sect1 id="prefs_kanjidrill">
+    <title>Configuring kanji tests</title>
 
-		<para>
-			J-Ben uses four special fonts for displaying text in the program.
-			Here, you can change how they are set.  Each font is described
-			below.
-		</para>
+    <para>
+      A few options are available for modifying the behavior of kanji tests.
+      You can select, for both "reading" and "writing" modes, which information
+      fields you want shown or covered.  Additionally, single-key keyboard
+      shortcuts are supported, allowing you to easily drill using only one
+      hand on the keyboard (and the other hand writing kanji on paper, hopefully).
+    </para>
+  </sect1>
+  <sect1 id="prefs_fonts">
+    <title>Configuring the display fonts</title>
 
-		<itemizedlist>
-			<listitem>Japanese Font, Normal: General purpose Japanese display
-			font.  Used for most Japanese text display throughout the program.</listitem>
-			<listitem>Japanese Font, Large: Used for displaying the "header"
-			character in kanji dictionary output.</listitem>
-			<listitem>English Font, Normal: General purpose English font.  Used
-			for dictionary output and some other places where Japanese is not
-			expected.</listitem>
-			<listitem>English Font, Small: Used for displaying
-			disclaimer/copyright related text in some places.</listitem>
-		</itemizedlist>
-	</sect1>
-	<sect1 id="prefs_other">
-		<title>Other options</title>
+    <para>
+      J-Ben uses four special fonts for displaying text in the program.
+      Here, you can change how they are set.  Each font is described
+      below.
+    </para>
 
-		<para>
-			Currently only one "other option" is supported: the J-Ben "mobile
-			mode" toggle.  As mentioned earlier, this simply adjusts where
-			J-Ben's configuration file(s) are saved.  If mobile mode is
-			checked, then settings will be saved based upon the working directory.
-			Usually, this means that it'll save to the program's root folder,
-			which is ideal for USB thumb drives.  If mobile mode is not checked,
-			then J-Ben will save to the user's "home" or "Application Data"
-			folder.
-		</para>
-		<para>
-			(Note for Linux users: mobile mode is currently a Windows-only
-			option.  Also, because of this, you probably will not have an
-			"Other" tab.)
-		</para>
-	</sect1>
+    <itemizedlist>
+      <listitem>Japanese Font, Normal: General purpose Japanese display
+	font.  Used for most Japanese text display throughout the program.</listitem>
+      <listitem>Japanese Font, Large: Used for displaying the "header"
+	character in kanji dictionary output.</listitem>
+      <listitem>English Font, Normal: General purpose English font.  Used
+	for dictionary output and some other places where Japanese is not
+	expected.</listitem>
+      <listitem>English Font, Small: Used for displaying
+	disclaimer/copyright related text in some places.</listitem>
+    </itemizedlist>
+  </sect1>
+  <sect1 id="prefs_other">
+    <title>Other options</title>
+
+    <para>
+      Currently only one "other option" is supported: the J-Ben "mobile
+      mode" toggle.  As mentioned earlier, this simply adjusts where
+      J-Ben's configuration file(s) are saved.  If mobile mode is
+      checked, then settings will be saved based upon the working directory.
+      Usually, this means that it'll save to the program's root folder,
+      which is ideal for USB thumb drives.  If mobile mode is not checked,
+      then J-Ben will save to the user's "home" or "Application Data"
+      folder.
+    </para>
+    <para>
+      (Note for Linux users: mobile mode is currently a Windows-only
+      option.  Also, because of this, you probably will not have an
+      "Other" tab.)
+    </para>
+  </sect1>
 </chapter>
