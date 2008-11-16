@@ -1006,17 +1006,16 @@ string KDict::GetSodFileName(const KInfo& k, long options){
 	string sodDir = p->GetSetting("sod_dir");
 	if(sodDir.empty()) sodDir = JB_DATADIR DSSTR "sods";
 
-	/* Load static SOD, if present */
+	/* Load animated SOD, if present.  Fall back to static. */
 	ostringstream filename;
-	if((options & KDO_SOD_STATIC) != 0) {
-		filename << sodDir << DSCHAR
-			  << "sod-utf8-hex" << DSCHAR
-			  << ss.str() << ".png";
-
-	} else if((options & KDO_SOD_ANIM) != 0) {
+	if((options & KDO_SOD_ANIM) != 0) {
 		filename << sodDir << DSCHAR
 			 << "soda-utf8-hex" << DSCHAR
 			 << ss.str() << ".gif";
+	} else if((options & KDO_SOD_STATIC) != 0) {
+		filename << sodDir << DSCHAR
+			 << "sod-utf8-hex" << DSCHAR
+			 << ss.str() << ".png";
 	}
 	return filename.str();
 }
@@ -1449,6 +1448,9 @@ string GetSODTextBuf(const KInfo& k, long options) {
 			sod << "<img " << filename.str() << '>';
 		}
 	}
+#if 0
+	/* Animated SODs are not supported in GtkTextView objects, so this
+	   section is disabled. */
 	/* Load animated SOD, if present */
 	if((options & KDO_SOD_ANIM) != 0) {
 		filename.clear();
@@ -1462,6 +1464,7 @@ string GetSODTextBuf(const KInfo& k, long options) {
 			sod << "<img " << filename.str() << '>';
 		}
 	}
+#endif
 
 	string result;
 	if(!(sod.str().empty())) {
@@ -1496,10 +1499,10 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 		result << GetSODTextBuf(k, options);
 	}
 #endif
-	/* Animated gifs are not supported by GTKTextViews.  Only the first
+	/* Animated gifs are not supported by GtkTextViews.  Only the first
 	   frame shows.  So, for now, we'll only show static SODs. */
 	if((options & KDO_SOD_STATIC) != 0) {
-		result << GetSODTextBuf(k, options);
+		result << GetSODTextBuf(k, KDO_SOD_STATIC);
 	}
 
 	/* Japanese readings */
