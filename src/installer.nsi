@@ -1,3 +1,5 @@
+# This installer requires a version of NSIS with NSISdl support (any recent one),
+# plus the ZipDLL plugin.
 Name "J-Ben ${version}"
 OutFile "..\archives\${version}\J-Ben_${version}_Installer.exe"
 InstallDir $PROGRAMFILES\J-Ben
@@ -39,13 +41,10 @@ Section "!J-Ben Core"
 	File /r "..\J-Ben\share"
 
 	# Program Files\J-Ben\dicts
-	# Although the user could add their own dictionaries one-by-one,
-	# I think we can safely use /r here on installation and removal.
-	File /r "..\J-Ben\dicts"
+	SetOutPath "$INSTDIR\dicts"
+	File "..\J-Ben\dicts\README"
 
 	# Program Files\J-Ben\sods
-	# No SODs are loaded by default; this is an optional component.
-	# The only file to be copied is a readme.
 	SetOutPath "$INSTDIR\sods"
 	File "..\J-Ben\sods\README"
 
@@ -65,7 +64,48 @@ Section "!J-Ben Core"
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 SectionEnd
 
-Section "J-Ben Documentation"
+SectionGroup "Dictionary Files"
+	Section "EDICT2"
+		SetOutPath "$INSTDIR\dicts"
+		File "..\J-Ben\dicts\edict2.gz"
+	SectionEnd
+	Section "KANJIDIC"
+		SetOutPath "$INSTDIR\dicts"
+		File "..\J-Ben\dicts\kanjidic.gz"
+	SectionEnd
+	Section /o "KANJIDIC2 (Download)"
+		SetOutPath "$INSTDIR\dicts"
+		NSISdl::download http://www.vultaire.net/software/jben/files/dicts/kanjidic2.xml.gz kanjidic2.xml.gz
+		Pop $R0
+		StrCmp $R0 "success" +2
+		MessageBox MB_OK "The installer was unable to download KANJIDIC2.  Installation will continue, but the program may not work properly."
+	SectionEnd
+SectionGroupEnd
+
+SectionGroup "Stroke Order Diagrams (Download)"
+	Section /o "KanjiCafe.com SODs"
+		SetOutPath "$INSTDIR\sods"
+		NSISdl::download http://www.vultaire.net/software/jben/files/sods/sod-utf8-hex.zip sod-utf8-hex.zip
+		Pop $R0
+		StrCmp $R0 "success" +3
+		MessageBox MB_OK "The installer was unable to download the KanjiCafe.com SODs.  Installation will continue without them."
+		Return
+		ZipDLL::extractall "sod-utf8-hex.zip" "$INSTDIR\sods"
+		Delete "sod-utf8-hex.zip"
+	SectionEnd
+	Section /o "KanjiCafe.com Animated SODs"
+		SetOutPath "$INSTDIR\sods"
+		NSISdl::download http://www.vultaire.net/software/jben/files/sods/soda-utf8-hex.zip soda-utf8-hex.zip
+		Pop $R0
+		StrCmp $R0 "success" +3
+		MessageBox MB_OK "The installer was unable to download the KanjiCafe.com animated SODs.  Installation will continue without them."
+		Return
+		ZipDLL::extractall "soda-utf8-hex.zip" "$INSTDIR\sods"
+		Delete "soda-utf8-hex.zip"
+	SectionEnd
+SectionGroupEnd
+
+Section "Documentation"
 	# Program Files\J-Ben
 	SetOutPath "$INSTDIR"
 	# The following folders will always be added/removed in full,
@@ -73,23 +113,30 @@ Section "J-Ben Documentation"
 	File /r "..\J-Ben\doc"
 SectionEnd
 
-Section "Create Start Menu Icons"
-	SetOutPath "$INSTDIR\bin"
-	CreateDirectory "$SMPROGRAMS\J-Ben"
-	CreateShortcut "$SMPROGRAMS\J-Ben\J-Ben.lnk" "$INSTDIR\bin\jben.exe"
-	CreateShortcut "$SMPROGRAMS\J-Ben\Uninstall J-Ben.lnk" "$INSTDIR\uninstall.exe"
+Section /o "Source code (Download)"
+		SetOutPath "$INSTDIR\src"
+		NSISdl::download http://www.vultaire.net/software/jben/files/${version}/jben-${version}-source.zip source.zip
+		Pop $R0
+		StrCmp $R0 "success" +3
+		MessageBox MB_OK "The installer was unable to download the J-Ben source code package.  Installation will continue without it."
+		Return
+		ZipDLL::extractall "source.zip" "$INSTDIR\src"
+		Delete "source.zip"
 SectionEnd
 
-Section "Create Desktop Icon"
-	SetOutPath "$INSTDIR\bin"
-	CreateShortcut "$DESKTOP\J-Ben.lnk" "$INSTDIR\bin\jben.exe"
-SectionEnd
+SectionGroup "Shortcuts"
+	Section "Create Start Menu Shortcuts"
+		SetOutPath "$INSTDIR\bin"
+		CreateDirectory "$SMPROGRAMS\J-Ben"
+		CreateShortcut "$SMPROGRAMS\J-Ben\J-Ben.lnk" "$INSTDIR\bin\jben.exe"
+		CreateShortcut "$SMPROGRAMS\J-Ben\Uninstall J-Ben.lnk" "$INSTDIR\uninstall.exe"
+	SectionEnd
 
-;Section "J-Ben Documentation"
-;SectionEnd
-
-;Section "J-Ben Source Code"
-;SectionEnd
+	Section "Create Desktop Shortcut"
+		SetOutPath "$INSTDIR\bin"
+		CreateShortcut "$DESKTOP\J-Ben.lnk" "$INSTDIR\bin\jben.exe"
+	SectionEnd
+SectionGroupEnd
 
 Section "un.J-Ben Core"
 	# Program Files\J-Ben
@@ -106,14 +153,8 @@ Section "un.J-Ben Core"
 	RMDir /r "$INSTDIR\license"
 	RMDir /r "$INSTDIR\share"
 
-	# Program Files\J-Ben\dicts
-	# Although the user could add their own dictionaries one-by-one,
-	# I think we can safely use /r here on installation and removal.
-	RMDir /r "$INSTDIR\dicts"
-
-	# Program Files\J-Ben\sods
-	# No SODs are loaded by default; this is an optional component.
-	# The only file to be copied is a readme.
+	Delete "dicts\README"
+	RMDir "$INSTDIR\dicts"
 	Delete "sods\README"
 	RMDir "$INSTDIR\sods"
 
@@ -124,6 +165,49 @@ Section "un.J-Ben Core"
 	DeleteRegKey HKLM \
 		"Software\Microsoft\Windows\CurrentVersion\Uninstall\J-Ben"
 SectionEnd
+
+SectionGroup "un.Dictionaries"
+	Section "un.EDICT2"
+		SetOutPath "$INSTDIR"
+		Delete "dicts\edict2.gz"
+		RMDir "$INSTDIR\dicts"
+		SetOutPath "$INSTDIR\.."
+		RMDir "$INSTDIR"
+	SectionEnd
+	Section "un.KANJIDIC"
+		SetOutPath "$INSTDIR"
+		Delete "dicts\kanjidic.gz"
+		RMDir "$INSTDIR\dicts"
+		SetOutPath "$INSTDIR\.."
+		RMDir "$INSTDIR"
+	SectionEnd
+	Section "un.KANJIDIC2"
+		SetOutPath "$INSTDIR"
+		Delete "dicts\kanjidic2.xmlgz"
+		RMDir "$INSTDIR\dicts"
+		SetOutPath "$INSTDIR\.."
+		RMDir "$INSTDIR"
+	SectionEnd
+SectionGroupEnd
+
+SectionGroup "un.Stroke Order Diagrams"
+	Section "un.KanjiCafe.com SODs"
+		SetOutPath "$INSTDIR\sods"
+		RMDir /r "$INSTDIR\sods\sod-utf8-hex"
+		SetOutPath "$INSTDIR"
+		RMDir "$INSTDIR\sods"
+		SetOutPath "$INSTDIR\.."
+		RMDir "$INSTDIR"
+	SectionEnd
+	Section "un.KanjiCafe.com Animated SODs"
+		SetOutPath "$INSTDIR\sods"
+		RMDir /r "$INSTDIR\sods\soda-utf8-hex"
+		SetOutPath "$INSTDIR"
+		RMDir "$INSTDIR\sods"
+		SetOutPath "$INSTDIR\.."
+		RMDir "$INSTDIR"
+	SectionEnd
+SectionGroupEnd
 
 Section "un.J-Ben Documentation"
 	# Program Files\J-Ben
@@ -141,4 +225,11 @@ Section "un.Start Menu and Desktop Shortcuts"
 	Delete "$SMPROGRAMS\J-Ben\Uninstall J-Ben.lnk"
 	RMDir "$SMPROGRAMS\J-Ben"
 	Delete "$DESKTOP\J-Ben.lnk"
+SectionEnd
+
+Section "un.Source code"
+	SetOutPath "$INSTDIR"
+	RMDir /r "$INSTDIR\src"
+	SetOutPath "$INSTDIR\.."
+	RMDir "$INSTDIR"
 SectionEnd

@@ -50,8 +50,8 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 						 "which use the kanji")),
 	  chkLowImp(_("Other information (Radical #'s, "
 				  "Korean and Pinyin romanization)")),
-	  chkSodStatic(_("Use KanjiCafe.com stroke order diagrams")),
-	  chkSodAnim(_("Use KanjiCafe.com animated stroke order diagrams")),
+	  chkSodStatic(_("Use stroke order diagrams if present")),
+	  chkSodAnim(_("Use animated stroke order diagrams if present (tests only)")),
 	  tblFonts(4, 3),
 	  lblJaNormal(_("Japanese Font, Normal")),
 	  lblJaLarge (_("Japanese Font, Large")),
@@ -337,7 +337,11 @@ void DialogConfig::Update() {
 	chkSodStatic    .set_active(options & KDO_SOD_STATIC);
 	chkSodAnim      .set_active(options & KDO_SOD_ANIM);
 
+#if 0
 	/* Enable/disable SOD/SODA checkboxes based on existance of directory */
+	/* (DISABLED for now; J-Ben should auto-disable the flag if dicts
+	   are not found, but obviously that needs to be done in the prefs
+	   loader.  I'll add that later.) */
 	string sodDir = Preferences::Get()->GetSetting("sod_dir");
 	chkSodStatic.set_sensitive(
 		FileExists(
@@ -353,6 +357,7 @@ void DialogConfig::Update() {
 			.append("soda-utf8-hex")
 			.append(1,DSCHAR)
 			.append("README-License").c_str()));
+#endif
 
 	for(size_t i=0;i<vChkDict.size();i++) {
 		vChkDict[i]->set_active(dictionaries & (1ul << i));

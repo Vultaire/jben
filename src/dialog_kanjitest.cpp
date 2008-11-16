@@ -236,19 +236,19 @@ void DialogKanjiTest::ShowNextKanji() {
 	switch(testMode) {
 	case DKT_TM_Reading:
 		ctvKanji.Show();
-		if (prefs->GetSetting("kanjitest.kanjiread.showenglish")=="true")
+		if (prefs->GetSetting("kanjitest.reading.showenglish")=="true")
 			ctvMeaning.Show();
-		if (prefs->GetSetting("kanjitest.kanjiread.showkunyomi")=="true")
+		if (prefs->GetSetting("kanjitest.reading.showkunyomi")=="true")
 			ctvKunyomi.Show();
-		if (prefs->GetSetting("kanjitest.kanjiread.showonyomi")=="true")
+		if (prefs->GetSetting("kanjitest.reading.showonyomi")=="true")
 			ctvOnyomi.Show();
 		break;
 	case DKT_TM_Writing:
-		if (prefs->GetSetting("kanjitest.kanjiwrite.showenglish")=="true")
+		if (prefs->GetSetting("kanjitest.writing.showenglish")=="true")
 			ctvMeaning.Show();
-		if (prefs->GetSetting("kanjitest.kanjiwrite.showkunyomi")=="true")
+		if (prefs->GetSetting("kanjitest.writing.showkunyomi")=="true")
 			ctvKunyomi.Show();
-		if (prefs->GetSetting("kanjitest.kanjiwrite.showonyomi")=="true")
+		if (prefs->GetSetting("kanjitest.writing.showonyomi")=="true")
 			ctvOnyomi.Show();
 		break;
 	}

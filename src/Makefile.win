@@ -3,7 +3,7 @@
 # binary if at all possible.
 #
 # Windows builds expect MinGW WITH MSys,
-# one of the gcc 4 compilers (for wstrings),
+# a -not broken- gcc 4 compiler (for wstrings) (4.3.0 alpha does NOT work!),
 # plus 7-Zip, NSIS and GTK binaries in your path for "make install".
 # PKG_CONFIG_PATH must also be set appropriately.
 #
@@ -11,17 +11,30 @@
 #
 # LAST SUCCESSFUL BUILD used:
 # MinGW
-# * MinGW-5.1.4.exe (automated installer)
-# * update: gcc-4.3.0-20080502-mingw32-alpha-bin.7z
+# * MinGW-5.1.4.exe (automated installer), using current release install,
+#   minimum plus g++ install
+# * update: gcc-{core,g++}-4.2.1-sjlj-2.tar.gz
 #   (updated GCC with wstrings and TR1 hash maps)
+#   ***IMPORTANT***: Compiled all code using "export CC=gcc-sjlj CXX=g++-sjlj".
+#   (Otherwise, the regular 3.x gcc would be used.)
 # MSys
-# * MSYS-1.0.10.exe
-# * Updates: installed all known MSYS updates, from oldest to newest, being
-#   careful not to overwrite newer files
-# GTKmm: gtkmm-win32-devel-2.14.1-3.exe (includes gtk dev environment as well)
+# * Install MSYS-1.0.10.exe, then add in msysCORE-1.0.11-20080826.tar.gz.
+#   If you don't do this, then once you reach pangomm you'll have configure
+#   errors.
+# GTK+ package: gtk-2.14.1 all-in-one development bundle
+# * Need to add the bin folder to your PATH, so pkg-config will work right!
+# GTKmm-related packages
+# * libsigc++-2.2.3
+# * glibmm-2.18.1
+# * cairomm-1.7.0
+# * pangomm-2.14.1
+# * gtkmm-2.14.3
+# (Built from source, -in the above order-.  Refer to
+#  http://live.gnome.org/gtkmm/MSWindows/BuildingGtkmm for full details.
+#  Again, remember to "export CC=gcc-sjlj CXX=g++-sjlj" before building!)
 # Boost: boost_1_37_0.7z
 # * The Boost::Regex library must be built.  See the note below.
-# <DISABLED> libxml2: libxml2-2.7.2.win32.zip
+# libxml2: libxml2-2.7.2.win32.zip
 # libiconv: iconv-1.9.2-1-bin.zip and iconv-1.9.2-1-lib.zip
 #           (Extract to the same folder)
 # zlib: zlib123-dll.zip
@@ -30,9 +43,10 @@
 #
 # Sources for these files:
 # http://mingw.sourceforge.net/: MinGW homepage (MSys is here, too)
-# http://live.gnome.org/gtkmm/MSWindows: gtkmm runtime and development binaries
+# http://www.gtk.org/: gtk+ all-in-one dev package
+# http://www.gtkmm.org/: gtkmm source code
 # http://www.boost.org/: Boost libraries
-# <N/A> http://www.zlatkovic.com/libxml.en.html: libxml2 for Windows
+# http://www.zlatkovic.com/libxml.en.html: libxml2 for Windows
 # http://gnuwin32.sourceforge.net/packages/libiconv.htm: libiconv for Windows
 # http://www.zlib.net/: zlib library; look for "zlib compiled DLL"
 #
@@ -52,11 +66,17 @@
 
 # NOTES TO SELF:
 # On library/GUI split, these things will (eventually) need to be taken care of:
-# 1. libxml2: It seems like having a separate libxml2 package conflicts with the
-#             one supplied by GTKmm.  For now, we'll just use GTKmm's stuff.
-# 2. gettext: handled by GTKmm's i18n package, but will need to be handled
+# 1. gettext: handled by GTKmm's i18n package, but will need to be handled
 #             manually when the core is separated into a dll.
 
+# BEFORE BUILDING: 
+# PKG_CONFIG_PATH must be set properly.  Include both GTK's and libxml's
+# pkgconfig files in the path.
+# (Example: export PKG_CONFIG_PATH=/local/lib/pkgconfig:/c/devel/libxml2-2.7.2.win32/lib/pkgconfig)
+#
+# COMMAND TO EXECUTE BUILD: make -f Makefile.win CC=gcc-sjlj CXX=g++-sjlj
+# (If CC/CXX are not explicitly specified like this, then don't expect to get
+#  very far. ;) )
 
 # === MAKEFILE BEGINS HERE ===
 
@@ -76,27 +96,39 @@ CC = gcc
 mingwbase = C:/MinGW
 
 # Library base directories
-gtkmmbase = C:/devel/GTKmm-2.14.1
+gtkbase = C:/devel/gtk-2.14.1
 zlibbase = C:/devel/zlib123-dll
 iconvbase = C:/devel/libiconv-1.9.2-1
 boostbase = C:/devel/boost_1_37_0
-#xmlbase = C:/devel/libxml2-2.7.2.win32
+xmlbase = C:/devel/libxml2-2.7.2.win32
+
+# No libxml-2.0.pc is included with the official libxml2 port.
+# Follow the procedure on
+# http://www.go-evolution.org/Building_Evolution_on_Windows#libxml2
+# for writing the file, plus for making a proper ".a" link lib.
 
 # Direct lib paths (for non-gcc-style names)
-#libxml = $(xmlbase)/lib/libxml2.lib
 libzlib = $(zlibbase)/lib/zdll.lib
-libboost_regex = $(boostbase)/stage/lib/libboost_regex-mgw43-mt-1_37.lib
-#The below should be a direct path to the boost::regex library
-#The below variables point towards the path to a configured,
-#redistributable GTK/GTKmm environment.  It's used by the Windows
-#"make install" target.  If you need help setting this up, contact the
-#author directly.
+#libxml = $(xmlbase)/lib/libxml2.lib
+# The below should be a direct path to the boost::regex library.
+# Note: There's release/debug versions, with multithreading, static runtime
+#   linking, both, and neither.  Lots of options!  I -think- runtime link
+#   static does static linking to the C library or something like that... so
+#   let's link just the multithreaded, no linked runtime version.
+#   (Decision based on reading thread at
+#    http://osdir.com/ml/lib.boost.build/2002-12/msg00062.html)
+libboost_regex = C:/devel/boost_bin_1_37_0/boost/bin.v2/libs/regex/build/gcc-mingw-4.2.1/release/link-static/threading-multi/libboost_regex-mgw42-mt-1_37.lib
+
+# The below variables point towards the path to a configured,
+# redistributable GTK/GTKmm environment.  It's used by the Windows
+# "make install" target.  If you need help setting this up, see this article:
+# http://live.gnome.org/gtkmm/MSWindows
 gtkredist = C:/gtk-redist
 
 #===LEAVE THESE ALONE===
-SharedCXXFLAGS = -I$(zlibbase)/include -I$(iconvbase)/include -I$(boostbase) -I$(gtkmmbase)/include `pkg-config --cflags libxml-2.0 gtkmm-2.4`
+SharedCXXFLAGS = -I$(zlibbase)/include -I$(iconvbase)/include -I$(boostbase) -I$(gtkbase)/include `pkg-config --cflags gtkmm-2.4 libxml-2.0`
 SharedCPPFLAGS = -D__WIN32__
-libs = $(libzlib) -L$(iconvbase)/lib -liconv.dll $(libboost_regex) `pkg-config --libs libxml-2.0 gtkmm-2.4` -mwindows
+libs = $(libzlib) -L$(iconvbase)/lib -liconv.dll $(libboost_regex) `pkg-config --libs gtkmm-2.4 libxml-2.0` -mwindows
 ##########################################
 # DO NOT EDIT BEYOND THIS POINT!         #
 # (Unless you know what you're doing ;)) #

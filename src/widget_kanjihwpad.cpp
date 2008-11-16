@@ -121,7 +121,7 @@ bool KanjiHWPad::OnExpose(GdkEventExpose* event) {
 	}
 	return true;
 }
-				 
+
 bool KanjiHWPad::OnMotion(GdkEventMotion* event) {
 	if(event->state & Gdk::BUTTON1_MASK) {
 		if(pCurrentLine)
@@ -297,8 +297,17 @@ void KanjiHWPad::LookupChars() {
 			}
 		} else {
 			ostringstream oss;
-			oss << ERR_PREF << "Bad call to kpengine!";
-			el.Push(EL_Error, oss.str());
+			if (error->domain == G_SPAWN_ERROR) {
+				el.Push(EL_Error,
+					(boost::format(_("%s:%d: G_SPAWN_ERROR, code = %d, message = \"%s\""))
+					 % __FILE__ % __LINE__
+					 % error->code % error->message).str());
+			} else {
+				el.Push(EL_Error,
+					(boost::format(_("%s:%d: Bad call to kpengine!  Domain = %d, code = %d, message = \"%s\""))
+					 % __FILE__ % __LINE__
+					 % error->domain % error->code % error->message).str());
+			}
 		}
 
 		/* cleanup */

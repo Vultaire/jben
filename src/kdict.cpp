@@ -1491,7 +1491,14 @@ string KDict::KInfoToTextBuf(const KInfo& k,
 	result << "<font ja.large>" << k.literal << "</font>\n\n";
 
 	/* Insert KanjiCafe.com SODs if present */
+#if 0
 	if((options & (KDO_SOD_STATIC | KDO_SOD_ANIM)) != 0) {
+		result << GetSODTextBuf(k, options);
+	}
+#endif
+	/* Animated gifs are not supported by GTKTextViews.  Only the first
+	   frame shows.  So, for now, we'll only show static SODs. */
+	if((options & KDO_SOD_STATIC) != 0) {
 		result << GetSODTextBuf(k, options);
 	}
 
