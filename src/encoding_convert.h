@@ -74,9 +74,6 @@ basic_string<tdest> ConvertString
 		= iconv(converter, &srcData, &inputBytesLeft,
 				&destData, &outputBytesLeft);
 	if(retcode==(size_t)-1) {
-		/* If we put in error reporting later, we'll want this to return
-		   conversion errors.  For now though, we'll do nothing and simply
-		   bail. */
 		ostringstream oss;
 		oss << "Conversion from " << sourceEncoding << " to " << targetEncoding
 			<< ": error code = " << errno;

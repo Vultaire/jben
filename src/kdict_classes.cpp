@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "kdict_classes.h"
 #include "string_utils.h"
 #include <boost/format.hpp>
+#include <cstring>
 
 SkipCode::SkipCode() {
 	i1 = i2 = i3 = 0;
@@ -45,6 +46,8 @@ bool SkipCode::is_set() const {
 }
 
 KInfo::KInfo() {
+	/* Initialize non-object values */
 	radical = radicalNelson = (unsigned char) 0;
-	grade = strokeCount = freq = 0;
+	grade = jlpt = strokeCount = (unsigned char) 0;
+	freq = 0;
 }
