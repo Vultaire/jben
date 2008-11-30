@@ -214,42 +214,35 @@
 	you are studying. It's used by the <link linkend="kdict">kanji
 	  dictionary</link> and is required for
 	<link linkend="kdrill">kanji drilling mode</link>. This list
-	can be added to and sorted based on newspaper frequency and
-	Jouyou grade level.
+	can be added to and sorted based on newspaper frequency,
+	Jouyou grade level, and Japanese Language Proficiency Test (JLPT)
+	level.
+      </para>
+
+      <para>
+	Editing the kanji study list is done through the kanji study list
+	editor, which can be reached from the Edit menu.
+	(Edit -> Kanji Study List)
       </para>
 
       <sect3>
-	<title>Adding characters to the list</title>
+	<title>Adding characters to the list automatically</title>
 
 	<para>
-	  If you don't know where to start on studying kanji, I
-	  personally recommend using the Kanji menu to add kanji to
-	  your list by Jouyou grade level. This is done by selecting
-	  Kanji -&gt; Add Kanji to List -&gt; By Jouyou Grade Level,
-	  and selecting a range of grades to add from the dialog which
-	  appears. Alternatively, you can select By Newspaper
-	  Frequency Ranking and choose kanji to add in that way.
+	  If you don't know where to start on studying kanji, I suggest
+	  starting by using the "Add Kanji" buttons on the left side of the
+	  editor to add kanji by either Jouyou grade level or JLPT level.
+	  Just click the appropriate button, choose a range of grades or levels,
+	  click "OK", and those kanji will be added to your list.
 	</para>
 
 	<para>
-	  Alternatively, you can <link linkend="klistimport">import a
-	    list from a text file</link>, or you can <link
-							linkend="klistedit">manually edit the list</link> using the
-	  Kanji Study List editor.
+	  Other methods to add kanji include the "By Frequency" button, which
+	  adds kanji by newspaper frequency ranking, or the "From File" button
+	  which finds the kanji contained within a plain text file.
+	  (Note: "From File" currently only works on UTF-8 encoded files.)
 	</para>
-      </sect3>
 
-      <sect3 id="klistimport">
-	<title>Importing study lists</title>
-
-	<para>
-	  The "Add Kanji From File" button will let you import a plain
-	  text file into J-Ben, from which all the kanji characters
-	  will be detected and added to your study list.  The text
-	  file must be encoded in UTF-8.  If you are unsure about this,
-	  it is probably safer to just copy and paste the file directly
-	  into the editor window and then press Apply.
-	</para>
       </sect3>
 
       <sect3 id="klistedit">
@@ -258,8 +251,7 @@
 	<para>
 	  The Kanji Study List editor lets you manually edit your kanji
 	  list. You can type kanji in by hand, or copy and paste them
-	  from another application.  This editor is accessible via
-	  "Edit->Kanji Study List".
+	  from another application.
 	</para>
 
 	<para>
@@ -271,11 +263,6 @@
 	  commit, and you would end up with a list of all the kanji
 	  used in that list.
 	</para>
-
-	<para>
-	  If you don't like the changes you've made, just hit the
-	  Revert button, and the list will return to the way it was.
-	</para>
       </sect3>
 
       <sect3>
@@ -284,25 +271,18 @@
 	<para>
 	  After adding characters to the list, it is strongly
 	  recommended to sort the list.  The editor allows 3 methods
-	  of sorting: by Jouyou grade level, by newspaper frequency,
-	  or by both (using an outer sort by grade level and an inner
-	  sort by newspaper frequency).  Currently you can only sort
+	  of sorting: by newspaper frequency, by Jouyou grade,
+	  or by JLPT level.  Currently you can only sort
 	  in ascending order.
 	</para>
-      </sect3>
-
-      <sect3 id="klistclear">
-	<title>Clearing the study list</title>
 
 	<para>
-	  All operations on the kanji list are additive: even
-	  importing a list from a file doesn't replace the list, but
-	  rather just adds to it. In the case you actually want to
-	  replace the current kanji list with another, or just start
-	  from scratch, select Clear Kanji List from the Kanji menu.
+	  J-Ben uses a "stable" sort for sorting study lists.  This allows a
+	  nice trick where you can first sort by frequency, then by Jouyou
+	  grade (or JLPT level), and the result will be a list sorted by grade
+	  but with the characters within each grade sorted by frequency.
 	</para>
       </sect3>
-
     </sect2>
     <sect2 id="vsl">
       <title>The vocab study list</title>
