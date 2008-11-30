@@ -1,3 +1,9 @@
+1.2.2:
+* Added adding/sorting kanji by JLPT level.
+* Slightly reorganized the kanji list editor.
+* Fixed bug in JLPT code: the JLPT field was not being initialized to zero.
+* Fixed some out-of-date documentation about the kanji study list.
+
 1.2.1:
 * Installers for both Windows and Linux now will let you pick and choose
   which dictionaries and stroke order diagram packages to download and
