@@ -5,7 +5,7 @@ Website: http://www.vultaire.net/software/jben/
 License: GNU General Public License (GPL) version 2
          (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt)
 
-File: kanjilist.h
+File: dialog_addkanjibyjlpt.h
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,38 +21,28 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-#ifndef kanjilist_h
-#define kanjilist_h
+#ifndef dialog_addkanjibyjlpt_h
+#define dialog_addkanjibyjlpt_h
 
-#include "kdict.h"
-#include <string>
-#include <vector>
-using namespace std;
+#include "widget_storeddialog.h"
+#include <gtkmm/button.h>
+#include <gtkmm/comboboxtext.h>
 
-#define ST_GRADE     1
-#define ST_FREQUENCY 2
-#define ST_JLPT      3
-
-class KanjiList {
+class DialogAddKanjiByJLPT : public StoredDialog {
 public:
-	KanjiList();
-	int AddFromString(const wstring& s);
-	int AddByGrade(int lowGrade, int highGrade);
-	int AddByJLPT(int lowLevel, int highLevel);
-	int AddByFrequency(int lowFreq, int highFreq);
-	wstring ToString(int lineWidth = 0);
-	int Size();
-	void Clear();
-	void Sort(int sortType, bool reverseOrder=false);
-	wchar_t operator[](unsigned int index);
-	int GetIndexByChar(wchar_t c);
-	vector<wchar_t>& GetVector();
-
+	DialogAddKanjiByJLPT(Gtk::Window& parent);
+	int GetLowLevel();
+	int GetHighLevel();
 private:
-	void InplaceMerge(vector<wchar_t>& v, unordered_map<wchar_t, int>& indexer, int start, int middle, int end);
+	void OnOK();
+	void OnCancel();
+	void OnLowValChange();
+	void OnHighValChange();
 
-	vector<wchar_t> kanjiList;
-	unordered_map<wchar_t, int> *myCharIndexer;
+	Gtk::ComboBoxText comboLowLevel, comboHighLevel;
+	Gtk::Button btnOK, btnCancel;
+	void OKProc();
+	void CancelProc();
 };
 
 #endif

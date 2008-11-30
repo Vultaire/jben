@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <gtkmm/button.h>
 #include <gtkmm/textview.h>
 #include "dialog_addkanjibygrade.h"
+#include "dialog_addkanjibyjlpt.h"
 #include "dialog_addkanjibyfreq.h"
 
 class DialogKanjiListEditor : public StoredDialog {
@@ -41,22 +42,25 @@ private:
 	bool ApplyIfNeeded();
 	void OnAddFile();
 	void OnAddGrade();
+	void OnAddJLPT();
 	void OnAddFreq();
 	void OnSortGrade();
+	void OnSortJLPT();
 	void OnSortFreq();
-	void OnSortBoth();
+	/*void OnSortBoth();*/
 	void OnCancel();
 	void OnApply();
 	void OnOK();
 
 	Gtk::TextView tvList;
-	Gtk::Button btnAddFile, btnAddGrade, btnAddFreq;
-	Gtk::Button btnSortGrade, btnSortFreq, btnSortBoth;
+	Gtk::Button btnAddFile, btnAddGrade, btnAddJLPT, btnAddFreq;
+	Gtk::Button btnSortGrade, btnSortJLPT, btnSortFreq/*, btnSortBoth*/;
 	Gtk::Button btnCancel, btnApply, btnOK;
 	/* bChanged tracks for whether Apply is needed,
 	   bChangesMade determines whether Cancel/Close return RESPONSE_OK. */
 	bool bChanged, bChangesMade;
 	DialogAddKanjiByGrade* pdAddByGrade;
+	DialogAddKanjiByJLPT* pdAddByJLPT;
 	DialogAddKanjiByFreq*  pdAddByFreq;
 };
 

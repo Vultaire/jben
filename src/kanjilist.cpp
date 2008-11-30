@@ -82,11 +82,33 @@ int KanjiList::AddByGrade(int lowGrade, int highGrade) {
 
 	const unordered_map<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
 
+	/* For our comparison, let's scoot ungraded kanji above all other
+	   kanji. */
+	if(lowGrade==0) lowGrade = 127;
+	if(highGrade==0) highGrade = 127;
+
 	for(unordered_map<wchar_t,KInfo>::const_iterator
 			ki=ht->begin(); ki!=ht->end(); ki++) {
 		grade = ki->second.grade;
-		if(grade>=lowGrade &&
-		  (grade<=highGrade || highGrade==0))
+		if(grade == 0) grade = 127;
+
+		if(grade>=lowGrade && grade<=highGrade)
+			kanjiStr.append(1, ki->first);
+	}
+
+	return AddFromString(kanjiStr);
+}
+
+int KanjiList::AddByJLPT(int lowLevel, int highLevel) {
+	wstring kanjiStr;
+	int level;
+
+	const unordered_map<wchar_t, KInfo>* ht = KDict::Get()->GetHashTable();
+
+	for(unordered_map<wchar_t,KInfo>::const_iterator
+			ki=ht->begin(); ki!=ht->end(); ki++) {
+		level = ki->second.jlpt;
+		if(level<=lowLevel && level>=highLevel)
 			kanjiStr.append(1, ki->first);
 	}
 
@@ -153,6 +175,8 @@ void KanjiList::Sort(int sortType, bool reverseOrder) {
 			value = ki->grade;
 		else if(sortType==ST_FREQUENCY)
 			value = ki->freq;
+		else if(sortType==ST_JLPT)
+			value = 5 - ki->jlpt; /* Should make value = 1-4 */
 		else {
 			ostringstream oss;
 			oss << "Unknown sort type: " << sortType << endl;

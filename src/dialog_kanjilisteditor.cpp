@@ -39,11 +39,13 @@ DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
 	: StoredDialog(_("Kanji List Editor"), parent,
 				   "gui.dlg.kanjilisteditor.size"),
 	  btnAddFile(  _("From File")),
-	  btnAddGrade( _("By Grade")),
+	  btnAddGrade( _("By Jouyou Grade")),
+	  btnAddJLPT(  _("By JLPT Level")),
 	  btnAddFreq(  _("By Frequency")),
-	  btnSortGrade(_("By Grade")),
+	  btnSortGrade(_("By Jouyou Grade")),
+	  btnSortJLPT( _("By JLPT Level")),
 	  btnSortFreq( _("By Frequency")),
-	  btnSortBoth( _("By Both")),
+	  /*btnSortBoth( _("By Both")),*/
 	  btnCancel(Gtk::Stock::CANCEL),
 	  btnApply(Gtk::Stock::APPLY),
 	  btnOK(Gtk::Stock::OK),
@@ -51,6 +53,7 @@ DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
 	  bChangesMade(false)
 {
 	pdAddByGrade = NULL;
+	pdAddByJLPT  = NULL;
 	pdAddByFreq  = NULL;
 
 	tvList.set_accepts_tab(false);
@@ -61,14 +64,20 @@ DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
 		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnAddFile));
 	btnAddGrade.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnAddGrade));
+	btnAddJLPT.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnAddJLPT));
 	btnAddFreq.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnAddFreq));
 	btnSortGrade.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnSortGrade));
+	btnSortJLPT.signal_clicked()
+		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnSortJLPT));
 	btnSortFreq.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnSortFreq));
+#if 0
 	btnSortBoth.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnSortBoth));
+#endif
 	btnCancel.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogKanjiListEditor::OnCancel));
 	btnApply.signal_clicked()
@@ -106,12 +115,16 @@ DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
 	pfSort->add(*pvbSort);
 
 	pvbAdd->pack_start(btnAddFile,  Gtk::PACK_SHRINK);
-	pvbAdd->pack_start(btnAddGrade, Gtk::PACK_SHRINK);
 	pvbAdd->pack_start(btnAddFreq,  Gtk::PACK_SHRINK);
+	pvbAdd->pack_start(btnAddJLPT, Gtk::PACK_SHRINK);
+	pvbAdd->pack_start(btnAddGrade, Gtk::PACK_SHRINK);
 
-	pvbSort->pack_start(btnSortGrade, Gtk::PACK_SHRINK);
 	pvbSort->pack_start(btnSortFreq,  Gtk::PACK_SHRINK);
+	pvbSort->pack_start(btnSortJLPT, Gtk::PACK_SHRINK);
+	pvbSort->pack_start(btnSortGrade, Gtk::PACK_SHRINK);
+#if 0
 	pvbSort->pack_start(btnSortBoth,  Gtk::PACK_SHRINK);
+#endif
 
 	Gtk::HButtonBox* phbb = get_action_area();
 	phbb->pack_start(btnCancel);
@@ -124,6 +137,7 @@ DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
 
 DialogKanjiListEditor::~DialogKanjiListEditor() {
 	if(pdAddByGrade) delete pdAddByGrade;
+	if(pdAddByJLPT) delete pdAddByJLPT;
 	if(pdAddByFreq) delete pdAddByFreq;
 }
 
@@ -192,7 +206,30 @@ void DialogKanjiListEditor::OnAddGrade() {
 			Gtk::MessageDialog md
 				(*this, (boost::format(_("Added %d kanji to the list."))
 						 % result).str());
-			md.set_title(_("Add Kanji by Grade"));
+			md.set_title(_("Add Kanji by Jouyou Grade"));
+			md.run();
+		}
+	}
+}
+
+void DialogKanjiListEditor::OnAddJLPT() {
+	if(ApplyIfNeeded()) {
+		ListManager* lm = ListManager::Get();
+		if(!pdAddByJLPT)
+			pdAddByJLPT = new DialogAddKanjiByJLPT(*this);
+		int result = pdAddByJLPT->run();
+		pdAddByJLPT->hide();
+		if(result==Gtk::RESPONSE_OK) {
+			result = lm->KList()->AddByJLPT(
+				pdAddByJLPT->GetLowLevel(),
+				pdAddByJLPT->GetHighLevel());
+
+			Update();
+
+			Gtk::MessageDialog md
+				(*this, (boost::format(_("Added %d kanji to the list."))
+						 % result).str());
+			md.set_title(_("Add Kanji by JLPT Level"));
 			md.run();
 		}
 	}
@@ -229,6 +266,14 @@ void DialogKanjiListEditor::OnSortGrade() {
 	}
 }
 
+void DialogKanjiListEditor::OnSortJLPT() {
+	if(ApplyIfNeeded()) {
+		ListManager* lm = ListManager::Get();
+		lm->KList()->Sort(ST_JLPT);
+		Update();
+	}
+}
+
 void DialogKanjiListEditor::OnSortFreq() {
 	if(ApplyIfNeeded()) {
 		ListManager* lm = ListManager::Get();
@@ -237,6 +282,7 @@ void DialogKanjiListEditor::OnSortFreq() {
 	}
 }
 
+#if 0
 void DialogKanjiListEditor::OnSortBoth() {
 	if(ApplyIfNeeded()) {
 		ListManager* lm = ListManager::Get();
@@ -245,6 +291,7 @@ void DialogKanjiListEditor::OnSortBoth() {
 		Update();
 	}
 }
+#endif
 
 void DialogKanjiListEditor::OnCancel() {
 	Update(); /* Since the dialog is not destroyed, prepare it

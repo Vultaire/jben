@@ -157,7 +157,7 @@ bool KanjiHWPad::OnRelease(GdkEventButton* event) {
 		LookupChars();
 		return false;
 	case 3:
-	    if(listLines.size()>0) {
+		if(listLines.size()>0) {
 			pCurrentLine = NULL;
 			listLines.pop_back();
 			Update();

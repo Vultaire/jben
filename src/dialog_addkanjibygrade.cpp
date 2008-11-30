@@ -41,7 +41,7 @@ Glib::ustring strs[] = {
 int strCount = 9;
 
 DialogAddKanjiByGrade::DialogAddKanjiByGrade(Gtk::Window& parent)
-	: StoredDialog(_("Add Kanji By Grade"), parent, "gui.dlg.addkanjibyfreq.size"),
+	: StoredDialog(_("Add Kanji By Jouyou Grade"), parent, "gui.dlg.addkanjibyfreq.size"),
 	  btnOK(Gtk::Stock::OK),
 	  btnCancel(Gtk::Stock::CANCEL)
 {
@@ -131,7 +131,7 @@ void DialogAddKanjiByGrade::OKProc() {
 		Gtk::MessageDialog md
 			(*this, _("Your high grade level cannot be less than your low "
 					  "grade level."));
-		md.set_title(_("Bad grade range"));
+		md.set_title(_("Bad jouyou grade range"));
 		md.run();
 	} else
 		response(Gtk::RESPONSE_OK);
