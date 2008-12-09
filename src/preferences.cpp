@@ -149,6 +149,17 @@ void Preferences::SetDefaultPrefs() {
 	stringOpts["kdict.kanjidic.file2.jispage"] = "jis212";
 
 	stringOpts["sod_dir"] = JB_DATADIR DSSTR "sods";
+
+	stringOpts["kanjitest.writing.showonyomi"]="true" ;
+	stringOpts["kanjitest.writing.showkunyomi"]="true" ;
+	stringOpts["kanjitest.writing.showenglish"]="true" ;
+	stringOpts["kanjitest.reading.showonyomi"]="false" ;
+	stringOpts["kanjitest.reading.showkunyomi"]="false" ;
+	stringOpts["kanjitest.reading.showenglish"]="false" ;
+	stringOpts["kanjitest.showanswer"]="1";
+	stringOpts["kanjitest.correctanswer"]="2";
+	stringOpts["kanjitest.wronganswer"]="3";
+	stringOpts["kanjitest.stopdrill"]="4";
 }
 
 int Preferences::LoadFile(const char *filename) {
@@ -291,16 +302,9 @@ void Preferences::UpgradeConfigFile() {
 		version = "1.2";
 	}
 	if (version=="1.2"){
-		stringOpts["kanjitest.writing.showonyomi"]="true" ;
-		stringOpts["kanjitest.writing.showkunyomi"]="true" ;
-		stringOpts["kanjitest.writing.showenglish"]="true" ;
-		stringOpts["kanjitest.reading.showonyomi"]="false" ;
-		stringOpts["kanjitest.reading.showkunyomi"]="false" ;
-		stringOpts["kanjitest.reading.showenglish"]="false" ;
-		stringOpts["kanjitest.showanswer"]="1";
-		stringOpts["kanjitest.correctanswer"]="2";
-		stringOpts["kanjitest.wronganswer"]="3";
-		stringOpts["kanjitest.stopdrill"]="4";
+		/* New items were added, but nothing needs to be changed here.
+		 However, since this section was already put in, we gotta keep
+		at least the version change in for proper compatibility. */
 		version = "1.2.1";
 	}
 

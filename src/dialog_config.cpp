@@ -144,6 +144,7 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 		new Gtk::CheckButton(_("\"Remembering The Kanji\" by James Heisig")));
 	vChkDict.push_back(pc);
 	pc = manage(new Gtk::CheckButton(_("\"Japanese Names\" by P.G. O'Neill")));
+	vChkDict.push_back(pc);
 
 	/* Connect signals */
 	chkDict.signal_toggled()

@@ -65,7 +65,10 @@ target = jben
 all: $(build_bindir)/$(target) kpengine
 	@echo
 	@echo "J-Ben was built successfully."
-	@echo "To install, use \"make install\" with the same options used to compile the"
+	@echo "To download necessary dictionary files and other (optional) components,"
+	@echo "run \"make download\" now."
+	@echo "If you have already downloaded these files, then to install, use"
+	@echo "\"make install\" with the same options used to compile the"
 	@echo "program."
 
 .PHONY : kpengine clean cleandep cleanall dictdownload install uninstall doc
@@ -102,6 +105,10 @@ $(build_depdir)/%.d : %.cpp
 
 download:
 	../linux_scripts/download_script
+	@echo "\"make download\" has finished.  J-Ben should now be ready for installation."
+	@echo "To install, use \"make install\" with the same options used to compile the"
+	@echo "program."
+
 
 install:
 	$(INSTALL) -d $(DESTDIR)$(bindir) $(DESTDIR)$(datadir)/jben/dicts \

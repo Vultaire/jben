@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Dictionary/SOD download script for J-Ben 1.2.1
 # This script is intended to be executed from the src folder,

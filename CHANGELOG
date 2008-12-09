@@ -1,3 +1,13 @@
+1.2.3:
+* Bug fix: linux_scripts/
+* Bug fix: Recently added changes for kanji test configuration options were
+  being set in the wrong part of preferences.cpp.  These changes have
+  been moved to the appropriate spot.  (Things worked fine for people
+  upgrading, but not for new installations.)
+* Minor string changes in the kanji test config panel.
+* Installer update: Linux makefile now specifies the "make download" step
+  after completing a straight "make".
+
 1.2.2:
 * Added adding/sorting kanji by JLPT level.
 * Slightly reorganized the kanji list editor.

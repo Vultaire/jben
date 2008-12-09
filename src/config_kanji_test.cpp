@@ -30,7 +30,7 @@ ConfigKanjiTest::ConfigKanjiTest():Gtk::VBox(1,3){
 
 /* upframe : the frame for the kanji read settings */
 
-  Gtk::Frame *upFrame = manage(new Gtk::Frame(_("Read kanji test")));
+  Gtk::Frame *upFrame = manage(new Gtk::Frame(_("Reading test")));
   pack_start(*upFrame);
 
   /* upbox : item to show or not in kanji read test */
@@ -57,7 +57,7 @@ ConfigKanjiTest::ConfigKanjiTest():Gtk::VBox(1,3){
   krShowEnglish->set_active(pref->GetSetting("kanjitest.reading.showenglish")=="true");
 
   /* midframe : the frame for the kanjiwrite settings */
-  Gtk::Frame *midFrame = manage(new Gtk::Frame(_("Write kanji test")));
+  Gtk::Frame *midFrame = manage(new Gtk::Frame(_("Writing test")));
   pack_start(*midFrame);
 
   /* midbox : item to show or not in kanji write test */
