@@ -7,24 +7,24 @@
 get_yn ()
 {
     while [ 0 ]; do
-	read yn
-	if [ "$yn" == "Y" ]; then
-	    yn = "y"
-	elif [ "$yn" == "N" ]; then
-	    yn = "n"
-	fi
+        read yn
+        if [ "$yn" == "Y" ]; then
+            yn = "y"
+        elif [ "$yn" == "N" ]; then
+            yn = "n"
+        fi
 
-	if [ -z "$yn" ]; then
-	    if [ ! -z "$1" ]; then
-		yn="$1"
-	    fi
-	fi
-	if [ "$yn" == "y" ]; then
-	    return 0
-	elif [ "$yn" == "n" ]; then
-	    return -1
-	fi
-	echo -ne "Please enter \"Y\" or \"N\": "
+        if [ -z "$yn" ]; then
+            if [ ! -z "$1" ]; then
+                yn="$1"
+            fi
+        fi
+        if [ "$yn" == "y" ]; then
+            return 0
+        elif [ "$yn" == "n" ]; then
+            return 1
+        fi
+        echo -ne "Please enter \"Y\" or \"N\": "
     done
 }
 
@@ -145,42 +145,42 @@ dl_sods=
 if [ $dl_edict2 ]; then
     # Download only if not present.
     if [ -e "../dicts/edict2.gz" ]; then
-	echo -e "EDICT2 already downloaded; skipping.\n"
+        echo -e "EDICT2 already downloaded; skipping.\n"
     else
-	wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/edict2.gz
-	if [ "$?" == "0" ]; then dl_dicts=0; fi
+        wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/edict2.gz
+        if [ "$?" == "0" ]; then dl_dicts=0; fi
     fi
 fi
 if [ $dl_kanjidic ]; then
     if [ -e "../dicts/kanjidic.gz" ]; then
-	echo -e "KANJIDIC already downloaded; skipping.\n"
+        echo -e "KANJIDIC already downloaded; skipping.\n"
     else
-	wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/kanjidic.gz
-	if [ "$?" == "0" ]; then dl_dicts=0; fi
+        wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/kanjidic.gz
+        if [ "$?" == "0" ]; then dl_dicts=0; fi
     fi
 fi
 if [ $dl_kanjidic2 ]; then
     if [ -e "../dicts/kanjidic2.xml.gz" ]; then
-	echo -e "KANJIDIC2 already downloaded; skipping.\n"
+        echo -e "KANJIDIC2 already downloaded; skipping.\n"
     else
-	wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/kanjidic2.xml.gz
-	if [ "$?" == "0" ]; then dl_dicts=0; fi
+        wget -P../dicts http://www.vultaire.net/software/jben/files/dicts/kanjidic2.xml.gz
+        if [ "$?" == "0" ]; then dl_dicts=0; fi
     fi
 fi
 if [ $dl_static_sods ]; then
     if [ -e "../sods/sod-utf8-hex.tar.gz" ]; then
-	echo -e "Static SODs already downloaded; skipping.\n"
+        echo -e "Static SODs already downloaded; skipping.\n"
     else
-	wget -P../sods http://www.vultaire.net/software/jben/files/sods/sod-utf8-hex.tar.gz
-	if [ "$?" == "0" ]; then dl_sods=0; fi
+        wget -P../sods http://www.vultaire.net/software/jben/files/sods/sod-utf8-hex.tar.gz
+        if [ "$?" == "0" ]; then dl_sods=0; fi
     fi
 fi
 if [ $dl_anim_sods ]; then
     if [ -e "../sods/soda-utf8-hex.tar.gz" ]; then
-	echo -e "Animated SODs already downloaded; skipping.\n"
+        echo -e "Animated SODs already downloaded; skipping.\n"
     else
-	wget -P../sods http://www.vultaire.net/software/jben/files/sods/soda-utf8-hex.tar.gz
-	if [ "$?" == "0" ]; then dl_sods=0; fi
+        wget -P../sods http://www.vultaire.net/software/jben/files/sods/soda-utf8-hex.tar.gz
+        if [ "$?" == "0" ]; then dl_sods=0; fi
     fi
 fi
 

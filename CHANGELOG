@@ -1,5 +1,6 @@
 1.2.3:
-* Bug fix: linux_scripts/
+* Bug fix: linux_scripts/download_script had an incorrect shebang line of
+  #!/bin/sh.  Changed to #!/bin/bash since bash-specific functions are in use.
 * Bug fix: Recently added changes for kanji test configuration options were
   being set in the wrong part of preferences.cpp.  These changes have
   been moved to the appropriate spot.  (Things worked fine for people
