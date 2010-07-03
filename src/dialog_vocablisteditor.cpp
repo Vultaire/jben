@@ -62,7 +62,7 @@ DialogVocabListEditor::DialogVocabListEditor(Gtk::Window& parent)
 	pvb->set_spacing(5);
 	pvb->pack_start(*pswTvList);
 
-	Gtk::HButtonBox* phbb = get_action_area();
+	Gtk::ButtonBox* phbb = get_action_area();
 	phbb->pack_start(btnCancel);
 	phbb->pack_start(btnApply);
 	phbb->pack_start(btnOK);

@@ -47,7 +47,7 @@ DialogSetMobile::DialogSetMobile()
 	btnMobile.signal_clicked()
 		.connect(sigc::mem_fun(*this, &DialogSetMobile::OnMobile));
 
-	Gtk::HButtonBox* phbb = get_action_area();
+	Gtk::ButtonBox* phbb = get_action_area();
 	phbb->pack_start(btnStandard);
 	phbb->pack_start(btnMobile);
 

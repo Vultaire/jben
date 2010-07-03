@@ -102,7 +102,7 @@ DialogKanjiPreTest::DialogKanjiPreTest(Gtk::Window& parent)
 	phbIndex->pack_start(rdoIndex, Gtk::PACK_SHRINK);
 	phbIndex->pack_start(spnIndex, Gtk::PACK_SHRINK);
 
-	Gtk::HButtonBox* phbb = get_action_area();
+	Gtk::ButtonBox* phbb = get_action_area();
 	phbb->pack_start(btnCancel);
 	phbb->pack_start(btnStart);
 

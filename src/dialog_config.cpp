@@ -272,7 +272,7 @@ DialogConfig::DialogConfig(Gtk::Window& parent)
 	pvb->set_spacing(5);
 	pvb->pack_start(*pnb);
 
-	Gtk::HButtonBox* phbb = get_action_area();
+	Gtk::ButtonBox* phbb = get_action_area();
 	phbb->pack_start(btnCancel);
 	phbb->pack_start(btnOK);
 

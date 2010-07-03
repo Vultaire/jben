@@ -68,7 +68,7 @@ DialogAddKanjiByGrade::DialogAddKanjiByGrade(Gtk::Window& parent)
 	pvb->pack_start(comboLowGrade);
 	pvb->pack_start(comboHighGrade);
 
-	Gtk::HButtonBox* phbb = get_action_area();
+	Gtk::ButtonBox* phbb = get_action_area();
 	phbb->pack_start(btnCancel);
 	phbb->pack_start(btnOK);
 

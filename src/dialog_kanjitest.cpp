@@ -147,7 +147,7 @@ DialogKanjiTest::DialogKanjiTest
 	pvb->pack_start(ctvKunyomi, Gtk::PACK_SHRINK);
 	pvb->pack_start(ctvMeaning, Gtk::PACK_SHRINK);
 
-	Gtk::HButtonBox* phbbButtons = get_action_area();
+	Gtk::ButtonBox* phbbButtons = get_action_area();
 	phbbButtons->pack_start(*btnShowAnswer, Gtk::PACK_SHRINK);
 	phbbButtons->pack_start(*btnCorrect, Gtk::PACK_SHRINK);
 	phbbButtons->pack_start(*btnWrong,   Gtk::PACK_SHRINK);

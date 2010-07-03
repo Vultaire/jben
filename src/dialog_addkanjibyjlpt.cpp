@@ -64,7 +64,7 @@ DialogAddKanjiByJLPT::DialogAddKanjiByJLPT(Gtk::Window& parent)
 	pvb->pack_start(comboLowLevel);
 	pvb->pack_start(comboHighLevel);
 
-	Gtk::HButtonBox* phbb = get_action_area();
+	Gtk::ButtonBox* phbb = get_action_area();
 	phbb->pack_start(btnCancel);
 	phbb->pack_start(btnOK);
 

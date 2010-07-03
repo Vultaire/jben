@@ -126,7 +126,7 @@ DialogKanjiListEditor::DialogKanjiListEditor(Gtk::Window& parent)
 	pvbSort->pack_start(btnSortBoth,  Gtk::PACK_SHRINK);
 #endif
 
-	Gtk::HButtonBox* phbb = get_action_area();
+	Gtk::ButtonBox* phbb = get_action_area();
 	phbb->pack_start(btnCancel);
 	phbb->pack_start(btnApply);
 	phbb->pack_start(btnOK);
